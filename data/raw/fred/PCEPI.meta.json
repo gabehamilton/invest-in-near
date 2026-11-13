@@ -1,0 +1,24 @@
+{
+  "blank_rows": 0,
+  "columns": [
+    "date",
+    "value"
+  ],
+  "description": "Personal consumption expenditures chain-type price index, monthly, SA, index 2017=100",
+  "fetch_day_utc": "2026-11-11",
+  "fetched_at": "2026-11-11T22:58:37+00:00",
+  "file": "data/raw/fred/PCEPI.csv",
+  "first_date": "1959-01-01",
+  "http_last_modified": "Thu, 29 Oct 2026 12:43:37 GMT",
+  "last_date": "2026-09-01",
+  "last_observed_date": "2026-09-01",
+  "missing_markers": [
+    ".",
+    ""
+  ],
+  "refresh": "full history re-downloaded every run (FRED revises past values; vintage_date is ignored here)",
+  "rows": 813,
+  "rows_after_fetch_date": 0,
+  "series_id": "PCEPI",
+  "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=PCEPI"
+}

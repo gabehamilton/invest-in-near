@@ -1,0 +1,53 @@
+{
+  "areas_requested": [
+    "CN",
+    "HK"
+  ],
+  "areas_without_data": [],
+  "columns": [
+    "area",
+    "period",
+    "value"
+  ],
+  "coverage": {
+    "CN": {
+      "first_period": "2015-01",
+      "last_period": "2026-10",
+      "rows": 142
+    },
+    "HK": {
+      "first_period": "2015-01",
+      "last_period": "2026-10",
+      "rows": 142
+    }
+  },
+  "description": "Central bank policy rates for China and Hong Kong, monthly, end of period, percent per annum (BIS WS_CBPOL)",
+  "dropped_nan": [],
+  "fetched_at": "2026-11-12T21:28:36+00:00",
+  "file": "data/raw/bis/policy_rates_monthly_cn_hk.csv",
+  "flow": "WS_CBPOL",
+  "key": "M.CN+HK",
+  "params": {
+    "format": "csv",
+    "startPeriod": "2015-01"
+  },
+  "refresh": "full re-download from 2015-01 every run (BIS revises recent periods)",
+  "rows": 284,
+  "series_attributes": {
+    "CN": {
+      "COMPILATION": "From 20 Aug 2019 onwards: Loan Prime Rate  (1 year): from 1 Jan 1996 till 19 Aug 2019: Official lending rate (1 year).",
+      "SOURCE_REF": "People's Bank of China",
+      "TITLE": "Central bank policy rates - China - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "HK": {
+      "COMPILATION": "Official base rate.",
+      "SOURCE_REF": "Hong Kong Monetary Authority",
+      "TITLE": "Central bank policy rates - Hong Kong SAR - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    }
+  },
+  "source_url": "https://stats.bis.org/api/v2/data/dataflow/BIS/WS_CBPOL/1.0/M.CN+HK?format=csv&startPeriod=2015-01"
+}

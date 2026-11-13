@@ -1,0 +1,699 @@
+{#-
+  data.html: "Where every number comes from".
+  Prose here is digit-free. Commands, paths, keys and formulas sit in <code>/<pre>; data-file
+  strings go through m.raw(); figures through num(); dates through tm().
+-#}
+{%- import '_macros.html.j2' as m with context -%}
+{%- autoescape true -%}
+{%- set known_formulas = ['F-growth', 'F-ceiling', 'F-burnshare', 'F-burn-epochs', 'F-burn-sampled', 'F-burn-ub', 'F-mint-check', 'F-lst', 'F-share', 'F-yoy', 'F-ffcomp', 'F-spread-adj', 'F-spread-naive', 'F-rv', 'F-vrp', 'F-tally', 'F-t3-gap', 'F-mdd-365', 'F-usd-12m', 'F-bis-rank', 'F-money-growth-latest', 'F-median', 'F-h1b-gap', 'F-policy-latest', 'F-pay-count', 'F-hold-net', 'F-hold-rank'] -%}
+{#- The desk simulation's method (only with its keys): F-sim articles below the other formulas, and a method
+    section with the risk and seed tables. Every figure is a registry display. -#}
+{%- set desk_need = ['sim_mean_usd', 'sim_desk_usd', 'sim_horizon_days', 'sim_window_short', 'sim_paths', 'sim_seed_n', 'sim_dots', 'sim_share', 'sim_near_usd', 'sim_split_usd', 'sim_split_eur', 'effr_latest', 'estr_latest', 'dgs1_latest', 'y_lst_365', 'sim_r_usd', 'sim_r_eur', 'sim_r_dgs1', 'sim_y', 'sim_mu_value_flat', 'sim_mu_thesis_m2', 'sim_mu_thesis_cpi', 'rv_365_near', 'sim_rv_engine', 'sim_p05_usd', 'sim_es95_usd', 'sim_es975_usd', 'sim_var1d99_usd', 'sim_es1d975_usd', 'sim_day_obs', 'sim_day_es_n', 'sim_p_half', 'sim_w_budget', 'sim_es_interest_years', 'sim_corr_near_eur_365', 'sim_fix_days', 'sim_window_end', 'sim_tail_n'] -%}
+{%- set dk = namespace(ok=true) -%}
+{%- for k in desk_need if k not in numbers or numbers[k].get('value') is none %}{% set dk.ok = false %}{% endfor -%}
+{%- set desk_ok = dk.ok -%}
+{%- if desk_ok %}{% set known_formulas = known_formulas + ['F-sim-obs', 'F-sim-rate', 'F-sim-tbill', 'F-sim-pool', 'F-sim-path', 'F-sim-unit', 'F-sim-benefit', 'F-sim-mean', 'F-sim-drift', 'F-sim-dist', 'F-sim-be', 'F-sim-budget', 'F-sim-liq', 'F-sim-day', 'F-sim-block', 'F-sim-lognormal', 'F-sim-seeds'] %}{% endif -%}
+{%- set used = [] -%}
+{%- for k, n in numbers|dictsort %}{% if n.get('formula_id') and n.formula_id not in used %}{% set _ = used.append(n.formula_id) %}{% endif %}{% endfor -%}
+{%- for cid, ch in charts|dictsort %}{% for f in ch.get('formula_ids') or [] %}{% if f not in used %}{% set _ = used.append(f) %}{% endif %}{% endfor %}{% endfor -%}
+{%- macro used_by(fid) -%}
+{%- set ks = [] -%}{%- for k, n in numbers|dictsort if n.get('formula_id') == fid %}{% set _ = ks.append(k) %}{% endfor -%}
+{%- if ks %}<p class="used-by">Used by: {% for k in ks %}<a href="#n-{{ k }}"><code>{{ k }}</code></a>{{ ', ' if not loop.last }}{% endfor %}</p>{% else %}<p class="used-by na">No registered number uses it.</p>{% endif -%}
+{%- endmacro -%}
+<!doctype html>
+<html lang="en">
+<head>
+{{ m.head('Data · NEAR, tested', 'Where every number on the NEAR thesis page comes from: sources, formulas, every number, the verdict rules and the checks on the data.') }}
+</head>
+<body class="data-page">
+{{ m.topbar('data') }}
+<main id="main" tabindex="-1">
+
+<section class="hero wrap" aria-labelledby="data-h">
+  <p class="kicker">Data</p>
+  <h1 id="data-h">Where every number comes from</h1>
+  <p class="lede">Every figure on the main page traces back to a raw file in <code>data/raw</code>, a formula on this page and the source it came from.</p>
+  <nav class="toc" aria-label="On this page">
+    <ul>
+      <li><a href="#status">Source status</a></li>
+      <li><a href="#sources">Sources in detail</a></li>
+      <li><a href="#formulas">Formulas</a></li>
+      {%- if desk_ok %}
+      <li><a href="#desk-method">Desk simulation</a></li>
+      {%- endif %}
+      <li><a href="#numbers">Number registry</a></li>
+      <li><a href="#rules">Verdict rules</a></li>
+      <li><a href="#xchk">Cross-checks</a></li>
+      <li><a href="#gaps">Known gaps</a></li>
+      <li><a href="#licences">Licences and terms</a></li>
+      <li><a href="#reconciliation">Supply reconciliation</a></li>
+    </ul>
+  </nav>
+</section>
+
+<section id="status" class="wrap" aria-labelledby="status-h">
+  <h2 id="status-h">Source status</h2>
+  <p class="note">One row per source, with its latest observation. A stale or missing source shows here and on every chart that reads it; nothing is filled in to hide it. Each source's terms of use are under <a href="#licences">licences and terms</a>. Class: a primary source decides a figure, a cross-check source only checks one, and a declared constant is a value quoted from its published source.</p>
+  <div class="table-wrap">
+    <table class="status-board">
+      <caption class="vh">Status of every data source</caption>
+      <thead><tr><th scope="col">Source</th><th scope="col">Class</th><th scope="col">Endpoint</th><th scope="col">State</th><th scope="col">Last observation</th><th scope="col">Rows</th><th scope="col">Lag, days</th><th scope="col">Cached file, sha, fetch time, committed</th></tr></thead>
+      <tbody>
+      {%- for s in sources %}
+        <tr id="src-{{ s.get('id') }}" data-state="{{ s.get('state') }}">
+          <th scope="row">{{ m.raw(s.get('name') or s.get('id')) }}</th>
+          <td>{{ m.raw(s.get('class')) }}</td>
+          <td>{{ m.raw(s.get('endpoint')) }}</td>
+          <td><span class="state" data-state="{{ s.get('state') }}"><span class="dot" data-state="{{ s.get('state') }}" aria-hidden="true"></span>{{ m.state_word(s.get('state')) }}</span>{% if s.get('fix') and (s.get('state') != 'ok' or s.get('id') == 'constants') %}<br><span class="fix">{% if s.get('state') == 'ok' %}Check{% else %}Fix{% endif %}: <code>{{ s.fix }}</code></span>{% endif %}</td>
+          <td>{% if s.get('last_obs') %}{{ tm(s.last_obs) }}{% else %}<span class="na">n/a</span>{% endif %}</td>
+          <td class="numcell">{{ m.raw(s.get('rows')) }}</td>
+          <td class="numcell">{{ m.raw(s.get('lag_days')) }}</td>
+          {#- file, sha, fetch time and committed share one cell, so the board fits a desktop width -#}
+          <td class="file"><span class="file-path">{{ m.raw(s.get('path')) }}</span>
+            <span class="file-meta"><span class="sha">sha {% if s.get('sha256') %}<code title="{{ s.sha256 }}">{{ s.sha256 }}</code>{% else %}<span class="na">n/a</span>{% endif %}</span>
+            <span>fetched {% if s.get('fetched_at') %}{{ tm(s.fetched_at) }}{% else %}<span class="na">n/a</span>{% endif %}</span>
+            <span>committed {{ m.raw(s.get('committed')) }}</span></span></td>
+        </tr>
+      {%- endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="sources" class="wrap" aria-labelledby="sources-h">
+  <h2 id="sources-h">Sources in detail</h2>
+  <p class="note">The gotchas below are the ones that change a number if you miss them.</p>
+  <div class="src-blocks">
+    <article class="src-block" id="src-detail-rpc">
+      <h3>NEAR RPC</h3>
+      <p>Archival JSON-RPC at <code>archival-rpc.mainnet.fastnear.com</code>: <code>block</code> by height for total supply, <code>validators</code> for stake, <code>EXPERIMENTAL_protocol_config</code> for the issuance ceiling, and <code>call_function</code> on <code>meta-pool.near</code> and <code>linear-protocol.near</code> for liquid staking prices.</p>
+      <ul>
+        <li>The config field <code>protocol_reward_rate</code> reads as a fraction, but nearcore hard-codes the treasury's share on mainnet. The figures use the declared constant <code>treasury_share</code> from <code>thesis/constants.toml</code>, pinned to the nearcore source line, so stakers get the remainder.</li>
+        <li>Stake from <code>validators</code> trails the current epoch, so the staked share lags slightly.</li>
+        <li>The archival endpoint rate-limits. The sample cache is append-only, a missing sample stays missing, and a window edge with no sample nearby is null.</li>
+        <li>The history file's last row is the latest block, not the start of a day. It sets the “now” figures (supply, staked share, the rate in force); trailing windows end at the latest start-of-day sample instead.</li>
+      </ul>
+    </article>
+    <article class="src-block" id="src-detail-bigquery">
+      <h3>BigQuery public dataset</h3>
+      <p><code>bigquery-public-data.crypto_near_mainnet_us</code>, queried with the SQL in <code>sql/</code>, always filtered on <code>block_date</code>.</p>
+      <ul>
+        <li>The dataset lives in <code>us-east1</code>, and token amounts are <code>FLOAT64</code> in yoctoNEAR, so sums lose precision at the last digits.</li>
+        <li>Before the developer gas rebate ended (<code>HSP-027</code>, at block {{ num('hsp027_height') }} on {{ num('hsp027_from') }}), <code>tokens_burnt</code> overstates the burn, because part of every function-call fee went to the called contract as a reward. From that block the whole fee burns, so gross equals net. The exact burn comes from per-block changes in total supply.</li>
+        <li>The dataset stopped updating for long stretches. The status board shows its last block date, and the burn chart says which method it used.</li>
+      </ul>
+    </article>
+    <article class="src-block" id="src-detail-fred">
+      <h3>FRED</h3>
+      <p>One keyless <code>fredgraph.csv?id=</code> request per series: fed funds (<code>DFF</code>, <code>EFFR</code>), the target range, CPI, core CPI, PCE, money supply, the euro exchange rate and the Fed's median projections. The desk simulation adds two: the euro short-term rate, €STR (<code>ECBESTRVOLWGTTRMDMNRT</code>, the European Central Bank's volume-weighted overnight rate, which FRED republishes), and the one-year Treasury yield (<code>DGS1</code>).</p>
+      <ul>
+        <li>The desk reads each rate on or before the latest date every input shares, the same rule as the effective fed funds rate, so no rate comes from a day the price data has not reached.</li>
+        <li>FRED serves the latest vintage only, so a revised month changes history on the next pull.</li>
+        <li>The BLS skipped one month of CPI during the federal shutdown. Lines break there, year-over-year values that need that month are null, and windows that start or end in it move to the nearest month inside the window.</li>
+      </ul>
+    </article>
+    <article class="src-block" id="src-detail-bis">
+      <h3>BIS</h3>
+      <p>Central bank policy rates (<code>WS_CBPOL</code>) and consumer price inflation (<code>WS_LONG_CPI</code>) for the currency panel.</p>
+      <ul>
+        <li>Australia publishes CPI quarterly; the monthly series repeats each quarter's value, and the chart flags it.</li>
+        <li>Argentina is excluded: its central bank stopped publishing a policy rate.</li>
+      </ul>
+    </article>
+    <article class="src-block" id="src-detail-market">
+      <h3>Binance and Coinbase prices</h3>
+      <p>Daily candles from <code>data-api.binance.vision</code> for NEAR, bitcoin and ether, and Coinbase's NEAR-USD as a cross-check and fallback.</p>
+      <ul>
+        <li>Binance quotes against USDT, not dollars. The cross-check against Coinbase's dollar price measures the gap.</li>
+        <li>Coinbase's NEAR history starts later than Binance's, so a Coinbase fallback omits the early windows and lists them.</li>
+      </ul>
+    </article>
+    <article class="src-block" id="src-detail-derivatives">
+      <h3>Derivatives venues</h3>
+      <p>Deribit, OKX and Aevo instrument lists for options, and Deribit's volatility indexes for bitcoin and ether.</p>
+      <ul>
+        <li>An unreachable venue reads “not checked”, never “no”, and counts separately.</li>
+      </ul>
+    </article>
+    <article class="src-block" id="src-detail-defillama">
+      <h3>DefiLlama</h3>
+      <p>Daily NEAR Intents volume and fees from DefiLlama's <code>summary/dexs/near-intents</code> and <code>summary/fees/near-intents</code>.</p>
+      <ul>
+        <li>DefiLlama's figures come from a Dune table maintained by NEAR, so they are not independent of Dune. The Explorer cross-check exists to test that.</li>
+        <li>The most recent days are provisional and often revised upward; the Intents volume chart uses complete months only.</li>
+      </ul>
+    </article>
+    <article class="src-block" id="src-detail-money">
+      <h3>Money for the {{ num('n_fiat_panel') }} most-traded currencies</h3>
+      <p>One public, keyless money series per currency, from the publisher that issues it: FRED for the dollar, the ECB for the euro, the Bank of Japan for the yen, the Bank of England for sterling, the OECD for the yuan, the SNB for the franc, the RBA for the Australian dollar, the Bank of Canada for the Canadian dollar, the HKMA for the Hong Kong dollar, and SingStat, via the MAS, for the Singapore dollar. Each raw file under <code>data/raw/money/&lt;currency&gt;/</code> has a sidecar with its URL, units and fetch time.</p>
+      <ul>
+        <li>Units differ by publisher (millions, billions, index points); the loader reads each sidecar's unit string and refuses a unit it does not know.</li>
+        <li>Each currency's money growth is its latest twelve months, ending at its latest published month; nothing is filled or carried forward.</li>
+        <li>The Bank of England refuses repeated requests, so the pull makes one paced request per series and keeps the previous file when refused.</li>
+        <li>The OECD's monetary aggregates mirror several national series; cross-check <code>X9</code> compares them.</li>
+      </ul>
+    </article>
+    <article class="src-block" id="src-detail-bis-fx">
+      <h3>BIS Triennial Survey ranking</h3>
+      <p>The {{ num('n_fiat_panel') }} currencies are ranked by daily turnover from the survey annex's table of turnover by currency, net-net, read from the BIS statistics API (dataflow <code>WS_DER_OTC_TOV</code>) by <code>pipeline/sources/bis_fx.py</code> into <code>data/raw/bis_fx/</code>; the annex PDF is the cross-check. The code sorts and takes the top ten; nobody types the list. The ranking uses the annex's later vintage of the figures (the survey's press page carries an earlier total), from the survey month {{ num('bis_survey_month') }}, and holds until the next survey.</p>
+    </article>
+    <article class="src-block" id="src-detail-intents">
+      <h3>NEAR Intents Explorer</h3>
+      <p>The partner API at <code>explorer.near-intents.org/api/v0</code>. It needs a partner access token from NEAR Intents and allows one request every few seconds.</p>
+      <ul>
+        <li>Raw rows are aggregated in memory and never written to disk, per {{ cite('NEAR Intents Terms of Service, section 4.1(e)') }}.</li>
+        <li>Published aggregates wait for written permission; see <a href="#licences">licences and terms</a>.</li>
+      </ul>
+    </article>
+  </div>
+  <h3 class="sub" id="constants">Declared constants</h3>
+  <p class="note">Inputs no API returns. Each has a source, a verbatim quote and a retrieval date, in <code>thesis/constants.toml</code>.</p>
+  <div class="table-wrap">
+    <table class="constants">
+      <caption class="vh">Declared constants with their sources</caption>
+      <thead><tr><th scope="col">Name</th><th scope="col">Value</th><th scope="col">Unit</th><th scope="col">Source and quote</th><th scope="col">Retrieved</th></tr></thead>
+      <tbody>
+      {%- for name, c in constants|dictsort if c is mapping %}
+        <tr id="K-{{ name }}">
+          <th scope="row"><code>{{ name }}</code></th>
+          <td>{% if 'value' in c or ('lo' in c and 'hi' in c) %}{{ rule(name, 'value') }}{% else %}<span class="na">quoted text, no value</span>{% endif %}</td>
+          <td>{{ m.raw(c.get('unit')) }}</td>
+          <td>{% if c.get('provenance') %}<span class="badge">{{ m.raw(c.provenance) }}</span><br>{% endif %}{% if c.get('source') %}{{ cite(c.get('quote') or c.source, c.source) }}{% elif c.get('quote') %}{{ m.raw(c.quote) }}{% endif %}{% if c.get('quote_status') %}<br><span class="badge">{{ m.raw(c.quote_status) }}</span>{% endif %}{% if c.get('note') %}<br>{{ m.raw(c.note) }}{% endif %}</td>
+          <td>{% if c.get('retrieved') %}{{ tm(c.retrieved) }}{% endif %}</td>
+        </tr>
+      {%- endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="formulas" class="wrap" aria-labelledby="formulas-h">
+  <h2 id="formulas-h">Formulas</h2>
+  <p class="note">One anchor per formula id. Every number in the registry names one of these. Ids: F is a computed value, D a value read directly from a source, K a declared constant, P a parameter set in <code>thesis/rules.toml</code>, and X, further down, a cross-check between two sources.</p>
+  <div class="formulas">
+    <article class="formula" id="F-growth">
+      <h3><code>F-growth</code> Supply growth over a window</h3>
+      <pre><code>g = (S1 / S0) ^ (365.25 / days) - 1</code></pre>
+      <p>S is total supply from the RPC sample nearest each window edge, and days come from the two blocks' timestamps. Samples are the block at the start of a UTC day: monthly from launch, then weekly, then daily (<code>rpc/history_samples.csv</code> merged with <code>rpc/dense_samples.csv</code>; on a date both files sampled they must agree exactly). Every trailing window ends at the latest of these full-day samples, so with daily samples a trailing year spans exactly one year. If no sample sits within a week of an edge, the value is null, never approximated.</p>
+      {{ used_by('F-growth') }}
+    </article>
+    <article class="formula" id="F-ceiling">
+      <h3><code>F-ceiling</code> Most the protocol allowed over the same window</h3>
+      <pre><code>ceiling = exp( sum_k  i_k * dt_k ) - 1      (i_k = max_inflation_rate in force, dt_k in years)</code></pre>
+      <p>The issuance ceiling compounded over the time each value was in force, from <code>EXPERIMENTAL_protocol_config</code>. The rate switches at the exact first block of each change, found by bisecting the config between two sampled blocks (<code>rpc/protocol_changes.csv</code>), so the ceiling is exact rather than bracketed.</p>
+      {{ used_by('F-ceiling') }}
+    </article>
+    <article class="formula" id="F-burnshare">
+      <h3><code>F-burnshare</code> Burn as a share of issuance, exact</h3>
+      <pre><code>burn_share = sum(burn) / sum(mint)</code></pre>
+      <p>Mint and burn from per-block changes in BigQuery's total supply. Used only when coverage of the window is complete.</p>
+      {{ used_by('F-burnshare') }}
+    </article>
+    <article class="formula" id="F-burn-epochs">
+      <h3><code>F-burn-epochs</code> Burn as a share of issuance, exact from every epoch boundary</h3>
+      <pre><code>minted     = sum_b minted_b      over every epoch boundary b with start_height &lt; b &lt;= end_height
+burnt      = minted - (supply(end) - supply(start))
+burn_share = burnt / minted
+minted_b   = supply(b) - supply(b - 1) + burn in block b</code></pre>
+      <p>Total supply moves only by the mint at the first block of each epoch and by the burn in every block, so over the exact window between two midnight UTC samples a year apart the burn is the summed mint less supply growth. No epoch is sampled or skipped: <code>rpc/epoch_mints.csv</code> walks back from the tip one boundary at a time, and each row records the boundary before it (<code>prev_boundary_height</code>). The method is used only when those links run unbroken from a boundary at or before the window start to one after its end; a gap or a missing link falls back to the monthly sample, and the burn chart says why. It must sit at or below the upper bound (cross-check). Labeled “exact: every epoch boundary” wherever it appears.</p>
+      {{ used_by('F-burn-epochs') }}
+    </article>
+    <article class="formula" id="F-burn-sampled">
+      <h3><code>F-burn-sampled</code> Burn as a share of issuance, one epoch per month</h3>
+      <pre><code>burn_share = sum_e burnt_e / sum_e minted_e      (one complete epoch e per calendar month)
+burnt_e  = supply(start) - supply(end) + burn in the start block
+minted_e = supply(next start) - supply(end) + burn in the next start block</code></pre>
+      <p>Each sampled epoch's mint and burn are exact RPC reads (<code>rpc/epoch_history.csv</code>). Only one epoch a month is read, so a single unusual epoch stands in for its whole month: the burn chart lists every sampled epoch, keeps the outliers, and shows the upper bound beside the sampled share. Used when neither BigQuery nor every epoch boundary covers the period (the calendar years), kept beside an exact trailing-year share for comparison, and labeled “sampled: one epoch per month” wherever it appears.</p>
+      {{ used_by('F-burn-sampled') }}
+    </article>
+    <article class="formula" id="F-mint-check">
+      <h3><code>F-mint-check</code> Realized mint against the ceiling, per epoch</h3>
+      <pre><code>gap_e = minted_e * seconds_per_year / (supply(start) * epoch_seconds) - max_inflation_rate      (pp)</code></pre>
+      <p>Since nearcore's <code>RectifyInflation</code> protocol version (declared constant <code>rectify_inflation_protocol</code>), an epoch's reward is the ceiling rate times supply times the epoch's duration, so a full-online epoch mints at the ceiling and validators below the online threshold leave part unminted. Earlier epochs were paid by block count and are listed but not compared. One complete epoch per month (<code>rpc/epoch_history.csv</code>).</p>
+      {{ used_by('F-mint-check') }}
+    </article>
+    <article class="formula" id="F-burn-ub">
+      <h3><code>F-burn-ub</code> Burn plus unminted, upper bound</h3>
+      <pre><code>burn + unminted &lt;= S0 * (exp(i * years) - 1) - (S1 - S0)</code></pre>
+      <p>The gap between what the ceiling would mint and what supply actually did bounds the burn from above: the true share cannot exceed it. It is the measured share only when neither BigQuery, every epoch boundary nor a month-by-month epoch sample covers the period, and it is drawn beside the measured share in every period. Labeled “upper bound” wherever it appears.</p>
+      {{ used_by('F-burn-ub') }}
+    </article>
+    <article class="formula" id="F-lst">
+      <h3><code>F-lst</code> Liquid staking yield</h3>
+      <pre><code>y = (P_end / P_start) ^ (365.25 / days) - 1      (P = stNEAR or LiNEAR price in NEAR)
+y_lst = mean(y_stNEAR, y_LiNEAR) where both exist</code></pre>
+      <p>A realized yield, net of validator commission and protocol fees, read from each token's on-chain exchange rate.</p>
+      {{ used_by('F-lst') }}
+    </article>
+    <article class="formula" id="F-share">
+      <h3><code>F-share</code> Change in a holder's share of all NEAR</h3>
+      <pre><code>staker     = (1 + y_lst) / (1 + g) - 1
+non_staker = 1 / (1 + g) - 1</code></pre>
+      <p>Annualized per window. Positive means the holder owns a larger fraction of all NEAR at the end than at the start.</p>
+      {{ used_by('F-share') }}
+    </article>
+    <article class="formula" id="F-yoy">
+      <h3><code>F-yoy</code> Year-over-year change</h3>
+      <pre><code>yoy_t = X_t / X_(t-12) - 1</code></pre>
+      <p>Null if either month is missing; no month is filled.</p>
+      {{ used_by('F-yoy') }}
+    </article>
+    <article class="formula" id="F-ffcomp">
+      <h3><code>F-ffcomp</code> Fed funds, compounded</h3>
+      <pre><code>growth = prod_d (1 + DFF_d / 36000)      (ACT/360, one factor per calendar day)
+annual = growth ^ (365 / days) - 1</code></pre>
+      <p>What a dollar earning the effective fed funds rate every day of the window would have returned, on the same footing as a staking yield.</p>
+      {{ used_by('F-ffcomp') }}
+    </article>
+    <article class="formula" id="F-spread-adj">
+      <h3><code>F-spread-adj</code> <code id="F-spread-naive">F-spread-naive</code> Staking minus fed funds</h3>
+      <pre><code>spread_adj   = y_lst(window) - annual(F-ffcomp, same days)
+spread_naive = y_lst(window) - mean(EFFR, same days)</code></pre>
+      <p>The ledger prints both; verdicts use the like-for-like version.</p>
+      {{ used_by('F-spread-adj') }}
+      {{ used_by('F-spread-naive') }}
+    </article>
+    <article class="formula" id="F-rv">
+      <h3><code>F-rv</code> Realized volatility</h3>
+      <pre><code>rv = stdev( ln(P_t / P_(t-1)) ) * sqrt(365)      (FX: sqrt(252))
+sigma_d = rv / sqrt(365)</code></pre>
+      {{ used_by('F-rv') }}
+    </article>
+    <article class="formula" id="F-vrp">
+      <h3><code>F-vrp</code> Volatility risk premium (proxy)</h3>
+      <pre><code>vrp = DVOL_t - rv(forward 30 days)</code></pre>
+      <p>Bitcoin and ether only, as context; there is no NEAR options market to measure.</p>
+      {{ used_by('F-vrp') }}
+    </article>
+    <article class="formula" id="F-t3-gap">
+      <h3><code>F-t3-gap</code> Burn the fee-burn tripwire needs</h3>
+      <pre><code>burn_needed_t3   = t3_burn_pct / 100 * mint_per_day_365     (t3_burn_pct in rules.toml [params])
+burn_multiple_t3 = burn_needed_t3 / burn_per_day_365</code></pre>
+      <p>How much NEAR fees would have to burn each day for the confirming tripwire on fee burn to fire at today's issuance, and how many times the trailing year's daily burn that is. Both use the same trailing-year mint and burn as the burn share.</p>
+      {{ used_by('F-t3-gap') }}
+    </article>
+    <article class="formula" id="F-mdd-365">
+      <h3><code>F-mdd-365</code> Largest fall within the last year</h3>
+      <pre><code>mdd_365 = min_t ( P_t / max_(end-365d &lt;= s &lt;= t) P_s - 1 )      over closes in [end - 365 d, end)</code></pre>
+      <p>Only closes within the trailing year count, so the high is one a holder could have bought at recently.</p>
+      {{ used_by('F-mdd-365') }}
+    </article>
+    <article class="formula" id="F-usd-12m">
+      <h3><code>F-usd-12m</code> One-year windows in dollars</h3>
+      <pre><code>ret12_w  = P(w_end) / P(w_end - 365 d) - 1      (stNEAR in dollars: NEAR price x stNEAR rate)
+cash12_w = growth(F-ffcomp over the same days) - 1
+_1y keys: windows with end - 365 d &lt; w_end &lt;= end, weekly</code></pre>
+      <p>The share of weekly one-year windows in which stNEAR held within the band of its starting dollar value, or beat fed funds. The <code>_1y</code> keys count only windows that end within the trailing year.</p>
+      {{ used_by('F-usd-12m') }}
+    </article>
+    <article class="formula" id="F-bis-rank">
+      <h3><code>F-bis-rank</code> The {{ num('n_fiat_panel') }} most-traded currencies</h3>
+      <pre><code>rank = sort(currencies, by turnover_usd_bn_per_day, descending)[:10]      (BIS Triennial annex, net-net)</code></pre>
+      {{ used_by('F-bis-rank') }}
+    </article>
+    <article class="formula" id="F-money-growth-latest">
+      <h3><code>F-money-growth-latest</code> Latest money growth and the aggregate behind it</h3>
+      <pre><code>g_M,latest = M_t / M_(t-12) - 1      (latest twelve months; EUR: the ECB's annual rate)
+aggregate  = the series each currency's money comes from</code></pre>
+      {{ used_by('F-money-growth-latest') }}
+    </article>
+    <article class="formula" id="F-median">
+      <h3><code>F-median</code> Median across the currencies</h3>
+      <pre><code>median over the currencies with a computed value; the count is registered beside it</code></pre>
+      {{ used_by('F-median') }}
+    </article>
+    <article class="formula" id="F-h1b-gap">
+      <h3><code>F-h1b-gap</code> The gaps the rule reads</h3>
+      <pre><code>h1b_gap_c   = g_M,latest,c - g_365_at_c      (NEAR's supply growth over the same twelve months; positive = NEAR slower)
+h1b_gap_med = median_c h1b_gap_c      (pp)</code></pre>
+      {{ used_by('F-h1b-gap') }}
+    </article>
+    <article class="formula" id="F-policy-latest">
+      <h3><code>F-policy-latest</code> What holding each currency pays now</h3>
+      <pre><code>pol_c = the latest end-of-month central bank policy rate for c's area      (BIS WS_CBPOL; the euro: the euro area)
+pol_usd = the latest daily effective federal funds rate                  (FRED DFF)</code></pre>
+      <p>The comparison economies' rates are in <code>data/raw/bis/policy_rates_monthly.csv</code>; China's and Hong Kong's come from the same BIS series in their own file, <code>data/raw/bis/policy_rates_monthly_cn_hk.csv</code>. For China, BIS's policy-rate series is the one-year Loan Prime Rate (its official one-year lending rate before the Loan Prime Rate replaced it); for Hong Kong it is the HKMA base rate, which follows the US rate under the peg. A currency whose area has no policy-rate series in <code>data/raw/bis</code> has no rate: its number is empty, and the reason names the files and the currency's exchange-rate regime (Singapore's central bank steers the exchange rate and sets no policy rate). Nothing is borrowed from another currency or carried forward.</p>
+      {{ used_by('F-policy-latest') }}
+    </article>
+    <article class="formula" id="F-pay-count">
+      <h3><code>F-pay-count</code> Policy rates against NEAR's staking yield</h3>
+      <pre><code>pay_n_with_rate = count_c (pol_c is computed)
+pay_n_below     = count_c (pol_c &lt; y_lst_365)      (strictly below NEAR's liquid-staking yield over the past year)</code></pre>
+      <p>A plain comparison with no verdict of its own: the like-for-like test against fed funds is the staking claim's, and the spreads against other currencies are the spread claim's.</p>
+      {{ used_by('F-pay-count') }}
+    </article>
+    <article class="formula" id="F-hold-net">
+      <h3><code>F-hold-net</code> A year's change in a holder's share of the total</h3>
+      <pre><code>hold_near_net = (1 + y_lst_365 / 100) / (1 + g_365 / 100) - 1                (a staker's share of NEAR's supply)
+hold_c_net    = (1 + pol_c / 100) / (1 + mon_c_gm_latest / 100) - 1          (the share of c's money stock held by
+                                                                              cash that earns c's policy rate)</code></pre>
+      <p>Both are exact ratios, printed in percent: holdings that grow at one rate while the total grows at another change their share of the total by this much in a year. Each input is the latest the files hold, and each number's inputs name the month (for NEAR, the dates of the year) they are from. A currency needs both figures: one without a policy rate (or without money growth) has no number, and the reason says which is missing. The policy rate is a benchmark that cash rarely earns in full, and staking is paid in NEAR, so its dollar value moves with the price.</p>
+      {{ used_by('F-hold-net') }}
+    </article>
+    <article class="formula" id="F-hold-rank">
+      <h3><code>F-hold-rank</code> Staked NEAR's place among the currencies</h3>
+      <pre><code>hold_n_ranked  = 1 + count_c (hold_c_net is computed)
+hold_near_rank = 1 + count_c (hold_c_net &gt; hold_near_net)        (a tie ranks NEAR first)</code></pre>
+      <p>A description, not a claim: it has no verdict, and the title shows it after the money and rate figures it combines.</p>
+      {{ used_by('F-hold-rank') }}
+    </article>
+    {%- if desk_ok %}
+    <article class="formula" id="F-sim-obs">
+      <h3><code>F-sim-obs</code> The desk's rates, read on one date</h3>
+      <pre><code>estr_latest, dgs1_latest = the latest observation on or before latest_common_date      (effr_latest the same)</code></pre>
+      <p>€STR and the one-year Treasury come from FRED's files for those series; the fed funds rate is the one the staking claim already uses.</p>
+      {{ used_by('F-sim-obs') }}
+    </article>
+    <article class="formula" id="F-sim-rate">
+      <h3><code>F-sim-rate</code> <code id="F-sim-tbill">F-sim-tbill</code> A year of interest at today's rate</h3>
+      <pre><code>R_U = (1 + effr_latest / 36000) ^ 365 - 1      (ACT/360, compounded daily; the F-ffcomp convention)
+r_E = (1 + estr_latest / 36000) ^ 365 - 1
+R_T = (1 + dgs1_latest / 200) ^ 2 - 1          (F-sim-tbill: bond-equivalent yield, dollar leg only)
+y   = y_lst_365 / 100                           (average of stNEAR and LiNEAR over the last year)</code></pre>
+      <p>Each rate is held where it is today for the whole year, and baked to twelve significant digits so the page's script and the Python model start from the same numbers.</p>
+      {{ used_by('F-sim-rate') }}
+      {{ used_by('F-sim-tbill') }}
+    </article>
+    <article class="formula" id="F-sim-pool">
+      <h3><code>F-sim-pool</code> The days a simulated year is drawn from</h3>
+      <pre><code>a_d = P(d) / P(d - 1)                 every calendar day d in the window (NEAR's daily close)
+b_d = X(d) / X(previous fixing)       on DEXUSEU fixing days, else 1
+a~_d = a_d / mean(a),  b~_d = b_d / mean(b)      (demeaned in gross terms, never in logs)</code></pre>
+      <p>Dividing by the average gross move removes the window's own trend and keeps its swings, skew, tails and same-day co-movement. NEAR's close is at midnight UTC and the euro's fixing at noon in New York, so a same-day pair is measured hours apart.</p>
+      {{ used_by('F-sim-pool') }}
+    </article>
+    <article class="formula" id="F-sim-path">
+      <h3><code>F-sim-path</code> One simulated year</h3>
+      <pre><code>path i: sim_horizon_days draws of one joint day index j        (xoshiro128** seeded by splitmix32)
+G_i = prod a~_j,  X_i = prod b~_j,  h_i = 1 if the running product of a~ is ever &lt;= sim_half
+G_i = G_i / mean(G),  X_i = X_i / mean(X)                        (moment matched: the average year ends at 1)</code></pre>
+      <p>Days are drawn with replacement and each draw keeps NEAR's move and the euro's move from the same day. The same draws serve every setting of the controls, so moving one slides the outcomes instead of reshuffling them.</p>
+      {{ used_by('F-sim-path') }}
+    </article>
+    <article class="formula" id="F-sim-unit">
+      <h3><code>F-sim-unit</code> <code id="F-sim-benefit">F-sim-benefit</code> Each year's difference against dollars and euros only</h3>
+      <pre><code>u_i = (1 + mu)(1 + k y) G_i - 1 - [ s R_U + (1 - s)((1 + r_E) X_i - 1) ] - c
+D_i = w V u_i                                    (F-sim-benefit)
+w share in NEAR, s dollar share of the cash, k = 1 staked (0 not), mu assumed price change, c costs</code></pre>
+      <p>The NEAR part is bought with dollars and euros in the cash's own proportions, so the only choice is NEAR or cash. Staking rewards are paid in NEAR, so their dollar value moves with the price.</p>
+      {{ used_by('F-sim-unit') }}
+      {{ used_by('F-sim-benefit') }}
+    </article>
+    <article class="formula" id="F-sim-mean">
+      <h3><code>F-sim-mean</code> The expected benefit, exact</h3>
+      <pre><code>E[D] = w V [ (1 + mu)(1 + k y) - 1 - R_B - c ],      R_B = s R_U + (1 - s) r_E
+     = carry  w V (k y - R_B)                          of which the euro leg  w V (1 - s)(R_U - r_E)
+     + price  w V mu (1 + k y)
+     - costs  w V c</code></pre>
+      <p>The average is computed in closed form, never as an average of simulated years: simulation noise on the average is larger than the carry itself. The bracket cells swap one input at a time (the price assumption, interest parity for the euro, an all-dollar desk, the one-year Treasury).</p>
+      {{ used_by('F-sim-mean') }}
+    </article>
+    <article class="formula" id="F-sim-drift">
+      <h3><code>F-sim-drift</code> The price assumptions on offer</h3>
+      <pre><code>price flat on average     mu = 0                                   (the default)
+demand flat in dollars    mu_v = 1 / (1 + g) - 1                   g = g_365 / 100
+the thesis's implication  mu_m = (1 + m2_yoy/100) / (1 + g) - 1    (money);  mu_p with cpi_yoy (prices)</code></pre>
+      <p>The price change is an assumption the reader chooses; it is never measured from past prices. Price flat treats NEAR as the model treats the euro (the price expected unchanged, each holding earning its own carry) and assumes the price already reflects published issuance. Demand flat in dollars is the quantity-theory view with no growth in demand. The evidence favours neither, and they give the expected benefit opposite signs, so the page shows both, with the thesis's implication, whichever is selected.</p>
+      {{ used_by('F-sim-drift') }}
+    </article>
+    <article class="formula" id="F-sim-dist">
+      <h3><code>F-sim-dist</code> The typical year, the tails and the dots</h3>
+      <pre><code>S = sort(u);  q(p) = S[h] + (h - floor h)(S[h+1] - S[h]),  h = (N - 1) p      (type 7)
+median q(0.5);  bad year q(0.05);  good year q(0.95);  p_beat = share of u &gt; 0
+ES95 = -mean(worst N/20),  ES97.5 = -mean(worst N/40);  dot k = S[(2k - 1) N / 200]</code></pre>
+      <p>Every dollar figure is the per-dollar result times the NEAR part, so holding more NEAR changes the size of the outcome, not the odds. A shortfall can exceed the NEAR part itself, because it is measured against the interest the cash would otherwise have earned.</p>
+      {{ used_by('F-sim-dist') }}
+    </article>
+    <article class="formula" id="F-sim-be">
+      <h3><code>F-sim-be</code> Break-evens, exact</h3>
+      <pre><code>mean break-even    mu_E* = (1 + R_B + c) / (1 + k y) - 1
+per year           mu_i  = (1 + R_B,i + c) / ((1 + k y) G_i) - 1;   median break-even = median(mu_i)
+break-even cost    c*    = (1 + mu)(1 + k y) - 1 - R_B</code></pre>
+      {{ used_by('F-sim-be') }}
+    </article>
+    <article class="formula" id="F-sim-budget">
+      <h3><code>F-sim-budget</code> The default share</h3>
+      <pre><code>w_b = R_B / ES95_unit                  (ES95 per dollar of the NEAR part)
+bad year in years of interest = ES95 / (V R_B)</code></pre>
+      <p>The largest NEAR share whose bad-year average shortfall fits inside one year of the whole desk's interest, rounded down to the control's step. A rule about the downside, not an optimum: no share is marked best.</p>
+      {{ used_by('F-sim-budget') }}
+    </article>
+    <article class="formula" id="F-sim-liq">
+      <h3><code>F-sim-liq</code> Getting out</h3>
+      <pre><code>days = w V / (p x median daily dollar volume)        Coinbase volume_base x close; Binance volume_quote (USDT)
+instant-pool cover = nslp_usd / (w V);  share of liquid staking = w V / (stNEAR and LiNEAR supply x own price x close)</code></pre>
+      <p>The participation rate p is a scenario value, named in every row it affects. Binance's volume is quoted in USDT and Binance is not open to US persons. rNEAR has no price in the data, so the liquid-staking market is valued at least at the two tokens priced.</p>
+      {{ used_by('F-sim-liq') }}
+    </article>
+    <article class="formula" id="F-sim-day">
+      <h3><code>F-sim-day</code> One day, measured</h3>
+      <pre><code>one-day VaR 99 and ES 97.5 of the NEAR part = historical quantile and tail mean of the window's raw a_d - 1, x w V</code></pre>
+      <p>Measured from the window's own days, not simulated.</p>
+      {{ used_by('F-sim-day') }}
+    </article>
+    <article class="formula" id="F-sim-block">
+      <h3><code>F-sim-block</code> <code id="F-sim-lognormal">F-sim-lognormal</code> Two other engines, for the sensitivity table only</h3>
+      <pre><code>F-sim-block      circular blocks of sim_block_days joint days instead of single days
+F-sim-lognormal  G = exp(sigma Z), sigma^2 = horizon x var(log a~), moment matched; the euro flat</code></pre>
+      <p>Computed in Python only and printed as rows of the sensitivity table; the page's controls use the single-day engine, whose spread matches NEAR's measured volatility.</p>
+      {{ used_by('F-sim-block') }}
+    </article>
+    <article class="formula" id="F-sim-seeds">
+      <h3><code>F-sim-seeds</code> How many digits a simulated figure earns</h3>
+      <pre><code>spread_x = max - min of figure x over the seeds in rules.toml sim_seed_checks
+step_x   = the smallest display step larger than spread_x</code></pre>
+      <p>Each simulated figure is printed to a step its own Monte Carlo noise cannot cross; the table under the desk's method compares the two.</p>
+      {{ used_by('F-sim-seeds') }}
+    </article>
+    {%- endif %}
+    <article class="formula" id="F-tally">
+      <h3><code>F-tally</code> Verdict tally</h3>
+      <pre><code>n_state = count(claims with verdict == state)</code></pre>
+      <p>Supported, Partly and Refuted are counted. Not testable and Not computed are listed separately and never folded into either side.</p>
+      {{ used_by('F-tally') }}
+    </article>
+    {%- set others = [] %}
+    {%- for fid in used|sort if fid not in known_formulas and not fid.startswith('K-') %}{% set _ = others.append(fid) %}{% endfor %}
+    {%- if others %}
+    <article class="formula" id="other-formulas">
+      <h3>Other formulas and direct reads</h3>
+      <p>Each is defined in the model code that writes it; the “Show query” of every chart that uses one names that code and its inputs.</p>
+      <div class="table-wrap">
+        <table class="formula-index">
+          <caption class="vh">Formula ids defined in the model code, with the numbers that use each</caption>
+          <thead><tr><th scope="col">Formula</th><th scope="col">Used by</th></tr></thead>
+          <tbody>
+          {%- for fid in others %}
+            <tr id="{{ fid }}"><th scope="row">{{ m.raw(fid) }}</th><td>{{ used_by(fid) }}</td></tr>
+          {%- endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+    {%- endif %}
+    {%- for fid in used|sort if fid.startswith('K-') %}
+    <article class="formula" id="{{ fid }}">
+      <h3>{{ m.raw(fid) }} Declared constant</h3>
+      <p>Read from <code>thesis/constants.toml</code>; see <a href="#constants">declared constants</a> for the source and quote.</p>
+      {{ used_by(fid) }}
+    </article>
+    {%- endfor %}
+  </div>
+  {%- if desk_ok %}
+  <div id="desk-method" class="desk-method">
+  <h3 class="sub" id="desk-method-h">Desk simulation: method</h3>
+  <p class="note">The film's last scene, as a model. Its formulas are the <code>F-sim</code> anchors above; every figure here is the default state, and every one is in the registry below.</p>
+  <div class="prose">
+    <p>A trading desk holds {{ num('sim_desk_usd') }} it will not deploy for {{ num('sim_horizon_days') }}: {{ num('sim_split_usd') }} in dollar cash and {{ num('sim_split_eur') }} in euro cash. That split is a benchmark proxy from the two currencies' shares of foreign-exchange trading, not any desk's holdings. The mix moves {{ num('sim_share') }} ({{ num('sim_near_usd') }}) into liquid-staked NEAR, bought with dollars and euros in the same proportions, and the baseline keeps everything in cash. Both are bought and held, in nominal dollars; deflating both by the same price index would leave their difference the same in real terms.</p>
+    <p>Dollar cash earns the effective fed funds rate, {{ num('effr_latest') }} ({{ num('sim_r_usd') }} over a year, compounded). Euro cash earns €STR, {{ num('estr_latest') }} ({{ num('sim_r_eur') }}). The NEAR part earns NEAR's liquid-staking yield over the last year, {{ num('y_lst_365') }}, paid in NEAR. Every rate is held where it is today. The one-year Treasury, {{ num('dgs1_latest') }} ({{ num('sim_r_dgs1') }} as an annual rate), replaces fed funds only in one bracket cell and one sensitivity row.</p>
+    <p>Each of the {{ num('sim_paths') }} simulated years is {{ num('sim_horizon_days') }} drawn at random, with replacement, from the last {{ num('sim_horizon_days') }} to {{ num('sim_window_end') }}, each draw keeping NEAR's move and the euro's move from the same day; the alternative window is the last {{ num('sim_window_short') }}. Each day's move is divided by the window's average move, so the window's trend is gone and its swings remain, and each year is then scaled so the average year ends where the price assumption says. As a check, the simulated years spread NEAR's price by {{ num('sim_rv_engine') }} (the standard deviation of its log), against a measured volatility of {{ num('rv_365_near') }} over the last year.</p>
+    <p>The expected benefit is exact, from the closed form; the typical year, the tails and the dots come from the simulated years. The price change is the reader's assumption, and the default is flat on average. One year of data pins an average price change only to within about {{ num('rv_365_near') }} either way, so no past return is offered as a forecast. The other assumptions on offer: demand flat in dollars ({{ num('sim_mu_value_flat') }}) and the thesis's implication ({{ num('sim_mu_thesis_m2') }} from money, {{ num('sim_mu_thesis_cpi') }} from prices), which assumes demand for NEAR keeps pace with dollar money, something nothing on this site measures.</p>
+  </div>
+  <h3 class="sub" id="desk-risk">Risk at the default state, in a desk's terms</h3>
+  <div class="table-wrap">
+    <table>
+      <caption class="vh">The simulation's risk figures at the default state</caption>
+      <thead><tr><th scope="col">Measure</th><th scope="col">Default state</th><th scope="col">How</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">One-year relative value at risk, <code>VaR 95</code></th><td>{{ num('sim_p05_usd') }}</td><td>Only {{ num('sim_tail_n') }} in {{ num('sim_dots') }} simulated years end worse, against dollars and euros only (<a href="#F-sim-dist"><code>F-sim-dist</code></a>)</td></tr>
+        <tr><th scope="row">One-year expected shortfall, <code>ES 95</code></th><td>{{ num('sim_es95_usd') }}</td><td>The average of the worst {{ num('sim_tail_n') }} in {{ num('sim_dots') }} simulated years: about {{ num('sim_es_interest_years') }} years of the whole desk's interest</td></tr>
+        <tr><th scope="row">One-year expected shortfall, <code>ES 97.5</code></th><td>{{ num('sim_es975_usd') }}</td><td>The same average, over the worst half of those years</td></tr>
+        <tr><th scope="row">One-day value at risk of the NEAR part, <code>VaR 99</code></th><td>{{ num('sim_var1d99_usd') }}</td><td>Historical, from {{ num('sim_day_obs') }} daily moves (<a href="#F-sim-day"><code>F-sim-day</code></a>)</td></tr>
+        <tr><th scope="row">One-day expected shortfall of the NEAR part, <code>ES 97.5</code></th><td>{{ num('sim_es1d975_usd') }}</td><td>The average of the worst {{ num('sim_day_es_n') }} of those days</td></tr>
+        <tr><th scope="row">The NEAR part at some point worth half its entry value</th><td>{{ num('sim_p_half') }} {{ copy('film_tile_of') }} {{ num('sim_dots') }}</td><td>Simulated years, at zero added price change</td></tr>
+        <tr><th scope="row">Share whose bad year fits a year of interest</th><td>{{ num('sim_w_budget') }}</td><td>A rule about the downside, not an optimum (<a href="#F-sim-budget"><code>F-sim-budget</code></a>)</td></tr>
+        <tr><th scope="row">NEAR against the euro, daily correlation</th><td>{{ num('sim_corr_near_eur_365') }}</td><td>Over {{ num('sim_fix_days') }} fixing days of the last year; the two prices are taken hours apart</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {%- set seeds = [] %}
+  {%- for k in ['median_usd', 'p05_usd', 'p95_usd', 'es95_usd', 'p_beat_r', 'p_half', 'be_mu_median'] if ('sim_mc_spread_' ~ k) in numbers and ('sim_mc_step_' ~ k) in numbers %}{% set _ = seeds.append(k) %}{% endfor %}
+  {%- if seeds %}
+  <h3 class="sub" id="desk-seeds">Monte Carlo noise against the printed step</h3>
+  <p class="note">Each simulated figure, recomputed under {{ num('sim_seed_n') }} seeds: the spread between the highest and the lowest stays below the step the page prints it to (<a href="#F-sim-seeds"><code>F-sim-seeds</code></a>).</p>
+  <div class="table-wrap">
+    <table>
+      <caption class="vh">Spread across seeds and the display step of each simulated figure</caption>
+      <thead><tr><th scope="col">Figure</th><th scope="col">Spread across seeds</th><th scope="col">Printed to</th></tr></thead>
+      <tbody>
+      {%- for k in seeds %}
+        <tr><th scope="row"><a href="#n-sim_{{ k }}"><code>sim_{{ k }}</code></a></th><td>{{ num('sim_mc_spread_' ~ k) }}</td><td>{{ num('sim_mc_step_' ~ k) }}</td></tr>
+      {%- endfor %}
+      </tbody>
+    </table>
+  </div>
+  {%- endif %}
+  <h3 class="sub" id="desk-left">{{ copy('sim_left_h') }}</h3>
+  <ul>
+    {%- for k in ['failure', 'lst', 'rates', 'costs', 'accounting', 'wrongway'] %}
+    <li>{{ copy('sim_left_' ~ k) }}</li>
+    {%- endfor %}
+  </ul>
+  {%- set dcs = [] %}{% for c in ['c30', 'c31', 'c32', 'c33'] if c in charts %}{% set _ = dcs.append(c) %}{% endfor %}
+  {%- if dcs %}
+  <h3 class="sub" id="desk-charts">The desk's charts</h3>
+  <ul>
+    {%- for c in dcs %}
+    <li><a href="index.html#{{ c }}"><code>{{ c }}</code></a> {{ text(charts[c].get('title_template') or charts[c].get('title') or '') }}</li>
+    {%- endfor %}
+  </ul>
+  {%- if 'c33' in charts %}
+  {{ m.card('c33') }}
+  {%- endif %}
+  {%- endif %}
+  <p class="note">{{ copy('film_desk_note') }}</p>
+  </div>
+  {%- endif %}
+</section>
+
+<section id="numbers" class="wrap" aria-labelledby="numbers-h">
+  <h2 id="numbers-h">Number registry</h2>
+  <p class="note">Every number the pages print, with its unit, formula, inputs and the raw files it read. A null shows its reason instead of a value.</p>
+  <div class="table-wrap tall">
+    <table class="registry">
+      <caption class="vh">Every registered number with its provenance</caption>
+      <thead><tr><th scope="col">Key</th><th scope="col">Value</th><th scope="col">Unit</th><th scope="col">Formula</th><th scope="col">Inputs</th><th scope="col">Source files</th><th scope="col">As of</th></tr></thead>
+      <tbody>
+      {%- for k, n in numbers|dictsort %}
+        <tr id="n-{{ k }}"{% if n.get('value') is none %} data-null{% endif %}>
+          <th scope="row"><code>{{ k }}</code></th>
+          <td>{{ num(k) }}{% if n.get('value') is none and n.get('null_reason') %}<br><span class="why">{{ m.raw(n.null_reason) }}</span>{% endif %}</td>
+          <td>{{ m.raw(n.get('unit')) }}</td>
+          <td><a href="#{{ n.get('formula_id') }}">{{ m.raw(n.get('formula_id')) }}</a></td>
+          <td>{% for i in n.get('inputs') or [] %}<code>{{ i }}</code>{{ ' ' if not loop.last }}{% endfor %}</td>
+          <td>{% for f in n.get('source_files') or [] %}<code>{{ f }}</code>{{ ' ' if not loop.last }}{% endfor %}</td>
+          <td>{% if n.get('as_of') %}{{ tm(n.as_of) }}{% else %}<span class="na">n/a</span>{% endif %}</td>
+        </tr>
+      {%- endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="rules" class="wrap" aria-labelledby="rules-h">
+  <h2 id="rules-h">Verdict rules</h2>
+  <p class="note">Rules live in <code>thesis/rules.toml</code>. Each claim is checked in this order: a null input gives Not computed, then Not testable, Supported, Refuted; anything else is Partly.</p>
+  <div class="rules">
+    {%- for cid in claim_order if cid in rules %}
+    {%- set r = rules[cid] %}
+    <article class="rule-block" id="rule-{{ cid }}">
+      <h3>{{ ident(cid) }} {% if r.get('title') %}{{ rule(cid, 'title') }}{% endif %}</h3>
+      {%- if r.get('kind') == 'hidden' and r.get('assumption') %}
+      <p class="rule-claim"><span class="assumption"><span class="assumption-k">Assumed:</span> {{ rule(cid, 'assumption') }}</span>{% if r.get('claimed') %}<span class="hidden-in">Hidden in: {{ claimed(cid) }}</span>{% endif %}</p>
+      {%- elif r.get('kind') == 'reframe' and r.get('claimed') %}
+      <p class="rule-claim"><span class="hidden-in">Reframes: {{ claimed(cid) }}</span></p>
+      {%- elif r.get('claimed') %}
+      <p class="rule-claim">{{ claimed(cid) }}</p>
+      {%- endif %}
+      {{ m.verdict_detail(cid) }}
+      <dl class="rule-dl">
+        {%- if r.get('test') %}<dt>Test</dt><dd>{{ rule(cid, 'test') }}</dd>{% endif %}
+        {%- if r.get('metrics') %}<dt>Metrics</dt><dd>{% for k in r.metrics %}<a href="#n-{{ k }}"><code>{{ k }}</code></a>{{ ', ' if not loop.last }}{% endfor %}</dd>{% endif %}
+        {%- set rc = r.get('charts') or ([r.chart] if r.get('chart') else []) %}
+        {%- if rc %}<dt>Charts</dt><dd>{{ m.chart_links(rc, here=false) }}</dd>{% endif %}
+      </dl>
+    </article>
+    {%- endfor %}
+  </div>
+</section>
+
+<section id="xchk" class="wrap" aria-labelledby="xchk-h">
+  <h2 id="xchk-h">Cross-checks</h2>
+  <p class="note">Each check compares two independent sources for the same quantity, with its tolerance and result. A check that needs credentials shows “not run”.</p>
+  {%- if crosschecks %}
+  <div class="table-wrap">
+    <table class="xchk">
+      <caption class="vh">Cross-check results</caption>
+      <thead><tr><th scope="col">Check</th><th scope="col">What it compares</th><th scope="col">Result</th><th scope="col">Tolerance</th><th scope="col">Observed</th><th scope="col">Blocks verify</th></tr></thead>
+      <tbody>
+      {%- for xid, x in crosschecks|dictsort %}
+        {%- set st = x.get('status') or 'not run' %}
+        <tr id="xchk-{{ xid }}" data-state="{{ st }}">
+          <th scope="row">{{ ident(xid) }}</th>
+          <td>{{ m.raw(x.get('title')) }}{% if x.get('needs') %}<br><span class="why">Needs {{ m.raw(x.needs) }}</span>{% endif %}</td>
+          <td><span class="xstate" data-state="{{ st }}">{{ st }}</span>{% if x.get('reason') and st != 'pass' %}<br><span class="why">{{ m.raw(x.reason) }}</span>{% endif %}{% if x.get('fix') and st != 'pass' %}<br><span class="fix">Fix: {{ m.raw(x.fix) }}</span>{% endif %}</td>
+          <td>{% if xid in rules.get('crosschecks', {}) %}{{ rule(xid, 'tolerance') }}{% else %}{{ m.raw(x.get('tolerance_text')) }}{% endif %}</td>
+          <td>
+            {%- set ks = (x.get('keys') or {}).items()|list %}
+            {%- for label, k in ks if k in numbers %}<span class="measured"><code>{{ label }}</code> {{ num(k) }}</span>{{ ' · ' if not loop.last }}{% endfor %}
+            {%- if not ks %}<span class="na">n/a</span>{% endif %}
+          </td>
+          <td>{{ 'yes' if x.get('blocks_verify') else 'no' }}</td>
+        </tr>
+      {%- endfor %}
+      </tbody>
+    </table>
+  </div>
+  {%- else %}
+  <p>No cross-check results.</p>
+  {%- endif %}
+</section>
+
+<section id="gaps" class="wrap" aria-labelledby="gaps-h">
+  <h2 id="gaps-h">Known gaps and unverified items</h2>
+  {%- set items = open_items.get('items', []) if open_items is mapping else open_items %}
+  <ul class="limits">
+    {%- for it in items %}
+    <li id="gap-{{ it.id }}">
+      <p class="limit-head"><strong>{{ text(it.title) }}</strong> <span class="limit-status">{{ it.status }}</span>
+        {%- if it.get('refs') %} · {{ m.ids(it.refs) }}{% endif -%}
+        {%- if it.get('affects') %} · affects {{ m.ids(it.affects) }}{% endif %}</p>
+      <p>{{ text(it.text) }}</p>
+      <p class="resolve"><span class="resolve-k">Would resolve it:</span> {{ text(it.resolve) }}</p>
+      {%- if it.get('links') %}<p class="links">{% for l in it.links %}{{ cite(l.label, l.href) }}{{ ' · ' if not loop.last }}{% endfor %}</p>{% endif %}
+    </li>
+    {%- endfor %}
+  </ul>
+</section>
+
+<section id="licences" class="wrap" aria-labelledby="licences-h">
+  <h2 id="licences-h">Licences and terms</h2>
+  <ul class="plain">
+    <li>The code and prose are MIT licensed; see <code>LICENSE</code>.</li>
+    <li>FRED, BIS, the NEAR RPC and the BigQuery public dataset publish data for reuse with attribution, and each chart names its source.</li>
+    <li>Exchange and venue data (Binance, Coinbase, Deribit, OKX, Aevo) and DefiLlama are public API responses cached for reproducibility; each source's terms note is in the status board.</li>
+    <li>The money series come from central banks and statistics offices that publish them for reuse with attribution; each raw file's sidecar names its source.</li>
+    <li><strong>Fonts:</strong> the page's three typefaces are self-hosted and licensed under the {{ cite('SIL Open Font License 1.1', 'https://openfontlicense.org') }}. Instrument Serif (italic) by the Instrument Serif Project Authors, licence: <a href="assets/fonts/OFL-InstrumentSerif.txt">OFL-InstrumentSerif.txt</a>. Mona Sans by GitHub, with the Reserved Font Name "Mona Sans"; the file here is the Latin subset of the variable font as Google Fonts serves it, kept with its notice: <a href="assets/fonts/OFL-MonaSans.txt">OFL-MonaSans.txt</a>. Martian Mono by the Martian Mono Project Authors, licence: <a href="assets/fonts/OFL-MartianMono.txt">OFL-MartianMono.txt</a>.</li>
+    <li><strong>NEAR Intents Explorer:</strong> publishing aggregates derived from the Explorer API needs written permission from NEAR Intents under {{ cite('NEAR Intents Terms of Service, section 4.1(e)') }}; until it is recorded, those aggregates stay unpublished.</li>
+  </ul>
+  {%- set notes = [] %}
+  {%- for s in sources if s.get('tos_note') %}{% set _ = notes.append(s) %}{% endfor %}
+  {%- if notes %}
+  <h3 class="sub">Terms notes by source</h3>
+  <dl class="tos">
+    {%- for s in notes %}<dt>{{ m.raw(s.get('name') or s.get('id')) }}</dt><dd>{{ m.raw(s.tos_note) }}</dd>{% endfor %}
+  </dl>
+  {%- endif %}
+</section>
+
+<section id="reconciliation" class="wrap" aria-labelledby="reconciliation-h">
+  <h2 id="reconciliation-h">Supply reconciliation</h2>
+  <p class="note">A diagnostic: BigQuery's total supply against the RPC's at the same heights. It decides no verdict.</p>
+  {{ m.card('c16', kicker='Diagnostic') }}
+</section>
+
+</main>
+{{ m.footer() }}
+</body>
+</html>
+{%- endautoescape %}

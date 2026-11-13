@@ -1,0 +1,103 @@
+# Declared constants: inputs that no API returns. Each has a source, a verbatim quote and a retrieval date.
+# Rendered on data.html via <span class="rule">; never typed into prose.
+
+[treasury_share]
+value = 0.1
+unit = "ratio"
+source = "https://github.com/near/nearcore/blob/71fd3bc6921936d861c894a19fb781446ed959f7/chain/epoch-manager/src/reward_calculator.rs"
+quote = "let protocol_reward_rate = if use_hardcoded_value { Rational32::new_raw(1, 10) } ..."
+note = "Mainnet hard-codes the treasury share to 1/10; the RPC field protocol_reward_rate reads [0,1]. Stakers receive 0.9 of each epoch's mint."
+retrieved = "2026-11-10"
+
+[unlock_epochs]
+lo = 3
+hi = 4
+unit = "count"
+source = "https://github.com/near/core-contracts/blob/1b0436c96379c63aee7d2429c6d5d24019031ab8/staking-pool/src/lib.rs"
+quote = "const NUM_EPOCHS_TO_UNLOCK: EpochHeight = 4; // The actual number of epochs when the funds are unlocked is 3"
+retrieved = "2026-11-10"
+
+[mmf_penny_band]
+value = 0.5
+unit = "%"
+source = "https://www.ecfr.gov/current/title-17/section-270.2a-7"
+paragraph = "(a)(19)"
+quote = "Penny-rounding method of pricing means the method of computing an investment company's price per share for purposes of distribution, redemption and repurchase whereby the current net asset value per share is rounded to the nearest one percent."
+paragraph_band = "(g)(1)(i)(B)"
+quote_band = "In the event such deviation from the money market fund's amortized cost price per share exceeds 1/2 of 1 percent, the board of directors shall promptly consider what action, if any, should be initiated by the board of directors."
+verified_against = "https://www.ecfr.gov/api/versioner/v1/full/2026-11-01/title-17.xml?part=270&section=270.2a-7 (eCFR text as of 2026-11-01)"
+note = "Rounding to the nearest cent of a $1.00 share keeps the price at $1.00 while NAV stays within half a cent (0.5%) of it; the amortized-cost procedures in (g)(1)(i)(B) use the same half-percent deviation trigger."
+retrieved = "2026-11-10"
+
+[sweep_definition]
+unit = "text"
+source = "https://www.ecfr.gov/current/title-17/section-240.15c3-3"
+quote = "The term Sweep Program means a service provided by a broker or dealer where it offers to its customer the option to automatically transfer free credit balances in the securities account of the customer to either a money market mutual fund product as described in § 270.2a-7 of this chapter or an account at a bank whose deposits are insured by the Federal Deposit Insurance Corporation."
+retrieved = "2026-11-10"
+
+[epoch_length_blocks]
+value = 43200
+unit = "blocks"
+source = "https://rpc.mainnet.fastnear.com"
+quote = "epoch_length: 43200"
+note = "EXPERIMENTAL_protocol_config epoch_length; also data/raw/rpc/snapshot_now.json."
+retrieved = "2026-11-10"
+
+[intents_confidential_from]
+value = "2026-10-27"
+unit = "date"
+source = "https://docs.near-intents.org/changelog/entries/2026-10-27-1click-confidential.md"
+quote = "From October 27, 2026, 1Click swaps settle confidentially."
+verified_against = "https://docs.near-intents.org/changelog/entries/2026-10-27-1click-confidential.md (entry text, re-read 2026-11-10)"
+note = "From this date 1Click swaps settle confidentially on the NEAR Private Shard; c06 annotates the month."
+retrieved = "2026-11-10"
+
+[rectify_inflation_protocol]
+value = 45
+unit = "count"
+source = "https://github.com/near/nearcore/blob/09b978c15a170a1082eabe9f275030a9e5b27382/core/primitives/src/version.rs"
+quote = "ProtocolFeature::RectifyInflation => 45,"
+source_reward = "https://github.com/near/nearcore/blob/09b978c15a170a1082eabe9f275030a9e5b27382/chain/epoch_manager/src/reward_calculator.rs"
+quote_reward = "if checked_feature!(\"stable\", RectifyInflation, protocol_version) { (U256::from(*max_inflation_rate.numer() as u64) * U256::from(total_supply) * U256::from(epoch_duration) / (U256::from(self.num_seconds_per_year) ..."
+verified_against = "nearcore tag 1.20.0 (commit 09b978c15a170a1082eabe9f275030a9e5b27382), both files re-read 2026-11-10"
+note = "From this protocol version an epoch's reward is max_inflation_rate x total supply x epoch duration / seconds per year, so each epoch's annualized mint in rpc/epoch_history.csv can be compared with max_inflation_rate (the c02 realized-mint check). Before it, the reward was computed from block counts."
+retrieved = "2026-11-10"
+
+# The desk simulation's scenario: chosen values, not facts any source reports. Each is labelled on the
+# page ("Scenario", "Benchmark", "Assumption") and read by pipeline/models/portfolio.py only.
+[desk_scenario]
+kind = "author scenario"
+unit = "text"
+quote = "Once we have the thesis and its evidence, telling the story of the thesis in the UI is the main effort. That story should end with an interactive portfolio simulation. It should show the expected benefits over the coming year to a $500M trading desk of holding undeployed funds in a mixture of the dollars, euros, and NEAR as opposed to a just dollars and euros."
+note = "The desk simulation's scenario: the desk size, the NEAR share rule and slider range, the fallback dollar share, the exit participation rate and the range of the own price assumption. None is measured."
+retrieved = "2026-11-12"
+
+[desk_scenario.size]
+value = 500000000
+unit = "USD"
+note = "The desk's idle money, from the request above. Fixed: the page does not let a reader change it."
+
+[desk_scenario.share]
+step_bp = 10
+max_bp = 1000
+default_step_bp = 10
+grid_bp = [100, 200, 500, 1000]
+unit = "bp"
+note = "The NEAR share slider moves in steps of step_bp up to max_bp. The default share is the interest-budget share (the largest share whose bad-year average loss fits inside one year of the whole desk's interest) floored to default_step_bp. grid_bp are the shares in the table the page shows without JavaScript."
+
+[desk_scenario.split]
+value = 0.75
+step_pct = 1
+unit = "ratio"
+note = "The dollar share of the cash part. Used only when the BIS turnover figures (fx_usd_turnover, fx_eur_turnover) are absent; otherwise the split is their ratio rounded to step_pct, labelled a benchmark proxy (trading volume, not holdings)."
+
+[desk_scenario.participation]
+value = 0.10
+unit = "ratio"
+note = "The share of a median day's exchange volume the desk would be one of the sellers in. An assumption, always printed beside the days at the whole day's volume."
+
+[desk_scenario.mu_bounds]
+lo = -90
+hi = 200
+unit = "%"
+note = "The range of the reader's own one-year NEAR price change; wide enough to hold the median break-even of both windows, and above minus one hundred."

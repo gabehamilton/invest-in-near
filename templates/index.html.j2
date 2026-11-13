@@ -1,0 +1,230 @@
+{#-
+  index.html: the thesis page. With the build's film context it opens on the film (templates/_film.html.j2), a
+  sequence of scenes that is also the article without JavaScript; without it (the synthetic test fixtures) it opens
+  on a plain header. Either way the evidence follows in the film's order: each claim as a block and each chart as a
+  card, then the ledger, the tripwires, the limits and the agent module. The footer and its disclosure close the page.
+  The layout below (which scene shows which claims and charts) is structure, not prose: ids go through ident(), and
+  all prose with figures lives in thesis/copy.toml.
+-#}
+{%- import '_macros.html.j2' as m with context -%}
+{%- autoescape true -%}
+{%- set film_on = film is defined and film -%}
+{%- set groups = [
+  {'id': 'title', 'claims': ['H1b'], 'charts': ['c21']},
+  {'id': 'word', 'claims': ['H1', 'H10'], 'charts': ['c02', 'c05', 'c06']},
+  {'id': 'money', 'claims': ['H2'], 'charts': ['c11']},
+  {'id': 'yield', 'claims': ['H3', 'H5', 'H4'], 'charts': ['c01', 'c13', 'c12']},
+  {'id': 'cost', 'claims': ['H12', 'H6', 'H6_near', 'H9', 'H7'], 'charts': ['c03', 'c14', 'c07', 'c09', 'c08']},
+  {'id': 'ledger', 'claims': ['H8'], 'charts': ['c15']},
+  {'id': 'desk', 'claims': [], 'charts': ['c30', 'c31', 'c32', 'c33']}
+] -%}
+{%- set claim_charts = {
+  'H1': ['c02'], 'H1b': ['c21', 'c11'], 'H2': ['c11'], 'H3': ['c01', 'c12'], 'H4': ['c12'],
+  'H5': ['c13'], 'H6': ['c14'], 'H7': ['c09'], 'H8': ['c15'], 'H9': ['c07'], 'H10': ['c05'],
+  'H12': ['c03']
+} -%}
+{%- set ledger_order = ['H1', 'H1b', 'H2', 'H3', 'H4', 'H5', 'H6', 'H6_near', 'H7', 'H8', 'H9', 'H10', 'H12'] -%}
+<!doctype html>
+<html lang="en"{% if film_on %} data-theme="dark"{% endif %}>
+<head>
+{{ m.head('NEAR, tested', 'A NEAR investment hypothesis tested claim by claim against public on-chain and macro data. Every number links to its formula and its source.', film=film_on, sim=film_on and film.desk and true) }}
+</head>
+<body{% if film_on %} class="film-page"{% endif %}>
+{%- if not film_on %}
+{{ m.topbar('index') }}
+{%- endif %}
+<main id="main" tabindex="-1">
+{%- if film_on %}
+{#- on the stage a figure reads as itself: its key and formula stay in the evidence, and it is no tab stop -#}
+{% set film_markup %}{% include '_film.html.j2' %}{% endset %}
+{{ film_nums(film_markup) }}
+{%- else %}
+<section id="verdict" class="hero wrap" aria-labelledby="headline">
+  <p class="kicker">Verdict</p>
+  <h1 id="headline">{{ copy('headline') }}</h1>
+  <p class="under-test" id="claim"><span class="kicker">The claim under test</span> {{ claimed('thesis') }}</p>
+  <p class="lede">{{ copy('lede') }}</p>
+  <p class="scope" id="scope"><strong>Scope.</strong> {{ copy('scope_statement') }}</p>
+</section>
+{%- endif %}
+
+<section id="evidence" class="evidence wrap" aria-labelledby="evidence-h">
+  <h2 id="evidence-h">{{ copy('film_evidence_h') }}</h2>
+  <p class="note">{{ copy('film_evidence_intro') }}</p>
+  {%- if film_on %}
+  <p class="scope" id="scope"><strong>Scope.</strong> {{ copy('scope_statement') }}</p>
+  {%- endif %}
+  {%- for g in groups %}
+  {%- set gc = [] %}{% for c in g.charts if c in charts %}{% set _ = gc.append(c) %}{% endfor %}
+  {%- set gl = [] %}{% for c in g.claims if c in verdicts and c in rules %}{% set _ = gl.append(c) %}{% endfor %}
+  {%- if gc or gl or g.id == 'ledger' %}
+  <section class="ev-group" id="ev-{{ g.id }}" aria-labelledby="ev-{{ g.id }}-h">
+    <h3 id="ev-{{ g.id }}-h">{{ copy('film_scene_' ~ g.id) }}</h3>
+    {%- for cid in gl %}
+    {{ m.claim_block(cid, claim_charts.get(cid, [])) }}
+    {%- endfor %}
+    {%- if g.id == 'ledger' %}
+    <h4 id="ledger" class="sub">The claim ledger</h4>
+    <p class="note">{{ copy('ledger_intro') }}</p>
+    <div class="table-wrap">
+      <table class="ledger">
+        <caption class="vh">Each claim in the hypothesis, its verdict, what was measured and how it was tested</caption>
+        <thead><tr><th scope="col">Claim</th><th scope="col">As stated</th><th scope="col">Verdict</th><th scope="col">Measured</th><th scope="col">How it was tested</th></tr></thead>
+        <tbody>
+        {%- for cid in ledger_order if cid in verdicts and cid in rules %}
+          <tr id="ledger-{{ cid }}" data-claim="{{ cid }}">
+            <th scope="row" data-label="Claim"><a href="#claim-{{ cid }}">{{ ident(cid) }}</a></th>
+            <td data-label="As stated">{{ m.as_stated(cid) }}</td>
+            <td data-label="Verdict">{{ m.vchip(cid, link=true) }}</td>
+            <td data-label="Measured">{{ m.measured(cid, plain=true) }}</td>
+            <td data-label="How it was tested">{{ rule(cid, 'test') }}</td>
+          </tr>
+        {%- endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="tally">{{ copy('ledger_tally') }} <a href="data.html#rules">Every rule</a>.</p>
+    {%- endif %}
+    {%- for cid in gc %}
+    {{ m.card(cid, nested=true, plain=film_on) }}
+    {%- endfor %}
+  </section>
+  {%- endif %}
+  {%- endfor %}
+  {%- if film_on and film.desk %}
+  <p class="note sim-note">{{ copy('film_desk_note') }}</p>
+  {%- endif %}
+</section>
+
+<section id="mind" class="wrap" aria-labelledby="mind-h">
+  <h2 id="mind-h">What would change my mind</h2>
+  <p class="note">{{ copy('tripwires_intro') }} The supply comparison fails on {{ ident('H1b') }}'s own rule, {{ rule('H1b', 'refuted') }}; the staking comparison on {{ ident('H3') }}'s, {{ rule('H3', 'refuted') }}.</p>
+  {%- for group, heading, intro in [('break', 'What would break it', 'tripwires_break_intro'), ('confirm', 'What would confirm it', 'tripwires_confirm_intro')] %}
+  {%- set rows = [] %}
+  {%- for tid, tw in tripwires.items() if (tw.get('group') or 'break') == group %}{% set _ = rows.append((tid, tw)) %}{% endfor %}
+  {%- if rows %}
+  <h3 class="sub" id="mind-{{ group }}">{{ heading }}</h3>
+  <p class="note">{{ copy(intro) }}</p>
+  <div class="table-wrap">
+    <table class="tripwires">
+      <caption class="vh">{{ heading }}: the current value of each metric against the threshold that would change the thesis</caption>
+      <thead><tr><th scope="col">Metric</th><th scope="col">Now</th><th scope="col">Threshold</th><th scope="col">State</th><th scope="col">What it would mean</th><th scope="col">Chart</th></tr></thead>
+      <tbody>
+      {%- for tid, tw in rows %}
+        {%- set tstate = tw.get('state') or 'not computed' %}
+        <tr id="trip-{{ tid }}" data-state="{{ tstate }}"{% if tw.get('tripped') %} data-tripped{% endif %}>
+          <th scope="row" data-label="Metric"><span class="tw-id">{{ ident(tid) }}</span> {{ m.trip_metric(tid, tw) }}</th>
+          <td data-label="Now">{% if tw.get('metric') in numbers %}{{ trip_now(tid) }}{% else %}<span class="na">n/a</span>{% endif %}</td>
+          <td data-label="Threshold">{{ rule(tid, 'threshold_text') }}</td>
+          <td data-label="State"><span class="tstate" data-state="{{ tstate }}">{{ tstate }}</span>{% if tw.get('reason') and tstate != 'clear' %}<br><span class="why">{{ m.raw(tw.reason) }}</span>{% endif %}</td>
+          <td data-label="What it would mean">{{ rule(tid, 'meaning') }}</td>
+          <td data-label="Chart">{% if tw.get('chart') %}{{ m.chart_links([tw.chart]) }}{% endif %}</td>
+        </tr>
+      {%- endfor %}
+      </tbody>
+    </table>
+  </div>
+  {%- endif %}
+  {%- if group == 'break' %}
+  {{ m.card('c10', kicker='Staked share', labels=['T6'], plain=film_on) }}
+  {%- endif %}
+  {%- endfor %}
+</section>
+
+<section id="limits" class="wrap" aria-labelledby="limits-h">
+  <h2 id="limits-h">Limits and open questions</h2>
+  <p class="note">{{ copy('limits_intro') }}</p>
+  {%- set items = open_items.get('items', []) if open_items is mapping else open_items %}
+  <ul class="limits">
+    {%- for it in items %}
+    <li id="gap-{{ it.id }}">
+      <p class="limit-head"><strong>{{ text(it.title) }}</strong> <span class="limit-status">{{ it.status }}</span>
+        {%- if it.get('refs') %} · {{ m.ids(it.refs) }}{% endif -%}
+        {%- if it.get('affects') %} · affects {{ m.ids(it.affects) }}{% endif %}</p>
+      <p>{{ text(it.text) }}</p>
+      <p class="resolve"><span class="resolve-k">Would resolve it:</span> {{ text(it.resolve) }}</p>
+    </li>
+    {%- endfor %}
+  </ul>
+  <p class="see"><a href="data.html#gaps">Known gaps with sources</a> · <a href="THESIS.md">THESIS.md</a></p>
+</section>
+
+{#- The agent module: the last stage, after the limits. Prose and the prompt live in thesis/copy.toml; the prompt
+    names the published site through "SITE/", filled in here. Agents are listed in the order the module
+    recommends them; the links go to each product's front door, not to a prefilled prompt. -#}
+{%- set site_root = build.get('site_url') or '' -%}
+{%- set agent_prompt = copy('agent_prompt')|replace('SITE/', site_root) -%}
+{%- set agents = [
+  {'id': 'nearai', 'name': 'NEAR AI Cloud', 'tag': copy('agent_nearai_tag'), 'text': copy('agent_nearai_text'), 'attach': true,
+   'links': [('Open NEAR AI Private Chat', 'https://private.near.ai'), ('NEAR AI Cloud account', 'https://cloud.near.ai')]},
+  {'id': 'chatgpt', 'name': 'ChatGPT', 'tag': '', 'text': copy('agent_chatgpt_text'), 'attach': false,
+   'links': [('Open ChatGPT', 'https://chatgpt.com')]},
+  {'id': 'claude', 'name': 'Claude', 'tag': '', 'text': copy('agent_claude_text'), 'attach': false,
+   'links': [('Open Claude', 'https://claude.ai/new')]}
+] -%}
+<section id="agent" class="wrap" aria-labelledby="agent-h">
+  <h2 id="agent-h">{{ copy('agent_heading') }}</h2>
+  <p class="para">{{ copy('agent_intro') }}</p>
+  <p class="note">{{ copy('agent_privacy') }}</p>
+  <ol class="agents">
+    {%- for a in agents %}
+    <li class="agent" id="agent-{{ a.id }}" data-agent="{{ a.id }}">
+      <h3 class="agent-name">{{ a.name }}{% if a.tag %} <span class="agent-tag">{{ a.tag }}</span>{% endif %}</h3>
+      <p>{{ a.text }}</p>
+      <div class="agent-actions">
+        <button type="button" class="agent-copy" hidden{% if a.attach %} data-attach="THESIS.md"{% endif %}>Copy prompt{% if a.attach %} and THESIS.md{% endif %}</button>
+        {%- for label, href in a.links %}
+        <a class="agent-open" href="{{ href }}" target="_blank" rel="noopener noreferrer">{{ label }}</a>
+        {%- endfor %}
+        {%- if a.attach %}<a class="agent-open" href="THESIS.md">THESIS.md</a>{% endif %}
+        <span class="agent-status" role="status" aria-live="polite"></span>
+      </div>
+    </li>
+    {%- endfor %}
+  </ol>
+  <p class="note">{{ copy('agent_cli') }}</p>
+  <div class="cmd"><pre><code>make explore THESIS=mine.md</code></pre></div>
+  <details class="agent-prompt" open>
+    <summary>The prompt</summary>
+    <pre tabindex="0"><code>{{ agent_prompt }}</code></pre>
+  </details>
+  <p class="note">{{ copy('agent_check') }}</p>
+  <p class="see"><a href="{{ site_root }}llms.txt">llms.txt</a>, the index an agent can read first · <a href="THESIS.md">THESIS.md</a> · <a href="data.html#numbers">Every number and its formula</a></p>
+</section>
+
+</main>
+{%- if film_on %}
+<nav class="site-nav wrap" aria-label="Site">
+  <ul>
+    <li><a href="#film">The film</a></li>
+    <li><a href="#evidence">The evidence</a></li>
+    <li><a href="#mind">Change my mind</a></li>
+    <li><a href="#agent">Test yours</a></li>
+    <li><a href="data.html">Data</a></li>
+    <li><a href="THESIS.md">THESIS.md</a></li>
+    <li><a href="https://github.com/gabehamilton/invest-in-near">Repo</a></li>
+  </ul>
+</nav>
+<dialog class="ev-dialog" id="ev-dialog" aria-labelledby="ev-dialog-h">
+  <div class="ev-head"><h2 id="ev-dialog-h">Evidence</h2><button type="button" class="ev-close" data-act="close">Close</button></div>
+  <div class="ev-body"></div>
+  <p class="ev-full"><a href="#evidence" data-act="full">Open in the full evidence</a></p>
+</dialog>
+<div class="transport" hidden>
+  <button type="button" data-act="prev" aria-label="Previous shot" aria-keyshortcuts="ArrowLeft">Previous</button>
+  <button type="button" data-act="play" aria-label="Play" aria-keyshortcuts="Space" data-label-pause="Pause" data-label-replay="Replay">Play</button>
+  <button type="button" data-act="next" aria-label="Next shot" aria-keyshortcuts="ArrowRight">Next</button>
+  <output class="t-time" aria-live="off"></output>
+  <input class="t-scrub" type="range" min="0" max="1" step="any" value="0" aria-label="Position in the film">
+  <button type="button" data-act="motion" aria-pressed="true" aria-keyshortcuts="M">Motion</button>
+  <button type="button" data-act="evidence" aria-haspopup="dialog" aria-controls="ev-dialog" aria-keyshortcuts="E">Evidence</button>
+</div>
+<div class="capband" aria-live="polite" hidden><p class="capband-text"></p></div>
+{%- endif %}
+{{ m.footer() }}
+{%- if film_on %}
+{{ m.film_scripts() }}
+{%- endif %}
+</body>
+</html>
+{%- endautoescape %}

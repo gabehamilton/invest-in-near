@@ -1,0 +1,93 @@
+{
+ "H1": {
+  "binding_condition": "g_365 > 0",
+  "margin": "2.48 pp",
+  "verdict": "Refuted"
+ },
+ "H10": {
+  "binding_condition": "burn_share_365 < 10",
+  "margin": "8.49 pp",
+  "verdict": "Refuted"
+ },
+ "H12": {
+  "binding_condition": "staker_share_365 × nonstaker_365 < 0 and |staker_share_365 - nonstaker_365| ≥ 0.1",
+  "margin": "3.93 pp",
+  "verdict": "Refuted"
+ },
+ "H1b": {
+  "binding_condition": "gap_m2 > 0 and h1b_gap_med > 0",
+  "margin": "3.04 pp",
+  "verdict": "Supported"
+ },
+ "H2": {
+  "binding_condition": "neither the Supported nor the Refuted rule holds",
+  "margin": null,
+  "verdict": "Partly"
+ },
+ "H3": {
+  "binding_condition": "spread_adj_365 > 0 and spread_adj_365 ≤ 1.0",
+  "margin": "0.32 pp",
+  "verdict": "Supported"
+ },
+ "H4": {
+  "binding_condition": "n_q_rule < 8",
+  "margin": "5",
+  "verdict": "Not testable"
+ },
+ "H5": {
+  "binding_condition": "neither the Supported nor the Refuted rule holds",
+  "margin": null,
+  "verdict": "Partly"
+ },
+ "H6": {
+  "binding_condition": "h6_critical_failed ≥ 1",
+  "margin": "1",
+  "verdict": "Refuted"
+ },
+ "H6_near": {
+  "binding_condition": "h6n_rows13_pass = 2 and h6n_row2_fail = 0",
+  "margin": "0",
+  "verdict": "Supported"
+ },
+ "H7": {
+  "binding_condition": "rv_365_near ≥ 50 and rv_90_near ≥ 50",
+  "margin": "53.3 pp",
+  "verdict": "Supported"
+ },
+ "H8": {
+  "binding_condition": "n_venues_with_near_options = 0",
+  "margin": "0",
+  "verdict": "Not testable"
+ },
+ "H9": {
+  "binding_condition": "pct_within_2pp_1y < 20",
+  "margin": "16.2 pp",
+  "verdict": "Refuted"
+ },
+ "tally": {
+  "claims": 10,
+  "counted": [
+   "H1",
+   "H1b",
+   "H2",
+   "H3",
+   "H4",
+   "H5",
+   "H6",
+   "H7",
+   "H8",
+   "H9",
+   "H10",
+   "H12"
+  ],
+  "decided_hidden": 3,
+  "decided_stated": 7,
+  "not_computed": 0,
+  "not_testable": 2,
+  "partly": 2,
+  "refuted": 5,
+  "supported": 3,
+  "thinnest_supported_id": "H3",
+  "total": 12
+ }
+}

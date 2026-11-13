@@ -1,0 +1,9 @@
+FREQ,REF_AREA,UNIT_MEASURE,UNIT_MULT,TIME_FORMAT,COMPILATION,DECIMALS,SOURCE_REF,SUPP_INFO_BREAKS,TITLE,TIME_PERIOD,OBS_VALUE,OBS_STATUS,OBS_CONF,OBS_PRE_BREAK
+M,CN,368,0,,From 20 Aug 2019 onwards: Loan Prime Rate  (1 year): from 1 Jan 1996 till 19 Aug 2019: Official lending rate (1 year).,4,People's Bank of China,, Central bank policy rates - China - Monthly - End of period,2025-05,3,A,F,
+M,CN,368,0,,From 20 Aug 2019 onwards: Loan Prime Rate  (1 year): from 1 Jan 1996 till 19 Aug 2019: Official lending rate (1 year).,4,People's Bank of China,, Central bank policy rates - China - Monthly - End of period,2025-06,3,A,F,
+M,CN,368,0,,From 20 Aug 2019 onwards: Loan Prime Rate  (1 year): from 1 Jan 1996 till 19 Aug 2019: Official lending rate (1 year).,4,People's Bank of China,, Central bank policy rates - China - Monthly - End of period,2025-07,3,A,F,
+M,CN,368,0,,From 20 Aug 2019 onwards: Loan Prime Rate  (1 year): from 1 Jan 1996 till 19 Aug 2019: Official lending rate (1 year).,4,People's Bank of China,, Central bank policy rates - China - Monthly - End of period,2025-08,3,A,F,
+M,HK,368,0,,Official base rate.,4,Hong Kong Monetary Authority,, Central bank policy rates - Hong Kong SAR - Monthly - End of period,2025-05,4.75,A,F,
+M,HK,368,0,,Official base rate.,4,Hong Kong Monetary Authority,, Central bank policy rates - Hong Kong SAR - Monthly - End of period,2025-06,4.75,A,F,
+M,HK,368,0,,Official base rate.,4,Hong Kong Monetary Authority,, Central bank policy rates - Hong Kong SAR - Monthly - End of period,2025-07,4.75,A,F,
+M,HK,368,0,,Official base rate.,4,Hong Kong Monetary Authority,, Central bank policy rates - Hong Kong SAR - Monthly - End of period,2025-08,4.75,A,F,

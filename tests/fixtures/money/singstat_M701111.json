@@ -1,0 +1,100 @@
+{
+ "Data": {
+  "theme": "Industry",
+  "subject": "Finance and Insurance",
+  "topic": "Money and Banking",
+  "id": "M701111",
+  "groupTitle": "Money Supply (End Of Period)",
+  "title": "Money Supply (End Of Period), Monthly",
+  "frequency": "Monthly",
+  "adjustmentType": "",
+  "datasource": "MONETARY AUTHORITY OF SINGAPORE",
+  "footnote": "Net deposits with non-bank financial institutions excludes these institutions' deposits with banks.  There are changes to the data submitted by financial institutions with the revision of MAS Notices 610 and 1003 and the removal of the Domestic Banking Unit (DBU) - Asian Currency Unit (ACU) divide on 1 July 2021.  Hence, money supply data have been revised from July 2021.  The historical series on money supply were previously presented on DBU which were mostly denominated in Singapore dollar (SGD), while the current series report solely SGD-denominated activities.  Data on money supply until June 2021 which have been discontinued are available via  https://tablebuilder.singstat.gov.sg/table/TS/M920281",
+  "generatedBy": "SingStat Table Builder",
+  "dataLastUpdated": "30/10/2026",
+  "dateGenerated": "12/11/2026",
+  "offset": null,
+  "limit": "5000",
+  "sortBy": null,
+  "timeFilter": null,
+  "between": null,
+  "search": null,
+  "row": [
+   {
+    "seriesNo": "1",
+    "rowText": "M3",
+    "uoM": "Million Dollars",
+    "footnote": "",
+    "columns": [
+     {
+      "key": "2026 Jun",
+      "value": "909092.3"
+     },
+     {
+      "key": "2026 Jul",
+      "value": "907533.3"
+     },
+     {
+      "key": "2026 Aug",
+      "value": "915193.7"
+     },
+     {
+      "key": "2026 Sep",
+      "value": "920416.8"
+     }
+    ]
+   },
+   {
+    "seriesNo": "1.1",
+    "rowText": "M2",
+    "uoM": "Million Dollars",
+    "footnote": "",
+    "columns": [
+     {
+      "key": "2026 Jun",
+      "value": "892401.4"
+     },
+     {
+      "key": "2026 Jul",
+      "value": "890921.1"
+     },
+     {
+      "key": "2026 Aug",
+      "value": "898667"
+     },
+     {
+      "key": "2026 Sep",
+      "value": "903759.4"
+     }
+    ]
+   },
+   {
+    "seriesNo": "1.1.1",
+    "rowText": "M1",
+    "uoM": "Million Dollars",
+    "footnote": "",
+    "columns": [
+     {
+      "key": "2026 Jun",
+      "value": "321718.4"
+     },
+     {
+      "key": "2026 Jul",
+      "value": "316782.4"
+     },
+     {
+      "key": "2026 Aug",
+      "value": "320363.7"
+     },
+     {
+      "key": "2026 Sep",
+      "value": "321365.7"
+     }
+    ]
+   }
+  ]
+ },
+ "DataCount": 1,
+ "StatusCode": 200,
+ "Message": ""
+}

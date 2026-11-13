@@ -1,0 +1,9 @@
+{
+ "source": "JSON-RPC bodies observed 2026-11-10 (archival-rpc.mainnet.fastnear.com unless noted); whitespace normalized, deprecated_near_org message truncated at capture",
+ "unknown_epoch": {"jsonrpc": "2.0", "error": {"name": "HANDLER_ERROR", "cause": {"name": "UNKNOWN_EPOCH"}, "code": -32000, "message": "Server error", "data": "Unknown Epoch"}, "id": "x"},
+ "unknown_account": {"jsonrpc": "2.0", "error": {"name": "HANDLER_ERROR", "cause": {"info": {"block_hash": "AHXr6vJfpgfNzqRHMtsBDV5gAUTMe2tFUfV7Nkky1UFN", "block_height": 40000000, "requested_account_id": "meta-pool.near"}, "name": "UNKNOWN_ACCOUNT"}, "code": -32000, "message": "Server error", "data": "account meta-pool.near does not exist while viewing"}, "id": "x"},
+ "unknown_block": {"id": 1, "jsonrpc": "2.0", "error": {"name": "HANDLER_ERROR", "cause": {"info": {}, "name": "UNKNOWN_BLOCK"}, "code": -32000, "message": "Server error", "data": "DB Not Found Error: BLOCK HEIGHT: 50000000 \n Cause: Unknown"}},
+ "validator_info_unavailable": {"jsonrpc": "2.0", "error": {"name": "HANDLER_ERROR", "cause": {"name": "VALIDATOR_INFO_UNAVAILABLE"}, "code": -32000, "message": "Server error", "data": "Validator info unavailable"}, "id": 1},
+ "rate_limited": {"jsonrpc": "2.0", "error": {"code": -429, "message": "Rate limits exceeded. For higher rate limits get a subscription at https://fastnear.com"}, "id": "1"},
+ "deprecated_near_org": {"jsonrpc": "2.0", "error": {"code": -429, "message": "WARNING! THIS ENDPOINT IS DEPRECATED! STOP USING IT NOW! Switch t"}, "id": "x"}
+}

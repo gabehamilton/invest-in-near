@@ -1,0 +1,47 @@
+{
+  "columns": [
+    "block_date",
+    "eod_supply_near",
+    "minted_near",
+    "burnt_near",
+    "epoch_boundaries"
+  ],
+  "data_through": "2026-11-10",
+  "dates": [
+    "2026-11-01",
+    "2026-11-02",
+    "2026-11-03",
+    "2026-11-04",
+    "2026-11-05",
+    "2026-11-06",
+    "2026-11-07",
+    "2026-11-08",
+    "2026-11-09",
+    "2026-11-10"
+  ],
+  "description": "Month chunk 2026-11 of sql/daily_supply_flows.sql",
+  "fetched_at": "2026-11-11T23:10:08+00:00",
+  "file": "data/raw/bigquery/_chunks/daily_supply_flows/2026-11.csv",
+  "jobs": [
+    {
+      "bytes_billed": 39845888,
+      "bytes_processed": 39468648,
+      "cache_hit": false,
+      "end_date": "2026-11-10",
+      "job_id": "2f9a29ca-4ffb-478a-aa3b-9c5c6890e51d",
+      "rows": 10,
+      "start_date": "2026-11-01"
+    }
+  ],
+  "month": "2026-11",
+  "query": "daily_supply_flows",
+  "ranges": [
+    [
+      "2026-11-01",
+      "2026-11-10"
+    ]
+  ],
+  "rows": 10,
+  "sql_file": "sql/daily_supply_flows.sql",
+  "sql_fingerprint": "6428a47e32017c681c296868809241c019914997c36bc407baaa4229a46cd5c9"
+}

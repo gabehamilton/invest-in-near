@@ -1,0 +1,33 @@
+{
+  "aggregate": "M2",
+  "basis": "stock at the end of the month",
+  "blank_rows": 0,
+  "columns": [
+    "period",
+    "value"
+  ],
+  "currency": "CNY",
+  "description": "M2, end of month (People's Bank of China, via the OECD monetary aggregates dataflow)",
+  "fetched_at": "2026-11-11T22:59:19+00:00",
+  "field": "money",
+  "file": "data/raw/money/cny/money.csv",
+  "first_date": "2015-01-01",
+  "first_period": "2015-01",
+  "frequency": "monthly",
+  "last_date": "2026-09-01",
+  "last_observed_date": "2026-09-01",
+  "latest_period": "2026-09",
+  "method": "OECD SDMX DF_MONAGG (SDMX-CSV), one request for every area",
+  "notes": [
+    "Equals the PBoC's published M2 (checked against the PBoC Q3 2026 report in research); the PBoC publishes HTML only."
+  ],
+  "publisher": "OECD",
+  "refresh": "history from 2015-01 re-downloaded every run; a failed fetch keeps the previous file",
+  "response_sha256": "620b7e1e627cf8ce85e9e449e8deba2224da65c07db4ca56f4fc8c20fd6bb28e",
+  "role": "primary",
+  "rows": 141,
+  "seasonal_adjustment": "not seasonally adjusted",
+  "series_id": "DF_MONAGG/CHN.M.MABM.XDC",
+  "source_url": "https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_MONAGG,4.0/USA+EA20+JPN+GBR+CHN+CHE+AUS+CAN.M.MABM.XDC.....?startPeriod=2015-01",
+  "units": "CNY million"
+}

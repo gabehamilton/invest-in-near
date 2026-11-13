@@ -1,0 +1,38 @@
+{
+  "aggregate": "M3",
+  "basis": "change on the same month a year earlier",
+  "blank_rows": 0,
+  "columns": [
+    "period",
+    "value"
+  ],
+  "currency": "EUR",
+  "description": "Monetary aggregate M3, euro area, annual growth rate as published by the ECB (break-adjusted)",
+  "fetched_at": "2026-11-11T22:58:58+00:00",
+  "field": "money_growth_published",
+  "file": "data/raw/money/eur/money_growth_published.csv",
+  "first_date": "2015-01-01",
+  "first_period": "2015-01",
+  "frequency": "monthly",
+  "last_date": "2026-09-01",
+  "last_observed_date": "2026-09-01",
+  "latest_period": "2026-09",
+  "method": "ECB data portal SDMX (csvdata), series as published",
+  "notes": [],
+  "published_attributes": {
+    "DECIMALS": "1",
+    "TITLE": "Monetary aggregate M3, Annual growth rate",
+    "TITLE_COMPL": "Euro area (changing composition), Index of Notional Stocks, MFIs, central government and post office giro institutions reporting sector - Monetary aggregate M3, All currencies combined - Euro area (changing composition) counterpart, Non-MFIs excluding central government sector, Annual growth rate, data Working day and seasonally adjusted",
+    "UNIT": "PCCH",
+    "UNIT_MULT": "0"
+  },
+  "publisher": "European Central Bank",
+  "refresh": "history from 2015-01 re-downloaded every run; a failed fetch keeps the previous file",
+  "response_sha256": "cf7cc9789ec19bc983f4bf56643a533b543a467922b920151fe21d60e85c6a6c",
+  "role": "headline",
+  "rows": 141,
+  "seasonal_adjustment": "working-day and seasonally adjusted",
+  "series_id": "BSI.M.U2.Y.V.M30.X.I.U2.2300.Z01.A",
+  "source_url": "https://data-api.ecb.europa.eu/service/data/BSI/M.U2.Y.V.M30.X.I.U2.2300.Z01.A?format=csvdata&startPeriod=2015-01",
+  "units": "percent"
+}

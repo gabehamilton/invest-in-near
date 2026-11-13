@@ -1,0 +1,39 @@
+{
+  "chain_gaps": [],
+  "columns": [
+    "boundary_height",
+    "block_time_utc",
+    "minted_near",
+    "epoch_seconds",
+    "supply_before_near",
+    "annualized_mint_rate",
+    "prev_boundary_height"
+  ],
+  "columns_doc": {
+    "annualized_mint_rate": "minted_near / supply_before_near * 31536000 / epoch_seconds; equals max_inflation_rate when every validator is above the online threshold.",
+    "epoch_seconds": "timestamp(last block of epoch E-1) - timestamp(last block of epoch E-2): the duration the mint at the start of epoch E pays for (nearcore finalize_epoch).",
+    "minted_near": "supply(boundary) - supply(previous block) + sum(chunk.balance_burnt for chunks with height_included == boundary). On ordinary blocks supply delta + burnt == 0 exactly.",
+    "prev_boundary_height": "first block of epoch E-1 (the boundary before this one): the block after the last block of E-2, prev_hash checked. The row below must carry this height.",
+    "supply_before_near": "total_supply of the block before the boundary (the supply nearcore uses)."
+  },
+  "complete": true,
+  "contiguous": true,
+  "description": "Supply minted at every epoch boundary from 2024-11-03 00:00 UTC (737 days before the latest full-day dense sample date) to the latest final block: the exact mint behind the trailing-year burn share, and cheap ground truth for current issuance.",
+  "fetched_at": "2026-11-11T23:01:53+00:00",
+  "file": "data/raw/rpc/epoch_mints.csv",
+  "first_boundary": "131860311",
+  "floor_date": "2024-11-03",
+  "incremental_rule": "Boundary rows are immutable. The window is every boundary at or after 00:00 UTC 737 days before the latest full-day dense sample date (EPOCH_MINTS_DAYS or --epoch-days); rows older than that are dropped. The walk follows prev_boundary_height links through cached rows without RPC calls and fetches only where the cached chain breaks; a recomputed row must equal its cached copy. Progress is written every 25 fetched rows, so an interrupted walk resumes where it stopped.",
+  "last_boundary": "224092337",
+  "method": "Walk back from the tip: block(header.next_epoch_id) is the last block of the previous epoch; boundary = first block after it (prev_hash checked, epoch_id changes there). Each row links to the boundary before it (prev_boundary_height), found the same way, so the rows form one chain.",
+  "n_chain_gaps": 0,
+  "rows": 2136,
+  "rpc": {
+    "calls": 3
+  },
+  "source_url": "https://archival-rpc.mainnet.fastnear.com",
+  "tip_height": 224129519,
+  "verified": "2026-11-10: treasury.near credit x 10 at boundaries 223962737 and 223919537 equals max_inflation_rate x supply_before x epoch_seconds / 31536000 within 10 yoctoNEAR.",
+  "walk_error": null,
+  "window_days": 737
+}

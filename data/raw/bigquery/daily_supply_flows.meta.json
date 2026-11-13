@@ -1,0 +1,1418 @@
+{
+  "bytes_billed": 5342494720,
+  "bytes_processed": 5300147592,
+  "chunks": [
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:05:32+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 27262976,
+          "bytes_processed": 26722104,
+          "cache_hit": false,
+          "end_date": "2020-07-31",
+          "job_id": "31784c39-de0c-4d06-8916-79249a1fd27c",
+          "rows": 11,
+          "start_date": "2020-07-21"
+        }
+      ],
+      "month": "2020-07",
+      "planned_dates": 11,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:05:35+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 82837504,
+          "bytes_processed": 81891528,
+          "cache_hit": false,
+          "end_date": "2020-08-31",
+          "job_id": "f844111a-88f5-4fba-a5e8-dbe976719e6b",
+          "rows": 31,
+          "start_date": "2020-08-01"
+        }
+      ],
+      "month": "2020-08",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:05:39+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 84934656,
+          "bytes_processed": 84343872,
+          "cache_hit": false,
+          "end_date": "2020-09-30",
+          "job_id": "44c96733-ae54-4654-9421-6790b5959e10",
+          "rows": 30,
+          "start_date": "2020-09-01"
+        }
+      ],
+      "month": "2020-09",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:05:43+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 85983232,
+          "bytes_processed": 85535208,
+          "cache_hit": false,
+          "end_date": "2020-10-31",
+          "job_id": "7c56ad5e-d95e-4973-b284-ab16fe16e7d0",
+          "rows": 31,
+          "start_date": "2020-10-01"
+        }
+      ],
+      "month": "2020-10",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:05:46+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 72351744,
+          "bytes_processed": 71704728,
+          "cache_hit": false,
+          "end_date": "2020-11-30",
+          "job_id": "939e85e1-5ed5-47e7-9632-92f436e8e5f9",
+          "rows": 30,
+          "start_date": "2020-11-01"
+        }
+      ],
+      "month": "2020-11",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:05:49+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 60817408,
+          "bytes_processed": 60471168,
+          "cache_hit": false,
+          "end_date": "2020-12-31",
+          "job_id": "c69648e2-1002-4948-932a-637215beaa30",
+          "rows": 31,
+          "start_date": "2020-12-01"
+        }
+      ],
+      "month": "2020-12",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:05:53+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 59768832,
+          "bytes_processed": 58823448,
+          "cache_hit": false,
+          "end_date": "2021-01-31",
+          "job_id": "acf1d992-ec2c-4a94-b103-8bc1b6739f18",
+          "rows": 31,
+          "start_date": "2021-01-01"
+        }
+      ],
+      "month": "2021-01",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:05:56+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 54525952,
+          "bytes_processed": 53634384,
+          "cache_hit": false,
+          "end_date": "2021-02-28",
+          "job_id": "a266fd4d-a046-45ff-97d5-159e9de065f1",
+          "rows": 28,
+          "start_date": "2021-02-01"
+        }
+      ],
+      "month": "2021-02",
+      "planned_dates": 28,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:00+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 63963136,
+          "bytes_processed": 62939256,
+          "cache_hit": false,
+          "end_date": "2021-03-31",
+          "job_id": "5033a17f-c440-49ec-8d61-16d9442f16a8",
+          "rows": 31,
+          "start_date": "2021-03-01"
+        }
+      ],
+      "month": "2021-03",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:03+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 63963136,
+          "bytes_processed": 63940416,
+          "cache_hit": false,
+          "end_date": "2021-04-30",
+          "job_id": "cca67d43-8b2a-4dc2-aca4-eb5d2da602e4",
+          "rows": 30,
+          "start_date": "2021-04-01"
+        }
+      ],
+      "month": "2021-04",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:06+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 66060288,
+          "bytes_processed": 65680080,
+          "cache_hit": false,
+          "end_date": "2021-05-31",
+          "job_id": "65df5336-a487-4b8e-91da-371eb8e44af6",
+          "rows": 31,
+          "start_date": "2021-05-01"
+        }
+      ],
+      "month": "2021-05",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:10+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 65011712,
+          "bytes_processed": 64403688,
+          "cache_hit": false,
+          "end_date": "2021-06-30",
+          "job_id": "ebd2521f-83e9-4967-b878-b906e0d8aa7a",
+          "rows": 30,
+          "start_date": "2021-06-01"
+        }
+      ],
+      "month": "2021-06",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:14+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 66060288,
+          "bytes_processed": 65730216,
+          "cache_hit": false,
+          "end_date": "2021-07-31",
+          "job_id": "91b6cd55-63c9-4a59-a6de-983e1e7be49b",
+          "rows": 31,
+          "start_date": "2021-07-01"
+        }
+      ],
+      "month": "2021-07",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:16+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 63963136,
+          "bytes_processed": 63873360,
+          "cache_hit": false,
+          "end_date": "2021-08-31",
+          "job_id": "82e38828-aa21-4fb0-a9ff-9fee7d5a373a",
+          "rows": 31,
+          "start_date": "2021-08-01"
+        }
+      ],
+      "month": "2021-08",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:19+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 59768832,
+          "bytes_processed": 59699856,
+          "cache_hit": false,
+          "end_date": "2021-09-30",
+          "job_id": "f160798c-1aaa-4e8c-949a-a1dbdf56ad86",
+          "rows": 30,
+          "start_date": "2021-09-01"
+        }
+      ],
+      "month": "2021-09",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:23+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 62914560,
+          "bytes_processed": 61906560,
+          "cache_hit": false,
+          "end_date": "2021-10-31",
+          "job_id": "3d07dd72-c326-4cb2-a130-a094f0e9c911",
+          "rows": 31,
+          "start_date": "2021-10-01"
+        }
+      ],
+      "month": "2021-10",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:26+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 60817408,
+          "bytes_processed": 59947752,
+          "cache_hit": false,
+          "end_date": "2021-11-30",
+          "job_id": "d35b7933-e09e-43f4-a18b-aef94a00c641",
+          "rows": 30,
+          "start_date": "2021-11-01"
+        }
+      ],
+      "month": "2021-11",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:29+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 60817408,
+          "bytes_processed": 60153120,
+          "cache_hit": false,
+          "end_date": "2021-12-31",
+          "job_id": "5e2954ab-5d7b-4f22-b81a-7880a1a76167",
+          "rows": 31,
+          "start_date": "2021-12-01"
+        }
+      ],
+      "month": "2021-12",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:32+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 53477376,
+          "bytes_processed": 52652064,
+          "cache_hit": false,
+          "end_date": "2022-01-31",
+          "job_id": "28f4fc06-36ed-43e9-8f70-786f8c52fdb0",
+          "rows": 31,
+          "start_date": "2022-01-01"
+        }
+      ],
+      "month": "2022-01",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:36+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 48234496,
+          "bytes_processed": 47799576,
+          "cache_hit": false,
+          "end_date": "2022-02-28",
+          "job_id": "5f8547c8-c958-438b-a8f0-3fc656ce055e",
+          "rows": 28,
+          "start_date": "2022-02-01"
+        }
+      ],
+      "month": "2022-02",
+      "planned_dates": 28,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:39+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 52428800,
+          "bytes_processed": 51748248,
+          "cache_hit": false,
+          "end_date": "2022-03-31",
+          "job_id": "f556c10c-a9e9-4a5d-a731-dc65d18723f9",
+          "rows": 31,
+          "start_date": "2022-03-01"
+        }
+      ],
+      "month": "2022-03",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:43+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 51380224,
+          "bytes_processed": 51126360,
+          "cache_hit": false,
+          "end_date": "2022-04-30",
+          "job_id": "6b53ec88-e282-4a75-b0f0-e0cf6d71db82",
+          "rows": 30,
+          "start_date": "2022-04-01"
+        }
+      ],
+      "month": "2022-04",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:47+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 53477376,
+          "bytes_processed": 52827048,
+          "cache_hit": false,
+          "end_date": "2022-05-31",
+          "job_id": "997d8f5d-680b-412d-b57a-126857ded928",
+          "rows": 31,
+          "start_date": "2022-05-01"
+        }
+      ],
+      "month": "2022-05",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:49+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 52428800,
+          "bytes_processed": 51543864,
+          "cache_hit": false,
+          "end_date": "2022-06-30",
+          "job_id": "a3d6f3f6-3484-4875-8a17-44ce73da8bc7",
+          "rows": 30,
+          "start_date": "2022-06-01"
+        }
+      ],
+      "month": "2022-06",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:53+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 54525952,
+          "bytes_processed": 54206544,
+          "cache_hit": false,
+          "end_date": "2022-07-31",
+          "job_id": "7c99d520-c2b3-4720-b8f2-06409acbdef7",
+          "rows": 31,
+          "start_date": "2022-07-01"
+        }
+      ],
+      "month": "2022-07",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:06:57+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 53477376,
+          "bytes_processed": 53179368,
+          "cache_hit": false,
+          "end_date": "2022-08-31",
+          "job_id": "3889d825-c6d7-486e-b0ae-af241acc52ba",
+          "rows": 31,
+          "start_date": "2022-08-01"
+        }
+      ],
+      "month": "2022-08",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:00+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 51380224,
+          "bytes_processed": 50481624,
+          "cache_hit": false,
+          "end_date": "2022-09-30",
+          "job_id": "1639cbcd-74f6-49a3-8883-caadc3211e3f",
+          "rows": 30,
+          "start_date": "2022-09-01"
+        }
+      ],
+      "month": "2022-09",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:04+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 54525952,
+          "bytes_processed": 54131544,
+          "cache_hit": false,
+          "end_date": "2022-10-31",
+          "job_id": "f25d3c36-ed8d-4e88-932c-f4306280bb83",
+          "rows": 31,
+          "start_date": "2022-10-01"
+        }
+      ],
+      "month": "2022-10",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:07+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 54525952,
+          "bytes_processed": 53948760,
+          "cache_hit": false,
+          "end_date": "2022-11-30",
+          "job_id": "5dfaf3b5-0213-40d4-8f9e-1bbeb7049440",
+          "rows": 30,
+          "start_date": "2022-11-01"
+        }
+      ],
+      "month": "2022-11",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:11+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 56623104,
+          "bytes_processed": 56324544,
+          "cache_hit": false,
+          "end_date": "2022-12-31",
+          "job_id": "bbd07cd5-6169-468d-ae5c-703970f667a6",
+          "rows": 31,
+          "start_date": "2022-12-01"
+        }
+      ],
+      "month": "2022-12",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:14+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 58720256,
+          "bytes_processed": 57676632,
+          "cache_hit": false,
+          "end_date": "2023-01-31",
+          "job_id": "326b2151-31b0-435a-b693-27edeec15529",
+          "rows": 31,
+          "start_date": "2023-01-01"
+        }
+      ],
+      "month": "2023-01",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:18+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 51380224,
+          "bytes_processed": 50472384,
+          "cache_hit": false,
+          "end_date": "2023-02-28",
+          "job_id": "f7ce6ccc-6f48-40f0-8ebf-a75580751ca5",
+          "rows": 28,
+          "start_date": "2023-02-01"
+        }
+      ],
+      "month": "2023-02",
+      "planned_dates": 28,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:22+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 56623104,
+          "bytes_processed": 55962216,
+          "cache_hit": false,
+          "end_date": "2023-03-31",
+          "job_id": "8ef4b133-ecaf-45aa-9462-13b33689cb43",
+          "rows": 31,
+          "start_date": "2023-03-01"
+        }
+      ],
+      "month": "2023-03",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:25+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 56623104,
+          "bytes_processed": 56203536,
+          "cache_hit": false,
+          "end_date": "2023-04-30",
+          "job_id": "68ea4c26-b482-442a-b98f-c5fa301d3923",
+          "rows": 30,
+          "start_date": "2023-04-01"
+        }
+      ],
+      "month": "2023-04",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:28+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 58720256,
+          "bytes_processed": 58324008,
+          "cache_hit": false,
+          "end_date": "2023-05-31",
+          "job_id": "26b3c88c-20b9-4240-a405-b9ab6c727f6c",
+          "rows": 31,
+          "start_date": "2023-05-01"
+        }
+      ],
+      "month": "2023-05",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:32+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 56623104,
+          "bytes_processed": 55620432,
+          "cache_hit": false,
+          "end_date": "2023-06-30",
+          "job_id": "08c7f7e1-e10f-4343-b562-1ad2aba322cd",
+          "rows": 30,
+          "start_date": "2023-06-01"
+        }
+      ],
+      "month": "2023-06",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:35+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 59768832,
+          "bytes_processed": 59019480,
+          "cache_hit": false,
+          "end_date": "2023-07-31",
+          "job_id": "0659b756-48e5-4945-a77c-947167318be6",
+          "rows": 31,
+          "start_date": "2023-07-01"
+        }
+      ],
+      "month": "2023-07",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:38+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 57671680,
+          "bytes_processed": 57312648,
+          "cache_hit": false,
+          "end_date": "2023-08-31",
+          "job_id": "bc7bb75b-eb06-429b-8935-18a2c757fee2",
+          "rows": 31,
+          "start_date": "2023-08-01"
+        }
+      ],
+      "month": "2023-08",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:41+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 55574528,
+          "bytes_processed": 55065168,
+          "cache_hit": false,
+          "end_date": "2023-09-30",
+          "job_id": "825c3536-d43e-4a05-bbc6-959e30d77ac8",
+          "rows": 30,
+          "start_date": "2023-09-01"
+        }
+      ],
+      "month": "2023-09",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:44+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 57671680,
+          "bytes_processed": 57241776,
+          "cache_hit": false,
+          "end_date": "2023-10-31",
+          "job_id": "f65911e5-8c64-4ab0-9eec-5a2ac3dd1d54",
+          "rows": 31,
+          "start_date": "2023-10-01"
+        }
+      ],
+      "month": "2023-10",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:48+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 55574528,
+          "bytes_processed": 55339536,
+          "cache_hit": false,
+          "end_date": "2023-11-30",
+          "job_id": "cb400f8a-4e58-4358-926a-4c43e762b817",
+          "rows": 30,
+          "start_date": "2023-11-01"
+        }
+      ],
+      "month": "2023-11",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:52+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 58720256,
+          "bytes_processed": 58152480,
+          "cache_hit": false,
+          "end_date": "2023-12-31",
+          "job_id": "c5d80c0e-bd2e-404b-af20-0c6fc3d9ddc8",
+          "rows": 31,
+          "start_date": "2023-12-01"
+        }
+      ],
+      "month": "2023-12",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:55+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 62914560,
+          "bytes_processed": 62717616,
+          "cache_hit": false,
+          "end_date": "2024-01-31",
+          "job_id": "394721ae-cfb1-4434-936e-869874058698",
+          "rows": 31,
+          "start_date": "2024-01-01"
+        }
+      ],
+      "month": "2024-01",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:07:59+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 51380224,
+          "bytes_processed": 50579808,
+          "cache_hit": false,
+          "end_date": "2024-02-29",
+          "job_id": "97ab839c-2c22-412f-9385-7e318ea1dff0",
+          "rows": 29,
+          "start_date": "2024-02-01"
+        }
+      ],
+      "month": "2024-02",
+      "planned_dates": 29,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:02+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 50331648,
+          "bytes_processed": 49748064,
+          "cache_hit": false,
+          "end_date": "2024-03-31",
+          "job_id": "8840f279-c2f0-46ef-981c-f9d558b7de38",
+          "rows": 31,
+          "start_date": "2024-03-01"
+        }
+      ],
+      "month": "2024-03",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:05+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 52428800,
+          "bytes_processed": 51793800,
+          "cache_hit": false,
+          "end_date": "2024-04-30",
+          "job_id": "9b90aa47-711d-411b-9346-f4c07e2b339b",
+          "rows": 30,
+          "start_date": "2024-04-01"
+        }
+      ],
+      "month": "2024-04",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:08+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 54525952,
+          "bytes_processed": 53972184,
+          "cache_hit": false,
+          "end_date": "2024-05-31",
+          "job_id": "0754e221-a757-46f2-91f1-9a5df0f05622",
+          "rows": 31,
+          "start_date": "2024-05-01"
+        }
+      ],
+      "month": "2024-05",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:12+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 56623104,
+          "bytes_processed": 55879536,
+          "cache_hit": false,
+          "end_date": "2024-06-30",
+          "job_id": "a8cda988-40bb-4bc9-82cf-becb8a18fa51",
+          "rows": 30,
+          "start_date": "2024-06-01"
+        }
+      ],
+      "month": "2024-06",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:16+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 58720256,
+          "bytes_processed": 58502880,
+          "cache_hit": false,
+          "end_date": "2024-07-31",
+          "job_id": "89293742-b8f0-4483-a2e2-55a7abf39f79",
+          "rows": 31,
+          "start_date": "2024-07-01"
+        }
+      ],
+      "month": "2024-07",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:19+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 56623104,
+          "bytes_processed": 56573448,
+          "cache_hit": false,
+          "end_date": "2024-08-31",
+          "job_id": "f4ecd44b-151b-417f-9471-62255a7114cb",
+          "rows": 31,
+          "start_date": "2024-08-01"
+        }
+      ],
+      "month": "2024-08",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:23+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 56623104,
+          "bytes_processed": 56164848,
+          "cache_hit": false,
+          "end_date": "2024-09-30",
+          "job_id": "53f4fc05-b668-44cc-b977-ba4d70845d9c",
+          "rows": 30,
+          "start_date": "2024-09-01"
+        }
+      ],
+      "month": "2024-09",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:26+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 59768832,
+          "bytes_processed": 59260800,
+          "cache_hit": false,
+          "end_date": "2024-10-31",
+          "job_id": "baace806-2dc8-482f-80be-cd85e257c2ab",
+          "rows": 31,
+          "start_date": "2024-10-01"
+        }
+      ],
+      "month": "2024-10",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:29+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 56623104,
+          "bytes_processed": 56350176,
+          "cache_hit": false,
+          "end_date": "2024-11-30",
+          "job_id": "2d00fa51-45d0-48a4-a537-fe464ee97f20",
+          "rows": 30,
+          "start_date": "2024-11-01"
+        }
+      ],
+      "month": "2024-11",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:32+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 58720256,
+          "bytes_processed": 58379400,
+          "cache_hit": false,
+          "end_date": "2024-12-31",
+          "job_id": "8a01b3cf-6431-408b-bb34-7d65f4b8ce25",
+          "rows": 31,
+          "start_date": "2024-12-01"
+        }
+      ],
+      "month": "2024-12",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:35+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 59768832,
+          "bytes_processed": 58891896,
+          "cache_hit": false,
+          "end_date": "2025-01-31",
+          "job_id": "63cc13c7-0284-426d-8708-922834d5016b",
+          "rows": 31,
+          "start_date": "2025-01-01"
+        }
+      ],
+      "month": "2025-01",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:39+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 54525952,
+          "bytes_processed": 53489376,
+          "cache_hit": false,
+          "end_date": "2025-02-28",
+          "job_id": "d6ece8b0-ca26-46fc-920a-33b8fdd3310c",
+          "rows": 28,
+          "start_date": "2025-02-01"
+        }
+      ],
+      "month": "2025-02",
+      "planned_dates": 28,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:43+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 58720256,
+          "bytes_processed": 58056864,
+          "cache_hit": false,
+          "end_date": "2025-03-31",
+          "job_id": "f0c7acfd-1bbb-49bf-863d-fb295bf312ad",
+          "rows": 31,
+          "start_date": "2025-03-01"
+        }
+      ],
+      "month": "2025-03",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:46+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 57671680,
+          "bytes_processed": 56865528,
+          "cache_hit": false,
+          "end_date": "2025-04-30",
+          "job_id": "0f6b5083-9e64-4140-8abf-24162870d898",
+          "rows": 30,
+          "start_date": "2025-04-01"
+        }
+      ],
+      "month": "2025-04",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:51+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 91226112,
+          "bytes_processed": 90544128,
+          "cache_hit": false,
+          "end_date": "2025-05-31",
+          "job_id": "1f26bc27-197d-4992-a9fd-94c6a94d4222",
+          "rows": 31,
+          "start_date": "2025-05-01"
+        }
+      ],
+      "month": "2025-05",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:08:56+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 104857600,
+          "bytes_processed": 103871928,
+          "cache_hit": false,
+          "end_date": "2025-06-30",
+          "job_id": "848589d6-1b8a-4714-acb2-dd269a9fa86d",
+          "rows": 30,
+          "start_date": "2025-06-01"
+        }
+      ],
+      "month": "2025-06",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:00+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 106954752,
+          "bytes_processed": 106949688,
+          "cache_hit": false,
+          "end_date": "2025-07-31",
+          "job_id": "5b636ed8-c23d-443a-bd88-351d64da7245",
+          "rows": 31,
+          "start_date": "2025-07-01"
+        }
+      ],
+      "month": "2025-07",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:04+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 109051904,
+          "bytes_processed": 108729792,
+          "cache_hit": false,
+          "end_date": "2025-08-31",
+          "job_id": "672c4627-a155-4b6a-9887-98238a7376c9",
+          "rows": 31,
+          "start_date": "2025-08-01"
+        }
+      ],
+      "month": "2025-08",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:09+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 105906176,
+          "bytes_processed": 105752544,
+          "cache_hit": false,
+          "end_date": "2025-09-30",
+          "job_id": "71c7bb56-299e-4674-8a5f-87fb77b03ea6",
+          "rows": 30,
+          "start_date": "2025-09-01"
+        }
+      ],
+      "month": "2025-09",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:13+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 108003328,
+          "bytes_processed": 107879280,
+          "cache_hit": false,
+          "end_date": "2025-10-31",
+          "job_id": "9b78ebf9-5542-4077-a934-a080f6f9527d",
+          "rows": 31,
+          "start_date": "2025-10-01"
+        }
+      ],
+      "month": "2025-10",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:18+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 104857600,
+          "bytes_processed": 104485896,
+          "cache_hit": false,
+          "end_date": "2025-11-30",
+          "job_id": "3d68b3ab-9dd7-488b-8c45-00ec65d97b51",
+          "rows": 30,
+          "start_date": "2025-11-01"
+        }
+      ],
+      "month": "2025-11",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:23+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 105906176,
+          "bytes_processed": 105756312,
+          "cache_hit": false,
+          "end_date": "2025-12-31",
+          "job_id": "c4103508-8e74-478d-b51c-cc9ad3c0a949",
+          "rows": 31,
+          "start_date": "2025-12-01"
+        }
+      ],
+      "month": "2025-12",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:27+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 109051904,
+          "bytes_processed": 108462312,
+          "cache_hit": false,
+          "end_date": "2026-01-31",
+          "job_id": "6fa8ada4-6368-4b6e-abdb-b33c9425aeaa",
+          "rows": 31,
+          "start_date": "2026-01-01"
+        }
+      ],
+      "month": "2026-01",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:32+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 99614720,
+          "bytes_processed": 99052320,
+          "cache_hit": false,
+          "end_date": "2026-02-28",
+          "job_id": "db361f3e-5de3-4176-8259-8afc731fd74e",
+          "rows": 28,
+          "start_date": "2026-02-01"
+        }
+      ],
+      "month": "2026-02",
+      "planned_dates": 28,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:36+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 110100480,
+          "bytes_processed": 109878168,
+          "cache_hit": false,
+          "end_date": "2026-03-31",
+          "job_id": "0c7dd3f9-2e22-47cf-9f21-45cf1cccf7dd",
+          "rows": 31,
+          "start_date": "2026-03-01"
+        }
+      ],
+      "month": "2026-03",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:40+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 108003328,
+          "bytes_processed": 107122512,
+          "cache_hit": false,
+          "end_date": "2026-04-30",
+          "job_id": "11d65059-f770-4931-94b5-8ac3b5fdac16",
+          "rows": 30,
+          "start_date": "2026-04-01"
+        }
+      ],
+      "month": "2026-04",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:44+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 110100480,
+          "bytes_processed": 109907712,
+          "cache_hit": false,
+          "end_date": "2026-05-31",
+          "job_id": "b98d5025-d2c9-43e8-9204-ab8d704b9131",
+          "rows": 31,
+          "start_date": "2026-05-01"
+        }
+      ],
+      "month": "2026-05",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:48+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 105906176,
+          "bytes_processed": 105298056,
+          "cache_hit": false,
+          "end_date": "2026-06-30",
+          "job_id": "ed15fd20-4331-4b11-bbab-bb9bcbb4188d",
+          "rows": 30,
+          "start_date": "2026-06-01"
+        }
+      ],
+      "month": "2026-06",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:52+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 109051904,
+          "bytes_processed": 108123096,
+          "cache_hit": false,
+          "end_date": "2026-07-31",
+          "job_id": "bd818c26-a1e3-4ed9-a78e-a1f58e484a44",
+          "rows": 31,
+          "start_date": "2026-07-01"
+        }
+      ],
+      "month": "2026-07",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:09:57+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 109051904,
+          "bytes_processed": 108050112,
+          "cache_hit": false,
+          "end_date": "2026-08-31",
+          "job_id": "98ef8338-26f1-42a3-b10d-4ff6f19e7bb0",
+          "rows": 31,
+          "start_date": "2026-08-01"
+        }
+      ],
+      "month": "2026-08",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:10:01+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 104857600,
+          "bytes_processed": 104525832,
+          "cache_hit": false,
+          "end_date": "2026-09-30",
+          "job_id": "1fb6b6f1-57fb-4818-825b-203698f2ff15",
+          "rows": 30,
+          "start_date": "2026-09-01"
+        }
+      ],
+      "month": "2026-09",
+      "planned_dates": 30,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:10:05+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 112197632,
+          "bytes_processed": 111302448,
+          "cache_hit": false,
+          "end_date": "2026-10-31",
+          "job_id": "238fb3b7-8106-4d69-aff4-12e5f08e73ad",
+          "rows": 31,
+          "start_date": "2026-10-01"
+        }
+      ],
+      "month": "2026-10",
+      "planned_dates": 31,
+      "reused_from_cache": false
+    },
+    {
+      "complete": true,
+      "fetched_at": "2026-11-11T23:10:08+00:00",
+      "jobs": [
+        {
+          "bytes_billed": 39845888,
+          "bytes_processed": 39468648,
+          "cache_hit": false,
+          "end_date": "2026-11-10",
+          "job_id": "2f9a29ca-4ffb-478a-aa3b-9c5c6890e51d",
+          "rows": 10,
+          "start_date": "2026-11-01"
+        }
+      ],
+      "month": "2026-11",
+      "planned_dates": 10,
+      "reused_from_cache": false
+    }
+  ],
+  "columns": [
+    "block_date",
+    "eod_supply_near",
+    "minted_near",
+    "burnt_near",
+    "epoch_boundaries"
+  ],
+  "data_through": "2026-11-10",
+  "dataset": "bigquery-public-data.crypto_near_mainnet_us",
+  "description": "End-of-day total supply and the gross mint and burn behind it, from the per-block change in blocks.total_supply (yoctoNEAR, FLOAT64) ordered by block_height. Supply only rises at epoch boundaries (validator and treasury reward mint) and only falls through burns, so positive deltas are summed as minted_near and negative deltas as burnt_near; the boundary block's own burn is netted into its mint. epoch_boundaries counts deltas above 10 NEAR. The query also reads @start_date - 1 so the first block of the range has a predecessor, then drops that day. A day whose first block has no predecessor in the previous calendar day (a gap in the table) gets empty mint, burn and boundary counts instead of a delta that spans the gap; genesis day 2020-07-21 is exempt. burnt_near is total supply destruction (fee burn net of the 30% contract reward, plus any other burn), not gross fees.",
+  "fetched_at": "2026-11-11T23:10:09+00:00",
+  "file": "data/raw/bigquery/daily_supply_flows.csv",
+  "grain": "one row per block_date",
+  "incomplete_months": [],
+  "incremental_rule": "month chunks in data/raw/bigquery/_chunks/<query>/<YYYY-MM>.csv are reused when their SQL fingerprint matches, they cover every planned date of the month, and their data_through equals the current one or is after every planned date; so a day fetched as the window end is re-fetched once after freshness moves past it",
+  "location": "auto",
+  "params": "@start_date DATE, @end_date DATE (inclusive block_date range; the query reads block_date from @start_date - 1 for the LAG and drops that day)",
+  "rows": 2304,
+  "schedule": "daily",
+  "sql_file": "sql/daily_supply_flows.sql",
+  "sql_fingerprint": "6428a47e32017c681c296868809241c019914997c36bc407baaa4229a46cd5c9",
+  "sql_sha256": "c3f52b6ad23f9016cc05a4dfbe33f26b263f89b34f5abd1777132b4d2692d811",
+  "window": {
+    "end": "2026-11-10",
+    "start": "2020-07-21"
+  }
+}

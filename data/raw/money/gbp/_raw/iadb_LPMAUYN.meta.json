@@ -1,0 +1,9 @@
+{
+  "bytes": 2975,
+  "description": "Bank of England: LPMAUYN",
+  "fetched_at": "2026-11-11T22:58:47+00:00",
+  "file": "data/raw/money/gbp/_raw/iadb_LPMAUYN.csv",
+  "method": "raw response archived unchanged",
+  "sha256": "2f792e26c6a80aff2481753ff9dce60fbe6afbfdcc8be2e75c330c9974dfd28b",
+  "source_url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-FromShowColumns.asp?csv.x=yes&SeriesCodes=LPMAUYN&CSVF=TN&UsingCodes=Y&Datefrom=01%2FJan%2F2015&Dateto=now"
+}

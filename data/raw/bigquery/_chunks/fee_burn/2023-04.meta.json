@@ -1,0 +1,36 @@
+{
+  "columns": [
+    "block_date",
+    "gross_fee_burn_near",
+    "gas_burnt_tgas"
+  ],
+  "data_through": "2026-11-10",
+  "dates": [
+    "2023-04-15"
+  ],
+  "description": "Month chunk 2023-04 of sql/fee_burn.sql",
+  "fetched_at": "2026-11-11T23:12:23+00:00",
+  "file": "data/raw/bigquery/_chunks/fee_burn/2023-04.csv",
+  "jobs": [
+    {
+      "bytes_billed": 29360128,
+      "bytes_processed": 29056632,
+      "cache_hit": false,
+      "end_date": "2023-04-15",
+      "job_id": "b0eb993c-a67a-4d2a-b5c9-45061a7d1c0e",
+      "rows": 1,
+      "start_date": "2023-04-15"
+    }
+  ],
+  "month": "2023-04",
+  "query": "fee_burn",
+  "ranges": [
+    [
+      "2023-04-15",
+      "2023-04-15"
+    ]
+  ],
+  "rows": 1,
+  "sql_file": "sql/fee_burn.sql",
+  "sql_fingerprint": "bf421d94f063097ed2dab6bb6c9c8a24e1e96c94707b8e25d6146c20f8cdae2a"
+}

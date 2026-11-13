@@ -1,0 +1,24 @@
+{
+  "blank_rows": 259,
+  "columns": [
+    "date",
+    "value"
+  ],
+  "description": "Effective federal funds rate (NY Fed), business days, percent",
+  "fetch_day_utc": "2026-11-11",
+  "fetched_at": "2026-11-11T22:58:27+00:00",
+  "file": "data/raw/fred/EFFR.csv",
+  "first_date": "2000-07-03",
+  "http_last_modified": "Tue, 10 Nov 2026 14:02:35 GMT",
+  "last_date": "2026-11-09",
+  "last_observed_date": "2026-11-09",
+  "missing_markers": [
+    ".",
+    ""
+  ],
+  "refresh": "full history re-downloaded every run (FRED revises past values; vintage_date is ignored here)",
+  "rows": 6876,
+  "rows_after_fetch_date": 0,
+  "series_id": "EFFR",
+  "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=EFFR"
+}

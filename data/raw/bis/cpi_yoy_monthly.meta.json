@@ -1,0 +1,139 @@
+{
+  "areas_requested": [
+    "US",
+    "XM",
+    "GB",
+    "JP",
+    "CH",
+    "CA",
+    "AU",
+    "TR",
+    "BR",
+    "IN",
+    "AR"
+  ],
+  "areas_without_data": [],
+  "columns": [
+    "area",
+    "period",
+    "value"
+  ],
+  "coverage": {
+    "AR": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "AU": {
+      "first_period": "2015-01",
+      "last_period": "2026-06",
+      "rows": 138
+    },
+    "BR": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "CA": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "CH": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "GB": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "IN": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "JP": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "TR": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "US": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 140
+    },
+    "XM": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    }
+  },
+  "description": "Consumer prices, year-on-year change in percent, monthly (BIS WS_LONG_CPI, unit 771)",
+  "dropped_nan": [
+    "US 2025-10"
+  ],
+  "fetched_at": "2026-11-11T22:58:46+00:00",
+  "file": "data/raw/bis/cpi_yoy_monthly.csv",
+  "flow": "WS_LONG_CPI",
+  "key": "M.US+XM+GB+JP+CH+CA+AU+TR+BR+IN+AR.771",
+  "params": {
+    "format": "csv",
+    "startPeriod": "2015-01"
+  },
+  "refresh": "full re-download from 2015-01 every run (BIS revises recent periods)",
+  "rows": 1547,
+  "series_attributes": {
+    "AR": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    },
+    "AU": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    },
+    "BR": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    },
+    "CA": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    },
+    "CH": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    },
+    "GB": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    },
+    "IN": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    },
+    "JP": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    },
+    "TR": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    },
+    "US": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    },
+    "XM": {
+      "UNIT_MEASURE": "771",
+      "UNIT_MULT": "0"
+    }
+  },
+  "source_url": "https://stats.bis.org/api/v2/data/dataflow/BIS/WS_LONG_CPI/1.0/M.US+XM+GB+JP+CH+CA+AU+TR+BR+IN+AR.771?format=csv&startPeriod=2015-01"
+}

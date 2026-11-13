@@ -1,0 +1,33 @@
+# NEAR, tested
+
+> Relative to the dollar and the major currencies, NEAR's supply grows more slowly. It is not deflationary in absolute terms, and it is not cash.
+
+A NEAR investment hypothesis, tested claim by claim against public on-chain and macro data, as of 2026-11-12 21:28 UTC. Every figure on the site carries a registry key, a formula and its source files.
+
+## Tally
+
+- Tally: 3 supported · 2 partly · 5 refuted · 2 not testable · 0 not computed, across the stated claims and the hidden assumptions.
+- Title figures: 9 of the 10 most-traded currencies grew their money faster than NEAR's supply; 7 of 9 policy rates pay less than staking NEAR paid over the last year; staked NEAR ranks 1 of 10 by a year's change in a holder's share of the total. THESIS.md gives each with its caveats.
+
+## Read these first
+
+- [THESIS.md](https://gabehamilton.github.io/invest-in-near/THESIS.md): the argument in plain Markdown, with a verdict for every claim
+- [verdicts.json](https://gabehamilton.github.io/invest-in-near/data/verdicts.json): each verdict, the rule that decided it and the figures it read
+- [numbers.json](https://gabehamilton.github.io/invest-in-near/data/numbers.json): every figure, keyed, with its formula, inputs and source files
+- [tripwires.json](https://gabehamilton.github.io/invest-in-near/data/tripwires.json): the metrics and thresholds that would flip the thesis
+
+## Evidence
+
+- [sources.json](https://gabehamilton.github.io/invest-in-near/data/sources.json): each data source, what it provides and how fresh it is
+- [crosschecks.json](https://gabehamilton.github.io/invest-in-near/data/crosschecks.json): independent checks of the figures against each other
+- [manifest.json](https://gabehamilton.github.io/invest-in-near/data/manifest.json): every chart, every raw input and a hash of every output
+- Charts: one JSON spec at `data/charts/<id>.json` and one CSV at `data/csv/<id>.csv` per chart; the ids are listed in manifest.json
+- [sim.json](https://gabehamilton.github.io/invest-in-near/data/sim.json): the desk simulation's inputs and default state; THESIS.md's "Desk simulation" section gives each default output beside its assumption
+- [Thesis page](https://gabehamilton.github.io/invest-in-near/index.html) and [data page](https://gabehamilton.github.io/invest-in-near/data.html): the same content as HTML, with the charts
+
+## How to use it
+
+- Quote a figure only together with its registry key from numbers.json. A figure without a key is not the site's.
+- Verdicts are one of supported, partly supported, refuted, not testable or not computed. Read the rule before you argue with the verdict.
+- Scope: the current macro environment and NEAR's current utility. Past price is an indicator, not a target; governance is left out.
+- Nothing here is investment advice.

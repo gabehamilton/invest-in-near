@@ -1,0 +1,45 @@
+{
+  "blank_rows": 0,
+  "columns": [
+    "date",
+    "volume_usd"
+  ],
+  "description": "NEAR Intents daily volume in USD per UTC day, as published by DefiLlama",
+  "dropped_unfinished_dates": [],
+  "endpoint": "https://api.llama.fi/summary/dexs/near-intents",
+  "fetch_day_utc": "2026-11-11",
+  "fetched_at": "2026-11-11T23:02:37+00:00",
+  "file": "data/raw/intents/defillama_volume_daily.csv",
+  "first_date": "2024-12-10",
+  "last_date": "2026-11-10",
+  "latest_day": {
+    "date": "2026-11-10",
+    "previous_date": "2026-11-09",
+    "previous_value": "166233299",
+    "value": "152754904"
+  },
+  "latest_day_provisional": true,
+  "methodology": null,
+  "methodology_url": "https://github.com/DefiLlama/dimension-adapters/blob/master/dexs/near-intents",
+  "missing_dates": [],
+  "params": {
+    "excludeTotalDataChartBreakdown": "true"
+  },
+  "protocol": {
+    "defillamaId": "6225",
+    "name": "NEAR Intents",
+    "slug": "near-intents"
+  },
+  "provisional_dates": [
+    "2026-11-08",
+    "2026-11-09",
+    "2026-11-10"
+  ],
+  "provisional_rule": "the 3 UTC days before fetch_day_utc may still be partial or restated upstream; values are kept as published (pipeline convention, matching the Explorer pull's open window; DefiLlama publishes no finality horizon)",
+  "refresh": "full series re-downloaded every run (DefiLlama restates history when adapters change)",
+  "reported_total_all_time_usd": "37324522122",
+  "rows": 701,
+  "source_url": "https://api.llama.fi/summary/dexs/near-intents?excludeTotalDataChartBreakdown=true",
+  "sum_of_rows_usd": "37324522122",
+  "upstream": "DefiLlama dexs/near-intents adapter: sum(volume_amount_usd) from Dune table dune.near.dataset_near_intents_metrics per date_at (not independent of Dune)"
+}

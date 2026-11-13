@@ -1,0 +1,25 @@
+{
+  "description": "Live NEAR state at the latest final block; every view call is pinned to `height`.",
+  "endpoints": [
+    "https://rpc.mainnet.fastnear.com",
+    "https://rpc.mainnet.near.org"
+  ],
+  "fetched_at": "2026-11-11T23:02:37+00:00",
+  "file": "data/raw/rpc/snapshot_now.json",
+  "methods": {
+    "current_validators": "`validators` {epoch_id: header.epoch_id} (the tip's own epoch)",
+    "ft_supplies": "ft_metadata + ft_total_supply; total_supply = raw / 10^decimals",
+    "gas_price": "block header gas_price, yoctoNEAR per gas unit",
+    "last_epoch_boundary": "newest row of rpc/epoch_mints.csv (archival walk)",
+    "lst": "meta-pool.near get_st_near_price / get_contract_state, linear-protocol.near ft_price; metapool_state *_near and stnear_supply are yocto / 1e24, *_bp are basis points",
+    "max_inflation_rate": "EXPERIMENTAL_protocol_config max_inflation_rate as a decimal",
+    "pool_fees": "top 25 current validators by stake, get_reward_fee_fraction (null where the account is not a staking-pool contract)",
+    "protocol_reward_rate_rpc": "verbatim RPC value. nearcore hard-codes the mainnet treasury share to 1/10 (reward_calculator.rs use_hardcoded_value); not reinterpreted here.",
+    "staked_ratio": "total_stake_near / total_supply_near"
+  },
+  "rows": 1,
+  "rpc": {
+    "calls": 52
+  },
+  "source_url": "https://rpc.mainnet.fastnear.com"
+}

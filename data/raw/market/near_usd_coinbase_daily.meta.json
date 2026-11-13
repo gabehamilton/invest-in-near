@@ -1,0 +1,29 @@
+{
+  "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume_base",
+    "volume_quote"
+  ],
+  "complete": true,
+  "description": "Coinbase Exchange NEAR-USD daily candles (UTC days); Coinbase reports base volume only, so volume_quote is empty",
+  "error": null,
+  "excluded": "unfinished candle for 2026-11-11 (UTC)",
+  "fetched_at": "2026-11-11T22:59:56+00:00",
+  "file": "data/raw/market/near_usd_coinbase_daily.csv",
+  "first_date": "2022-09-01",
+  "last_date": "2026-11-10",
+  "pages": 6,
+  "params": {
+    "granularity": 86400,
+    "start": "2022-09-01",
+    "window_days": 300
+  },
+  "refresh": "full history re-downloaded every run; on a mid-run HTTP error the fetched rows replace matching cached dates and the rest of the cached file is kept (meta complete=false)",
+  "rows": 1532,
+  "rows_from_previous_file": 0,
+  "source_url": "https://api.exchange.coinbase.com/products/NEAR-USD/candles"
+}

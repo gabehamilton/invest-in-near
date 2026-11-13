@@ -1,0 +1,16 @@
+{
+  "_note": "Fake test data shaped like https://api.llama.fi/summary/dexs/near-intents (values invented for tests, never written to data/raw). 2026-01-02 is deliberately absent and 2026-01-03 is null.",
+  "name": "NEAR Intents",
+  "slug": "near-intents",
+  "defillamaId": "6225",
+  "methodologyURL": "https://github.com/DefiLlama/dimension-adapters/blob/master/dexs/near-intents",
+  "methodology": {},
+  "totalAllTime": 1600.75,
+  "totalDataChart": [
+    [1767139200, 1000],
+    [1767225600, 0.1],
+    [1767398400, null],
+    [1767484800, 600.65],
+    [1767571200, 1.5e-7]
+  ]
+}

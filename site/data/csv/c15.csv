@@ -1,0 +1,6 @@
+venue,option_underlyings,near_options,checked_at_http_status,endpoint
+Deribit,AVAX BTC ETH HYPE SOL TRX XRP,no,2026-11-11T22:59:56+00:00 (HTTP 200),https://www.deribit.com/api/v2/public/get_instruments?currency=any&kind=option
+OKX,BTC-USD ETH-USD HYPE-USD SOL-USD XAU-USD,no,2026-11-11T22:59:56+00:00 (HTTP 200),https://www.okx.com/api/v5/public/underlying?instType=OPTION
+Aevo,BTC ETH HYPE SOL,no,2026-11-11T22:59:56+00:00 (HTTP 200),https://api.aevo.xyz/markets?instrument_type=OPTION
+Bybit,n/a,not checked: HTTP 403,2026-11-11T22:59:56+00:00 (HTTP 403),https://api.bybit.com/v5/market/instruments-info?category=option&baseCoin=NEAR
+Binance,n/a,not checked: HTTP 451,2026-11-11T22:59:56+00:00 (HTTP 451),https://eapi.binance.com/eapi/v1/exchangeInfo

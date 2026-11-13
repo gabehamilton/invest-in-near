@@ -1,0 +1,59 @@
+{
+  "checks": {
+    "burnt_gas_reward@223012337": {
+      "first_block_starts_epoch": true,
+      "parent_hash_verified": true,
+      "prev_protocol_version": "86"
+    },
+    "max_inflation_rate@170351519": {
+      "first_block_starts_epoch": true,
+      "parent_hash_verified": true,
+      "prev_protocol_version": "80"
+    }
+  },
+  "columns": [
+    "param",
+    "old_value",
+    "new_value",
+    "first_height",
+    "block_time_utc",
+    "protocol_version",
+    "prev_height"
+  ],
+  "columns_doc": {
+    "block_time_utc": "header timestamp of first_height",
+    "first_height": "first block whose config has new_value",
+    "old_value / new_value": "the parameter as a decimal ([numerator, denominator] divided)",
+    "prev_height": "the block just before it (config has old_value)",
+    "protocol_version": "protocol_version in the config at first_height"
+  },
+  "description": "Exact first block at which each tracked protocol parameter took a new value: max_inflation_rate (max_inflation_rate), burnt_gas_reward (runtime_config.transaction_costs.burnt_gas_reward).",
+  "endpoints": [
+    "https://archival-rpc.mainnet.fastnear.com",
+    "https://archival-rpc.mainnet.near.org"
+  ],
+  "fetched_at": "2026-11-11T23:02:37+00:00",
+  "file": "data/raw/rpc/protocol_changes.csv",
+  "incremental_rule": "Change rows are immutable: an interval already explained by a recorded change (prev_height old value, first_height new value) is not searched again.",
+  "limits": "A change that reverts between two consecutive config samples (about a month apart) is not seen. Values are never inferred: an unreadable config leaves its interval unsearched and listed in run.failed.",
+  "method": "Candidate intervals are consecutive rows of rpc/protocol_config_samples.csv (history target heights + tip) whose values differ. Each is binary-searched with EXPERIMENTAL_protocol_config {block_id: height}, moving past heights with no block, to the first height whose config has the new value. first_height's parent hash is checked to be prev_height's block hash, so no block lies between.",
+  "rows": 2,
+  "run": {
+    "bisection_calls": 0,
+    "config_sample_calls": 0,
+    "failed": {},
+    "rpc": {
+      "archival": {
+        "calls": 3
+      }
+    }
+  },
+  "sampling": "Configs are read at the monthly history_samples target heights plus the tip (rpc/protocol_config_samples.csv); each interval between two consecutive reads whose values differ is then bisected down to adjacent blocks. One row per change found.",
+  "source_url": "https://archival-rpc.mainnet.fastnear.com",
+  "units": {
+    "block_time_utc": "ISO 8601 UTC",
+    "first_height / prev_height": "block height",
+    "old_value / new_value": "dimensionless exact decimal (a fraction, not percent: 0.025 = 2.5%/year for max_inflation_rate, 0.3 = 30% of burnt gas for burnt_gas_reward)",
+    "protocol_version": "integer protocol version"
+  }
+}

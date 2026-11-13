@@ -147,3 +147,17 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Working notes and scratch (not part of the published evidence)
+.context/
+
+# NEAR Intents Explorer aggregates: local only until NEAR Intents grants written permission to publish; remove
+# these lines in the same commit that sets publish = true for intents_explorer in thesis/sources.toml
+data/raw/intents/explorer_*

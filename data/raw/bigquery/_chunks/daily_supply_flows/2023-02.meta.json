@@ -1,0 +1,65 @@
+{
+  "columns": [
+    "block_date",
+    "eod_supply_near",
+    "minted_near",
+    "burnt_near",
+    "epoch_boundaries"
+  ],
+  "data_through": "2026-11-10",
+  "dates": [
+    "2023-02-01",
+    "2023-02-02",
+    "2023-02-03",
+    "2023-02-04",
+    "2023-02-05",
+    "2023-02-06",
+    "2023-02-07",
+    "2023-02-08",
+    "2023-02-09",
+    "2023-02-10",
+    "2023-02-11",
+    "2023-02-12",
+    "2023-02-13",
+    "2023-02-14",
+    "2023-02-15",
+    "2023-02-16",
+    "2023-02-17",
+    "2023-02-18",
+    "2023-02-19",
+    "2023-02-20",
+    "2023-02-21",
+    "2023-02-22",
+    "2023-02-23",
+    "2023-02-24",
+    "2023-02-25",
+    "2023-02-26",
+    "2023-02-27",
+    "2023-02-28"
+  ],
+  "description": "Month chunk 2023-02 of sql/daily_supply_flows.sql",
+  "fetched_at": "2026-11-11T23:07:18+00:00",
+  "file": "data/raw/bigquery/_chunks/daily_supply_flows/2023-02.csv",
+  "jobs": [
+    {
+      "bytes_billed": 51380224,
+      "bytes_processed": 50472384,
+      "cache_hit": false,
+      "end_date": "2023-02-28",
+      "job_id": "f7ce6ccc-6f48-40f0-8ebf-a75580751ca5",
+      "rows": 28,
+      "start_date": "2023-02-01"
+    }
+  ],
+  "month": "2023-02",
+  "query": "daily_supply_flows",
+  "ranges": [
+    [
+      "2023-02-01",
+      "2023-02-28"
+    ]
+  ],
+  "rows": 28,
+  "sql_file": "sql/daily_supply_flows.sql",
+  "sql_fingerprint": "6428a47e32017c681c296868809241c019914997c36bc407baaa4229a46cd5c9"
+}
