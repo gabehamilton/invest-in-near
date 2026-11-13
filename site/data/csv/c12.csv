@@ -1,0 +1,5 @@
+quarter,from_sample,to_sample,days,lst_yield_pct,ffcomp_pct,spread_pp,dff_mean_pct,in_band,included
+2026Q1,2026-01-01,2026-04-01,90.0,4.1404,3.7593,0.3811,3.64,True,in stats
+2026Q2,2026-04-01,2026-07-01,91.0,4.0805,3.7498,0.3307,3.631,True,in stats
+2026Q3,2026-07-01,2026-10-01,92.0,4.0654,3.7881,0.2773,3.6674,True,in stats
+2026Q4 QTD,2026-10-01,2026-11-10,40.0,4.281,4.0121,0.2689,3.88,True,"quarter to date, excluded"

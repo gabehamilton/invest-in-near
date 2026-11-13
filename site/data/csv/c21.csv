@@ -1,0 +1,11 @@
+code,currency,money_aggregate,money_growth_latest_pct,latest_month,near_supply_growth_same_12m_pct,gap_pp
+USD,US dollar,M2,5.7099,2026-09,2.6743,3.0357
+EUR,euro,M3,3.504,2026-09,2.6743,0.8297
+JPY,Japanese yen,M3,0.8868,2026-10,2.4786,-1.5918
+GBP,pound sterling,M4,3.6532,2026-09,2.6743,0.9789
+CNY,renminbi,M2,7.2312,2026-09,2.6743,4.557
+CHF,Swiss franc,M3,3.8741,2026-09,2.6743,1.1999
+AUD,Australian dollar,Broad money,6.1229,2026-09,2.6743,3.4487
+CAD,Canadian dollar,M2++ (gross),6.302,2026-08,2.8806,3.4214
+HKD,Hong Kong dollar,HK$ M2,7.4941,2026-09,2.6743,4.8198
+SGD,Singapore dollar,M2,3.3817,2026-09,2.6743,0.7074

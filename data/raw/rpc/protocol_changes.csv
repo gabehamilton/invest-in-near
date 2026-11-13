@@ -1,0 +1,3 @@
+param,old_value,new_value,first_height,block_time_utc,protocol_version,prev_height
+max_inflation_rate,0.05,0.025,170351519,2025-10-29T11:29:03.973484+00:00,81,170351518
+burnt_gas_reward,0.3,0,223012337,2026-11-04T11:46:29.014199+00:00,87,223012336

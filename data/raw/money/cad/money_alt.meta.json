@@ -1,0 +1,32 @@
+{
+  "aggregate": "M3 (gross)",
+  "basis": "stock at the end of the month",
+  "blank_rows": 0,
+  "columns": [
+    "period",
+    "value"
+  ],
+  "currency": "CAD",
+  "description": "M3 (gross), Bank of Canada",
+  "fetched_at": "2026-11-11T22:59:32+00:00",
+  "field": "money_alt",
+  "file": "data/raw/money/cad/money_alt.csv",
+  "first_date": "2015-01-01",
+  "first_period": "2015-01",
+  "frequency": "monthly",
+  "label_published": "M3 (gross) (Seasonally adjusted)",
+  "last_date": "2026-08-01",
+  "last_observed_date": "2026-08-01",
+  "latest_period": "2026-08",
+  "method": "Bank of Canada Valet API (JSON, keyless)",
+  "notes": [],
+  "publisher": "Bank of Canada",
+  "refresh": "history from 2015-01 re-downloaded every run; a failed fetch keeps the previous file",
+  "response_sha256": "936436d5e2e64f94452adfcbffe6997a9840a97b16cca0ef795c6b7ca65fa714",
+  "role": "alt",
+  "rows": 140,
+  "seasonal_adjustment": "seasonally adjusted",
+  "series_id": "V41552794",
+  "source_url": "https://www.bankofcanada.ca/valet/observations/V41552801,V41552794/json?start_date=2015-01-01",
+  "units": "CAD million"
+}

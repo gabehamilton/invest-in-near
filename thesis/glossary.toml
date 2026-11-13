@@ -1,0 +1,73 @@
+# Terms the pages use, defined once. Rendered as "Terms" on index.html (next to the claim ledger) and in
+# THESIS.md (after the claim). Same rules as copy.toml: never type a digit; {key} placeholders name registry
+# figures and nothing else. Terms are listed in the order a first-time reader meets them.
+
+[[terms]]
+id = "pp"
+term = "pp (percentage points)"
+text = "The plain difference between two rates. Staking at a yield a little above fed funds is a spread of a fraction of a pp."
+
+[[terms]]
+id = "epoch"
+term = "Epoch"
+text = "One validator round on NEAR, about {epoch_hours_median_30d} long at the moment. The protocol mints new NEAR once per epoch."
+
+[[terms]]
+id = "ceiling"
+term = "Issuance ceiling"
+text = "The protocol's max_inflation_rate: the most new NEAR it mints in a year, as a share of supply. It is {i_max_now} today, and governance sets it."
+
+[[terms]]
+id = "lst"
+term = "Liquid staking token (stNEAR, LiNEAR)"
+text = "A receipt for staked NEAR whose price in NEAR rises as staking rewards accrue. Meta Pool issues stNEAR and LiNEAR Protocol issues LiNEAR. Liquid staking yield is the growth of that price."
+
+[[terms]]
+id = "ffcomp"
+term = "Fed funds compounded"
+text = "What a dollar earning the effective fed funds rate every day of a window would have made. It is the like-for-like benchmark for a staking yield over the same days."
+
+[[terms]]
+id = "spread"
+term = "Spread"
+text = "Staking yield minus fed funds over the same days, in pp."
+
+[[terms]]
+id = "burn"
+term = "Fee burn"
+text = "NEAR destroyed when transactions pay for gas. Burn offsets issuance, and supply shrinks only when burn exceeds what the protocol mints."
+
+[[terms]]
+id = "upper-bound"
+term = "Upper bound (burn)"
+text = "The most the burn can be, from supply alone: what the ceiling would have minted minus what supply grew by. It counts rewards left unminted by offline validators as burn, so the true burn cannot exceed it."
+
+[[terms]]
+id = "cpi"
+term = "CPI and core CPI"
+text = "The US consumer price index for all urban consumers, published by the Bureau of Labor Statistics. Core leaves out food and energy."
+
+[[terms]]
+id = "money-supply"
+term = "US money supply"
+text = "The Federal Reserve's broad money measure: currency, checking and savings deposits, small time deposits and retail money funds."
+
+[[terms]]
+id = "volatility"
+term = "Realized volatility"
+text = "The annualized standard deviation of daily price changes. A bigger number means bigger typical swings."
+
+[[terms]]
+id = "sweep"
+term = "Sweep account rules"
+text = "The SEC's money market fund rule and its broker customer-protection rule, which set what a broker may sweep idle cash into."
+
+[[terms]]
+id = "implied"
+term = "Implied volatility"
+text = "The volatility an options price assumes. Implied minus realized is, on average, what an option seller earns for taking the risk."
+
+[[terms]]
+id = "tripwire"
+term = "Tripwire"
+text = "A measured result that would change the thesis, checked against the latest data. Some would break part of it; others would strengthen it, or open a test that is closed today."

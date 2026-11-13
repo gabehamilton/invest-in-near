@@ -1,0 +1,39 @@
+{
+  "aggregate": "M3",
+  "basis": "stock at the end of the month",
+  "blank_rows": 0,
+  "columns": [
+    "period",
+    "value"
+  ],
+  "currency": "CHF",
+  "description": "Monetary aggregate M3, level (Swiss National Bank)",
+  "fetched_at": "2026-11-11T22:59:21+00:00",
+  "field": "money",
+  "file": "data/raw/money/chf/money.csv",
+  "first_date": "2015-01-01",
+  "first_period": "2015-01",
+  "frequency": "monthly",
+  "item_labels_published": [
+    "Level",
+    "Monetary aggregate M3"
+  ],
+  "labels_url": "https://data.snb.ch/api/cube/snbmonagg/dimensions/en",
+  "last_date": "2026-09-01",
+  "last_observed_date": "2026-09-01",
+  "latest_period": "2026-09",
+  "method": "SNB data portal cube API (CSV, keyless)",
+  "notes": [
+    "The SNB cube carries no unit field: CHF million is inferred from the level of currency in circulation (research)."
+  ],
+  "publication_date": "2026-10-21 09:00",
+  "publisher": "Swiss National Bank",
+  "refresh": "history from 2015-01 re-downloaded every run; a failed fetch keeps the previous file",
+  "response_sha256": "1f66b770651cd3c3d19815b3e70a4503263868403ea0999b5ab2c5a414a195e0",
+  "role": "primary",
+  "rows": 141,
+  "seasonal_adjustment": "not stated (treated as not seasonally adjusted)",
+  "series_id": "snbmonagg/B.GM3",
+  "source_url": "https://data.snb.ch/api/cube/snbmonagg/data/csv/en?fromDate=2015-01&dimSel=D0%28B%29%2CD1%28GM2%2CGM3%29",
+  "units": "CHF million"
+}

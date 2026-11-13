@@ -1,0 +1,225 @@
+{
+ "source": "archival-rpc.mainnet.fastnear.com `block` {block_id: height}, trimmed by near_rpc.slim_block, fetched 2026-11-10. Epoch 4956: last block of 4955, first block of 4956, last block of 4956, first block of 4957. validators {block_id: 223962736} answered epoch_height 4956, epoch_start_height 223919537 (same day).",
+ "validators_223962736": {
+  "epoch_height": 4956,
+  "epoch_start_height": 223919537
+ },
+ "blocks": [
+  {
+   "header": {
+    "height": 223919536,
+    "hash": "J1t9rvPmmyfzXb5NfpcUctEr6PyQANjx9xE1o5T4838D",
+    "prev_hash": "DcMyJGtKkxYPt7TLTifcD5UD3oZjXaMsJ5XWskBdfJ1q",
+    "epoch_id": "Vmkooac6uW95yXZbh26KoAKA4FLVCH7ACCVSMqLFoLE",
+    "next_epoch_id": "2ZCYyW1MTm5yu1nCsy5nruDpgU3bKNgMVnH94zKE7eb9",
+    "timestamp_nanosec": "1794315695093399218",
+    "total_supply": "1311318611610435826496300031485607",
+    "gas_price": "100000000"
+   },
+   "chunks": [
+    {
+     "balance_burnt": "0",
+     "height_included": 223919536
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223919536
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223919536
+    },
+    {
+     "balance_burnt": "2492194426842100000000",
+     "height_included": 223919536
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223919536
+    },
+    {
+     "balance_burnt": "1029055225598400000000",
+     "height_included": 223919536
+    },
+    {
+     "balance_burnt": "103175925852000000000",
+     "height_included": 223919536
+    },
+    {
+     "balance_burnt": "258861158662000000000",
+     "height_included": 223919536
+    },
+    {
+     "balance_burnt": "4999672570589900000000",
+     "height_included": 223919536
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223919536
+    }
+   ]
+  },
+  {
+   "header": {
+    "height": 223919537,
+    "hash": "DGhXNg52TC63gYRHYHAGnYRvhCZmXsvzaR1WzCJAVhB",
+    "prev_hash": "J1t9rvPmmyfzXb5NfpcUctEr6PyQANjx9xE1o5T4838D",
+    "epoch_id": "2ZCYyW1MTm5yu1nCsy5nruDpgU3bKNgMVnH94zKE7eb9",
+    "next_epoch_id": "J1t9rvPmmyfzXb5NfpcUctEr6PyQANjx9xE1o5T4838D",
+    "timestamp_nanosec": "1794315695584332183",
+    "total_supply": "1311344357763735252784848649654916",
+    "gas_price": "100000000"
+   },
+   "chunks": [
+    {
+     "balance_burnt": "103161620737500000000",
+     "height_included": 223919537
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223919537
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223919537
+    },
+    {
+     "balance_burnt": "12233222423548900000000",
+     "height_included": 223919537
+    },
+    {
+     "balance_burnt": "52942180432000000000",
+     "height_included": 223919537
+    },
+    {
+     "balance_burnt": "976084713780800000000",
+     "height_included": 223919537
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223919537
+    },
+    {
+     "balance_burnt": "308832643649500000000",
+     "height_included": 223919537
+    },
+    {
+     "balance_burnt": "1683590004653100000000",
+     "height_included": 223919537
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223919537
+    }
+   ]
+  },
+  {
+   "header": {
+    "height": 223962736,
+    "hash": "BGyjKhk7QZCbQL75ZskUeiaindfzxDonb3foVGX4HyKm",
+    "prev_hash": "73ifkmLtUQ1JpibjReJx5rUqww2spJNM4uAVSCia54H",
+    "epoch_id": "2ZCYyW1MTm5yu1nCsy5nruDpgU3bKNgMVnH94zKE7eb9",
+    "next_epoch_id": "J1t9rvPmmyfzXb5NfpcUctEr6PyQANjx9xE1o5T4838D",
+    "timestamp_nanosec": "1794340524953451924",
+    "total_supply": "1311344000075118008903342749654916",
+    "gas_price": "100000000"
+   },
+   "chunks": [
+    {
+     "balance_burnt": "51592731297500000000",
+     "height_included": 223962736
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962736
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962736
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962736
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962736
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962736
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962736
+    },
+    {
+     "balance_burnt": "30920390916000000000",
+     "height_included": 223962736
+    },
+    {
+     "balance_burnt": "712958338456300000000",
+     "height_included": 223962736
+    },
+    {
+     "balance_burnt": "31597499669000000000",
+     "height_included": 223962736
+    }
+   ]
+  },
+  {
+   "header": {
+    "height": 223962737,
+    "hash": "G6Mu5jGot4SuR8dsZT44bR3pdATHXcxNwd6suRFDLnnE",
+    "prev_hash": "BGyjKhk7QZCbQL75ZskUeiaindfzxDonb3foVGX4HyKm",
+    "epoch_id": "J1t9rvPmmyfzXb5NfpcUctEr6PyQANjx9xE1o5T4838D",
+    "next_epoch_id": "BGyjKhk7QZCbQL75ZskUeiaindfzxDonb3foVGX4HyKm",
+    "timestamp_nanosec": "1794340525520410265",
+    "total_supply": "1311369760164738714118341705144239",
+    "gas_price": "100000000"
+   },
+   "chunks": [
+    {
+     "balance_burnt": "0",
+     "height_included": 223962737
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962737
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962737
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962737
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962737
+    },
+    {
+     "balance_burnt": "485645714839400000000",
+     "height_included": 223962737
+    },
+    {
+     "balance_burnt": "774824292893900000000",
+     "height_included": 223962737
+    },
+    {
+     "balance_burnt": "231427547306400000000",
+     "height_included": 223962737
+    },
+    {
+     "balance_burnt": "234697344217400000000",
+     "height_included": 223962737
+    },
+    {
+     "balance_burnt": "0",
+     "height_included": 223962737
+    }
+   ]
+  }
+ ]
+}

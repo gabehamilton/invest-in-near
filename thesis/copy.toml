@@ -1,0 +1,2393 @@
+# Page prose for index.html and THESIS.md, selected by verdict.
+#
+# Schema: one [name] table per piece of prose, each with an array of variants.
+# The first variant whose `when` conditions all hold wins. Conditions read "CLAIM=Verdict",
+# where Verdict is one of: Supported, Partly, Refuted, Not testable, Not computed. A condition may also name a
+# tripwire, cross-check, source or chart (its state) or a registry text key (its value, e.g.
+# "burn_method_short=sampled", or "burn_method=exact: every epoch boundary" to tell the RPC exact method from
+# BigQuery's).
+# The last variant of every name has `when = []` and is the fallback. If nothing matches, the build fails.
+#
+# Text may contain {key} placeholders for registry keys and nothing else. Never type a digit in text:
+# every figure comes from the registry through text(). Displays already carry their unit, so write
+# "{g_365}" and never "{g_365}%"; USD displays already carry the dollar sign.
+# An empty text means "omit this fragment" (templates skip it).
+
+# ---------------------------------------------------------------- hero
+
+[headline]
+[[headline.variants]]
+when = ["H1b=Supported", "H1=Refuted", "H6=Refuted"]
+text = "Relative to the dollar and the major currencies, NEAR's supply grows more slowly. It is not deflationary in absolute terms, and it is not cash."
+[[headline.variants]]
+when = []
+text = "I tested a monetary hypothesis about NEAR, claim by claim. Here is the ledger."
+
+[lede]
+# the hidden assumptions are H9, H10 and H12; when all of them fail the count reads "all", never "three of the three"
+[[lede.variants]]
+when = ["H1b=Supported", "H3=Supported", "H9=Refuted", "H10=Refuted", "H12=Refuted"]
+text = "I split the hypothesis behind that sentence into claims and tested each one, and the assumptions hiding inside them, against public data on today's economy. Of the {n_decided_stated} stated claims I could test, {n_supported_stated} hold, {n_refuted_stated} fail and {n_partly_stated} land in between, and all {n_decided_hidden} hidden assumptions fail. Two pieces carry the thesis. NEAR's supply grows slower than the major currencies' money, by a median {h1b_gap_med}. Staking ran {spread_adj_365:abs} {spread_adj_365_dir} compounded fed funds over the past year. Thin, but there."
+[[lede.variants]]
+when = ["H1b=Supported", "H3=Supported"]
+text = "I split the hypothesis behind that sentence into claims and tested each one, and the assumptions hiding inside them, against public data on today's economy. Of the {n_decided_stated} stated claims I could test, {n_supported_stated} hold, {n_refuted_stated} fail and {n_partly_stated} land in between; {n_refuted_hidden} of the {n_decided_hidden} hidden assumptions fail. Two pieces carry the thesis. NEAR's supply grows slower than the major currencies' money, by a median {h1b_gap_med}. Staking ran {spread_adj_365:abs} {spread_adj_365_dir} compounded fed funds over the past year. Thin, but there."
+[[lede.variants]]
+when = []
+text = "I split the hypothesis behind that sentence into claims and tested each one, and the assumptions hiding inside them, against public data. Of the {n_decided_stated} stated claims I could test, {n_supported_stated} hold, {n_refuted_stated} fail and {n_partly_stated} land in between; {n_refuted_hidden} of the {n_decided_hidden} hidden assumptions fail. The ledger below gives every verdict with the rule that decided it."
+
+[lede_h6]
+[[lede_h6.variants]]
+when = ["H1b=Supported", "H6=Refuted"]
+text = "The claim that NEAR suits sweep balances fails its own test in the ledger below."
+[[lede_h6.variants]]
+when = []
+text = ""
+
+[scope_statement]
+[[scope_statement.variants]]
+when = []
+text = "I judge NEAR the way someone deciding today whether to hold it would, on the economy as it is now. Governance is left out, past and future: if the rules change, holders hear about it well in advance and can sell. Past prices count where they say something about the coming year, so most tests use the latest year of data."
+
+[hero_label]
+[[hero_label.variants]]
+when = []
+text = "NEAR's net supply growth over the year to {latest_rpc_date}"
+
+[hero_subline]
+# T7 reads spread_adj_90; when that window has no LST samples at both edges, quote the full year instead
+[[hero_subline.variants]]
+when = ["T7=not computed"]
+text = "In the year to {m2_month}: NEAR's supply {g_365_at_m2}, US money supply {m2_yoy} · median broad-money growth of the {n_fiat_money} most-traded currencies, each over its latest year, {fiat_gm_latest_med} · staking minus fed funds {spread_adj_365} over the last year"
+
+[[hero_subline.variants]]
+when = []
+text = "In the year to {m2_month}: NEAR's supply {g_365_at_m2}, US money supply {m2_yoy} · median broad-money growth of the {n_fiat_money} most-traded currencies, each over its latest year, {fiat_gm_latest_med} · staking minus fed funds {spread_adj_90} over the last ninety days"
+
+# ---------------------------------------------------------------- KPI tiles
+
+[kpi_share_label]
+[[kpi_share_label.variants]]
+when = []
+text = "Stakers' share of all NEAR, change per year"
+
+[kpi_share_cmp]
+[[kpi_share_cmp.variants]]
+when = []
+text = "Unstaked holders: {nonstaker_365}"
+
+[kpi_yield_label]
+[[kpi_yield_label.variants]]
+when = []
+text = "Liquid staking yield, last year"
+
+[kpi_yield_cmp]
+[[kpi_yield_cmp.variants]]
+when = []
+text = "Fed funds compounded over the same days: {ffcomp_365}; staking ran {spread_adj_365:abs} {spread_adj_365_dir} it over the year"
+
+[kpi_burn_label]
+[[kpi_burn_label.variants]]
+when = []
+text = "Fee burn as a share of new issuance"
+
+[kpi_burn_cmp]
+[[kpi_burn_cmp.variants]]
+when = ["burn_method=exact: every epoch boundary"]
+text = "Exact over all {n_burn_epochs_365} epochs of the year, where a one-epoch-a-month sample read {burn_share_365_sampled}. Supply stops growing only when burn matches issuance"
+[[kpi_burn_cmp.variants]]
+when = ["burn_method_short=sampled"]
+text = "Sampled from {n_burn_epochs_365} epochs, and at most {burn_share_365_ub} on supply alone. Supply stops growing only when burn matches issuance"
+[[kpi_burn_cmp.variants]]
+when = ["burn_method_short=upper bound"]
+text = "An upper bound, from supply alone. Supply stops growing only when burn matches issuance"
+[[kpi_burn_cmp.variants]]
+when = []
+text = "Method: {burn_method_short}. Supply stops growing only when burn matches issuance"
+
+[kpi_vol_label]
+[[kpi_vol_label.variants]]
+when = []
+text = "NEAR price volatility, annualized, last year"
+
+[kpi_vol_cmp]
+[[kpi_vol_cmp.variants]]
+when = []
+text = "Bitcoin over the same days: {rv_365_btc}"
+
+[kpi_note]
+[[kpi_note.variants]]
+when = []
+text = "Prices and fed funds through {latest_common_date}; chain data through {latest_rpc_date}. Every number links to its formula: hover or focus it, and click through to the registry."
+
+# ---------------------------------------------------------------- strongest and weakest point
+# Rendered under the KPI tiles and in THESIS.md after the claim. The weakest point is the Supported claim with
+# the smallest margin (thinnest_supported_id); an empty text omits the line.
+
+[strongest]
+[[strongest.variants]]
+when = ["H1b=Supported"]
+chart = "c21"
+text = "Supply, against money. In the year to {m2_month} NEAR's supply grew {g_365_at_m2}, while the major currencies' money grew a median {fiat_gm_latest_med}, each over its latest year: a median gap of {h1b_gap_med}."
+[[strongest.variants]]
+when = []
+text = ""
+
+[weakest]
+[[weakest.variants]]
+when = ["H3=Supported", "thinnest_supported_id=H3", "T7=clear"]
+chart = "c01"
+text = "Staking ran only {spread_adj_365:abs} {spread_adj_365_dir} compounded fed funds over the year, the thinnest margin, in percentage points, of any supported claim. The ninety-day tripwire on this spread fires if staking falls below fed funds."
+[[weakest.variants]]
+when = []
+text = ""
+
+[thinnest]
+[[thinnest.variants]]
+when = []
+text = ""
+
+# ---------------------------------------------------------------- claim ledger
+
+[ledger_intro]
+[[ledger_intro.variants]]
+when = []
+text = "Each row is one claim from the hypothesis, quoted as I wrote it, with the test I ran and what the data said. Verdicts come from fixed rules in thesis/rules.toml."
+
+[id_key]
+[[id_key.variants]]
+when = []
+text = "Key: H is a claim as I wrote it, O an objection, A a question from the hypothesis with the claims that answer it, T a tripwire and c a chart."
+
+[hidden_summary]
+[[hidden_summary.variants]]
+when = []
+text = "Assumptions hiding inside the hypothesis, also tested"
+
+[ledger_tally]
+[[ledger_tally.variants]]
+when = []
+text = "{n_supported} supported · {n_partly} partly · {n_refuted} refuted · {n_untestable} not testable · {n_not_computed} not computed, across the stated claims and the hidden assumptions."
+
+[thesis_claim]
+[[thesis_claim.variants]]
+when = ["H1b=Supported", "H3=Supported"]
+text = "NEAR is deflationary relative to the dollar and other currencies. Its supply grows slower than the money of the {n_fiat_money} most-traded currencies, by a median {h1b_gap_med} over each one's latest year. Staking ran {spread_adj_365:abs} {spread_adj_365_dir} compounded fed funds over the past year."
+[[thesis_claim.variants]]
+when = ["H1b=Supported"]
+text = "NEAR is deflationary relative to the dollar and other currencies. Its supply grows slower than the money of the {n_fiat_money} most-traded currencies, by a median {h1b_gap_med} over each one's latest year."
+[[thesis_claim.variants]]
+when = []
+text = "This is a monetary hypothesis about NEAR, tested claim by claim. The verdicts below say which parts survive."
+
+[thesis_paragraph]
+[[thesis_paragraph.variants]]
+when = ["H1b=Supported", "H3=Supported", "H1=Refuted", "H4=Not testable", "H5=Partly", "H7=Supported"]
+text = "This is for someone who holds NEAR or is deciding whether to. NEAR's supply grows every epoch, {g_365} over the past year, so on its own it inflates. Hold it against money and it deflates: the dollar's money grew {m2_yoy}, and {h1b_n_faster} of the {n_fiat_money} most-traded currencies grew their money faster than NEAR's supply. The yield side is thinner. Staking ran {spread_adj_365:abs} {spread_adj_365_dir} compounded fed funds, and against other currencies' policy rates the result is mixed. The current issuance rule has been in force for {n_q_rule} full quarters, too few to say whether the two rates stay in balance. In dollars, NEAR is a volatility bet."
+[[thesis_paragraph.variants]]
+when = ["H1b=Supported", "H3=Supported"]
+text = "This is for someone who holds NEAR or is deciding whether to. Hold NEAR's supply against money and it deflates: the dollar's money grew {m2_yoy} over the past year, and {h1b_n_faster} of the {n_fiat_money} most-traded currencies grew their money faster than NEAR's supply. Staking ran {spread_adj_365:abs} {spread_adj_365_dir} compounded fed funds over the same year."
+[[thesis_paragraph.variants]]
+when = []
+text = "Two tests carry the thesis: NEAR's supply growth against the money growth of the major currencies, and staking yield against the policy rate. Both sit below with their verdicts."
+
+[tile_money_title]
+[[tile_money_title.variants]]
+when = ["H1b=Supported"]
+text = "Supply grows slower than the major currencies' money"
+[[tile_money_title.variants]]
+when = []
+text = "Supply against money"
+
+[tile_money_label]
+[[tile_money_label.variants]]
+when = []
+text = "Median gap to the major currencies' money growth, past year"
+
+[tile_money_sub]
+[[tile_money_sub.variants]]
+when = ["H2=Partly"]
+text = "In the year to {m2_month} NEAR's supply grew {g_365_at_m2} and the dollar's money {m2_yoy}; {h1b_n_faster} of the {n_fiat_money} most-traded currencies grew their money faster than NEAR's supply over their own latest year. Against US consumer prices ({cpi_yoy} in the year to {cpi_month}) NEAR's supply grew {gap_cpi:abs} {gap_cpi_dir}, but the gap sat near the one the hypothesis claimed in only {h2_months_in_band_12} of the last {h2_months_with_data_12} months, so that claim is only partly supported."
+[[tile_money_sub.variants]]
+when = []
+text = "In the year to {m2_month} NEAR's supply grew {g_365_at_m2}, the dollar's money {m2_yoy} and US consumer prices {cpi_yoy}; {h1b_n_faster} of the {n_fiat_money} most-traded currencies grew their money faster than NEAR's supply over their own latest year."
+
+[tile_rates_title]
+[[tile_rates_title.variants]]
+when = ["H3=Supported", "H5=Partly"]
+text = "Staking runs a little above fed funds; against other currencies' policy rates the result is mixed"
+[[tile_rates_title.variants]]
+when = ["H3=Supported"]
+text = "Staking runs a little above fed funds"
+[[tile_rates_title.variants]]
+when = []
+text = "Staking return against policy rates"
+
+[tile_rates_label]
+[[tile_rates_label.variants]]
+when = []
+text = "Liquid staking minus compounded fed funds, past year"
+
+[tile_rates_sub]
+# the two readings of "spread" are the ones chart c13 draws: policy rate minus own inflation (NEAR: staking yield
+# minus supply growth) and policy rate minus the US rate (NEAR: staking yield minus fed funds)
+[[tile_rates_sub.variants]]
+when = ["H4=Not testable", "H5=Partly"]
+text = "Liquid staking yielded {y_lst_365} against {ffcomp_365} for fed funds compounded over the same days. Against the policy rates of {n_panel} economies the result is mixed: on rate minus own inflation NEAR's gap is {near_reading_a:abs} against a panel median of {panel_median_abs_a}, and on rate minus the US rate it is {near_reading_b:abs} against {panel_median_abs_b}. The current issuance rule has been in force for {n_q_rule} full quarters, too few to say whether the two rates stay in balance."
+[[tile_rates_sub.variants]]
+when = ["H4=Not testable"]
+text = "Liquid staking yielded {y_lst_365} against {ffcomp_365} for fed funds compounded over the same days. Against the policy rates of {n_panel} economies, NEAR's gap is narrower than the median on {h5_now_narrower} of the two readings and wider on {h5_now_wider}: rate minus own inflation {near_reading_a:abs} against {panel_median_abs_a}, rate minus the US rate {near_reading_b:abs} against {panel_median_abs_b}. The current issuance rule has been in force for {n_q_rule} full quarters, too few to say whether the two rates stay in balance."
+[[tile_rates_sub.variants]]
+when = ["H5=Partly"]
+text = "Liquid staking yielded {y_lst_365} against {ffcomp_365} for fed funds compounded over the same days. Against the policy rates of {n_panel} economies the result is mixed: on rate minus own inflation NEAR's gap is {near_reading_a:abs} against a panel median of {panel_median_abs_a}, and on rate minus the US rate it is {near_reading_b:abs} against {panel_median_abs_b}."
+[[tile_rates_sub.variants]]
+when = []
+text = "Liquid staking yielded {y_lst_365} against {ffcomp_365} for fed funds compounded over the same days. Against the policy rates of {n_panel} economies, NEAR's gap is narrower than the median on {h5_now_narrower} of the two readings and wider on {h5_now_wider}: rate minus own inflation {near_reading_a:abs} against {panel_median_abs_a}, rate minus the US rate {near_reading_b:abs} against {panel_median_abs_b}."
+
+# THESIS.md: the film title's pay and rank figures, with their caveats (llms.txt points to them)
+[payrank_title]
+[[payrank_title.variants]]
+when = []
+text = "What holding pays, and where staked NEAR ranks"
+
+[payrank_pay]
+[[payrank_pay.variants]]
+when = []
+text = "{pay_n_below} of the {pay_n_with_rate} most-traded currencies with a policy rate pay less now than liquid staking NEAR paid over the last year, {y_lst_365}. That sets each central bank's latest reported rate beside a past year's staking yield, and a policy rate is a benchmark that cash rarely earns in full; the like-for-like comparison is the one above. China's rate is the one-year Loan Prime Rate and Hong Kong's the HKMA base rate, which follows the US rate under the peg. A currency with no policy rate is left out."
+
+[payrank_rank]
+[[payrank_rank.variants]]
+when = []
+text = "Staked NEAR ranks {hold_near_rank} of {hold_n_ranked} among staked NEAR and cash at each of those policy rates, by what a year did to a holder's share of the total. For staked NEAR that is the staking yield against supply growth over the year to {latest_rpc_date}, {y_lst_365} against {g_365}, a change of {hold_near_net}; for cash it is the policy rate against the currency's money growth over its latest year. Staking pays in NEAR, so its dollar value moves with NEAR's price."
+
+[llms_title_figures]
+[[llms_title_figures.variants]]
+when = []
+text = "{h1b_n_faster} of the {n_fiat_money} most-traded currencies grew their money faster than NEAR's supply; {pay_n_below} of {pay_n_with_rate} policy rates pay less than staking NEAR paid over the last year; staked NEAR ranks {hold_near_rank} of {hold_n_ranked} by a year's change in a holder's share of the total. THESIS.md gives each with its caveats."
+
+[what_not_intro]
+[[what_not_intro.variants]]
+when = []
+text = "What it is not:"
+
+[what_not_deflationary]
+[[what_not_deflationary.variants]]
+when = ["H1=Refuted"]
+text = "deflationary"
+[[what_not_deflationary.variants]]
+when = []
+text = ""
+
+[what_not_dollar]
+[[what_not_dollar.variants]]
+when = ["H6=Refuted"]
+text = "a dollar substitute, with {rv_365_near} annual volatility and a fall of {mdd_365:abs} from its high within the last year"
+[[what_not_dollar.variants]]
+when = []
+text = ""
+
+[what_not_vol]
+[[what_not_vol.variants]]
+when = ["H8=Not testable"]
+text = "a volatility-selling instrument: {n_venues_with_near_options} of {n_option_venues_checked} venues checked list NEAR options"
+[[what_not_vol.variants]]
+when = []
+text = ""
+
+# ---------------------------------------------------------------- objections
+
+[objections_intro]
+[[objections_intro.variants]]
+when = []
+text = "These are the objections I would raise if someone else pitched me this hypothesis. Each gets a straight answer and the chart that decides it."
+
+[O1_heading]
+[[O1_heading.variants]]
+when = []
+text = "“Deflationary? Supply goes up every epoch.”"
+
+[O1_stance]
+[[O1_stance.variants]]
+when = ["H1=Refuted", "T1=clear"]
+text = "Conceded on the word, answered on discipline"
+[[O1_stance.variants]]
+when = ["H1=Refuted"]
+text = "Conceded"
+[[O1_stance.variants]]
+when = []
+text = "Tested below"
+
+[O1_answer]
+[[O1_answer.variants]]
+when = ["H1=Refuted", "T1=clear"]
+text = "Fair. NEAR's supply grows every epoch, so “deflationary” is the wrong word. The growth is small and it follows the protocol's ceiling: the {g_365} above, against a ceiling of {i_max_now}."
+[[O1_answer.variants]]
+when = ["H1=Refuted"]
+text = "Fair. NEAR's supply grows every epoch, so “deflationary” is the wrong word. It grew {g_365} over the last year."
+[[O1_answer.variants]]
+when = []
+text = "Supply growth over the last year: {g_365}. The verdicts below say what that means for the claim."
+
+[O2_heading]
+[[O2_heading.variants]]
+when = []
+text = "“Staking yield is just dilution. You're paying yourself.”"
+
+[O2_stance]
+[[O2_stance.variants]]
+when = ["T2=clear"]
+text = "Answered for stakers"
+[[O2_stance.variants]]
+when = []
+text = "Tested below"
+
+[O2_answer]
+[[O2_answer.variants]]
+when = ["T2=clear"]
+text = "Only if everyone stakes. Staking pays more than new supply adds, so a liquid staker's share of all NEAR grew {staker_share_365} a year. The cost lands on unstaked holders, whose share changed by {nonstaker_365} a year."
+[[O2_answer.variants]]
+when = []
+text = "A liquid staker's share of all NEAR changed by {staker_share_365} a year; an unstaked holder's changed by {nonstaker_365}."
+
+[O3_heading]
+[[O3_heading.variants]]
+when = []
+text = "“Then there's no real yield. Fees don't cover issuance.”"
+
+[O3_stance]
+[[O3_stance.variants]]
+when = ["H10=Refuted"]
+text = "Conceded"
+[[O3_stance.variants]]
+when = ["H10=Partly"]
+text = "Partly conceded"
+[[O3_stance.variants]]
+when = []
+text = "Tested below"
+
+[O3_answer]
+[[O3_answer.variants]]
+when = ["H10=Refuted", "burn_method=exact: every epoch boundary"]
+text = "Fees burned {burn_share_365} of the NEAR minted over the last year, exact over all {n_burn_epochs_365} epoch boundaries: {burn_per_day_365} a day against {mint_per_day_365} minted. Usage does not offset issuance yet, so the staking yield is mostly a transfer from unstaked holders."
+[[O3_answer.variants]]
+when = ["H10=Refuted", "burn_method_short=sampled"]
+text = "Fees burned about {burn_share_365} of the NEAR minted over the last year, measured on {n_burn_epochs_365} sampled epochs, and at most {burn_share_365_ub} on supply alone. Usage does not offset issuance yet, so the staking yield is mostly a transfer from unstaked holders."
+[[O3_answer.variants]]
+when = ["H10=Refuted"]
+text = "Fees burned {burn_share_365} of the NEAR minted over the last year ({burn_method_short}). Usage does not offset issuance yet, so the staking yield is mostly a transfer from unstaked holders."
+[[O3_answer.variants]]
+when = []
+text = "Fees burned {burn_share_365} of the NEAR minted over the last year ({burn_method_short}), {burn_per_day_365} a day against {mint_per_day_365} minted."
+
+[O4_heading]
+[[O4_heading.variants]]
+when = []
+text = "“So where does long-term value come from? Show me demand.”"
+
+[O4_stance]
+[[O4_stance.variants]]
+when = []
+text = "Open"
+
+[O4_answer]
+[[O4_answer.variants]]
+when = ["H10=Refuted"]
+text = "The thesis makes no claim about demand. Intents volume is shown as context for the fee burn: NEAR Intents settled {intents_vol_365d} over the past year, and the latest ninety days ran at {intents_vol_90d_seq_ratio} the ninety days before (the latest {intents_n_provisional} days are provisional and may be revised). Value that moves as stablecoins and other tokens holds no NEAR, so it reaches the token through fees, and the burn above is thin."
+[[O4_answer.variants]]
+when = []
+text = "The thesis makes no claim about demand. Intents volume is shown as context for the fee burn: NEAR Intents settled {intents_vol_365d} over the last year, and the last ninety days ran at {intents_vol_90d_seq_ratio} the ninety days before (the latest {intents_n_provisional} days are provisional and may be revised). Usage reaches the token through fees, and the burn chart above shows how much."
+
+[O5_heading]
+[[O5_heading.variants]]
+when = []
+text = "“Your yield is in NEAR. A dollar investor eats all of that volatility.”"
+
+[O5_stance]
+[[O5_stance.variants]]
+when = ["H7=Supported"]
+text = "Conceded for dollar holders"
+[[O5_stance.variants]]
+when = []
+text = "Tested below"
+
+[O5_answer]
+[[O5_answer.variants]]
+when = ["H7=Supported"]
+text = "Measured in dollars, NEAR's price swung {rv_365_near} annualized over the last year, and at its worst it sat {mdd_365:abs} below its high within that year. Staking ran {spread_adj_365:abs} {spread_adj_365_dir} fed funds for the whole year, while a typical single day moved the price {sigma_d}."
+[[O5_answer.variants]]
+when = []
+text = "NEAR's annualized volatility over the last year was {rv_365_near}, against staking {spread_adj_365:abs} {spread_adj_365_dir} fed funds over the year and a typical daily move of {sigma_d}."
+
+[audit_intro]
+[[audit_intro.variants]]
+when = []
+text = "The hypothesis as I wrote it, one claim at a time. Claims the objections already settled link back there instead of repeating a chart."
+
+[A1_heading]
+[[A1_heading.variants]]
+when = []
+text = "Slower than dollar money and dollar prices?"
+
+[A2_heading]
+[[A2_heading.variants]]
+when = []
+text = "Does staking pay a little more than fed funds, and stay there?"
+
+[A3_heading]
+[[A3_heading.variants]]
+when = []
+text = "Do other currencies have a wider spread?"
+
+[A4_heading]
+[[A4_heading.variants]]
+when = []
+text = "Is NEAR ideal for sweep funds, or only for balances already held in NEAR?"
+
+[A5_heading]
+[[A5_heading.variants]]
+when = []
+text = "Can NEAR's volatility be sold?"
+
+# ---------------------------------------------------------------- tripwires and limits
+
+[tripwires_intro]
+[[tripwires_intro.variants]]
+when = []
+text = "Each tripwire is checked against the latest data, so these tables move when the data does."
+
+[tripwires_break_intro]
+[[tripwires_break_intro.variants]]
+when = []
+text = "Each row is a result that would break part of this thesis."
+
+[tripwires_confirm_intro]
+[[tripwires_confirm_intro.variants]]
+when = []
+text = "Each row is a result that would strengthen the thesis, or open a test that is closed today."
+
+[limits_intro]
+[[limits_intro.variants]]
+when = []
+text = "What this page cannot settle yet, and what would settle each item."
+
+# ---------------------------------------------------------------- THESIS.md only
+
+[no_price_target]
+[[no_price_target.variants]]
+when = []
+text = "There is no price target and no valuation model here. The thesis covers supply and yield, and stops before demand and price."
+
+[against_endogeneity]
+[[against_endogeneity.variants]]
+when = []
+text = "Staking yield depends on how much NEAR is staked. If the staked share climbs to {s_hypo}, the protocol formula pays about {y_s60}, so the yield compresses as staking gets popular."
+
+[against_intents]
+[[against_intents.variants]]
+when = []
+text = "The one demand figure shown rests on one data feed. DefiLlama's NEAR Intents series comes from a Dune table that NEAR maintains, and the independent cross-check needs partner access plus written permission to publish."
+
+[against_treasury]
+[[against_treasury.variants]]
+when = []
+text = "The treasury account's balance dropped sharply in one quarter this year, and I could not find a published reason. It does not change supply growth, but it matters for sell pressure."
+
+[disclosure]
+[[disclosure.variants]]
+when = []
+text = "Built with AI assistance: Claude Code wrote the code and the prose, and I directed it. Every number comes from public data and links to its formula."
+
+[agent_heading]
+[[agent_heading.variants]]
+when = []
+text = "Test your own thesis against this one"
+
+[agent_intro]
+[[agent_intro.variants]]
+when = []
+text = "You have read my thesis and the evidence for it. Yours is the other half. Hand the published thesis to an AI agent you already use, tell the agent yours, and have it set the two side by side: where you agree, where the evidence cuts against you, and where neither of us has tested the point."
+
+[agent_privacy]
+[[agent_privacy.variants]]
+when = []
+text = "This page never sees your thesis. The buttons copy text to your clipboard and you paste it into the agent you pick. The only request the page makes is to fetch its own THESIS.md."
+
+[agent_nearai_tag]
+[[agent_nearai_tag.variants]]
+when = []
+text = "Confidential, recommended"
+
+[agent_nearai_text]
+[[agent_nearai_text.variants]]
+when = []
+text = "Your thesis is the private part, so start here. NEAR AI runs its models inside hardware-sealed enclaves and says its own staff cannot read your chats; this site has not verified that claim. Sign in with your NEAR AI account, open a new chat and paste. Copy attaches the full text of THESIS.md ahead of the prompt, because this chat may not be able to open links."
+
+[agent_chatgpt_text]
+[[agent_chatgpt_text.variants]]
+when = []
+text = "Browses the web, so the prompt alone is enough. Your thesis goes to OpenAI under its data policy; use a temporary chat if you do not want the conversation kept."
+
+[agent_claude_text]
+[[agent_claude_text.variants]]
+when = []
+text = "Browses the web when web search is on, so the prompt alone is enough. Your thesis goes to Anthropic under its data policy; use an incognito chat if you do not want the conversation kept."
+
+[agent_cli]
+[[agent_cli.variants]]
+when = []
+text = "Prefer a terminal, and want the confidentiality checked rather than promised? Clone the repo and run the command below with a NEAR AI Cloud API key. It sends your thesis to a model in NEAR AI's enclave from your own machine, and before it sends a word it checks the enclave's Intel hardware attestation, then checks the signature on the reply. Any failed check stops the run."
+
+[agent_check]
+[[agent_check.variants]]
+when = []
+text = "Check the agent the way you would check me. Every figure it quotes should carry a registry key. Look that key up in numbers.json, or hover the same figure on this page, to see its formula and inputs. A figure with no key is the agent's own, not the site's."
+
+[agent_prompt]
+[[agent_prompt.variants]]
+when = []
+text = """I want to stress-test my own investment thesis against a published one, "NEAR, tested", at SITE/. Read it from the source. Do not answer from memory.
+
+Fetch these:
+- SITE/THESIS.md: the argument in plain text, with a verdict for every claim
+- SITE/data/verdicts.json: each verdict and the rule that decided it
+- SITE/data/numbers.json: every figure, with its formula, inputs and source files
+- SITE/data/tripwires.json: what would flip the thesis
+- SITE/llms.txt: an index of everything else (charts, sources, cross-checks)
+If you cannot open links, work from the THESIS.md text pasted above this message, if there is any, and tell me which files you could not read.
+
+Ground rules:
+- Use figures only from those files and name the registry key beside each one. If a figure is not there, say so. Do not estimate it.
+- Keep tested and untested apart. The site tests claims against public on-chain and macro data. Say which of my assumptions it never touched.
+- Scope is the current macro environment and NEAR's current utility. Past price is an indicator of near-term behavior, not a reason to buy or sell. Governance is left out.
+- Say plainly where the site's verdicts hurt my thesis and where they do not.
+
+Then work in this order:
+- First, ask me for my thesis, one question at a time: what I hold or plan to hold, over what horizon, what I expect from rates and inflation, and what would make me wrong. If I pasted it below, restate it in your own words and let me correct you before going on.
+- Second, set each of my assumptions beside the site's claims: where we agree, where we conflict, and where neither side has tested it.
+- Third, run the site's tripwires against my thesis: which ones would break mine, and which tripwires mine needs that the site lacks.
+- Last, give me the questions or data that would settle our biggest disagreement. Do not tell me to buy or sell. This is analysis, not advice.
+
+My thesis (paste it here, or leave this blank and interview me):
+"""
+
+# ---------------------------------------------------------------- film (the stage at the top of index.html)
+# film_<shot>_cap is the caption band of a shot and its text without JavaScript: one or two short sentences,
+# written to about seventeen characters a second of the shot. film_<shot>_<part> is a line on the frame.
+# film_<claim>_sentence and film_<claim>_answer are a verdict's lead and its concession, also used in the evidence.
+# Branches that need a number (how many bodies sit inside the ring, the split H5 reading, a run of zero days)
+# are taken in the template, which picks between entries here.
+
+[film_wordmark]
+[[film_wordmark.variants]]
+when = []
+text = "NEAR, tested"
+
+[film_skip_desk]
+[[film_skip_desk.variants]]
+when = []
+text = "Skip to the desk"
+
+[film_skip_evidence]
+[[film_skip_evidence.variants]]
+when = []
+text = "Skip to the evidence"
+
+[film_rm_note]
+[[film_rm_note.variants]]
+when = []
+text = "Motion is off, so every shot is shown settled. Press play to step through them."
+
+[film_rm_link]
+[[film_rm_link.variants]]
+when = []
+text = "Read it as an article"
+
+[film_scene_title]
+[[film_scene_title.variants]]
+when = []
+text = "The thesis"
+
+[film_scene_word]
+[[film_scene_word.variants]]
+when = []
+text = "The word"
+
+[film_scene_money]
+[[film_scene_money.variants]]
+when = []
+text = "Slower than what?"
+
+[film_scene_yield]
+[[film_scene_yield.variants]]
+when = []
+text = "Paid to wait?"
+
+[film_scene_cost]
+[[film_scene_cost.variants]]
+when = []
+text = "What it costs"
+
+[film_scene_ledger]
+[[film_scene_ledger.variants]]
+when = []
+text = "What survives"
+
+[film_scene_desk]
+[[film_scene_desk.variants]]
+when = []
+text = "The desk"
+
+# ---- scene: the thesis
+
+[film_t_eyebrow]
+[[film_t_eyebrow.variants]]
+when = []
+text = "An investment thesis, tested against public data"
+
+[film_t_hero1_label]
+[[film_t_hero1_label.variants]]
+when = []
+text = "{gap_m2_dir} than the dollar's money supply, over the year to {m2_month}"
+
+[film_t_hero2_label]
+[[film_t_hero2_label.variants]]
+when = []
+text = "most-traded currencies grew their money faster than NEAR grew its supply"
+
+[film_t_tested]
+[[film_t_tested.variants]]
+when = []
+text = "Tested"
+
+[film_scene_title_short]
+[[film_scene_title_short.variants]]
+when = []
+text = "Thesis"
+
+[film_scene_word_short]
+[[film_scene_word_short.variants]]
+when = []
+text = "Word"
+
+[film_scene_money_short]
+[[film_scene_money_short.variants]]
+when = []
+text = "Money"
+
+[film_scene_yield_short]
+[[film_scene_yield_short.variants]]
+when = []
+text = "Yield"
+
+[film_scene_cost_short]
+[[film_scene_cost_short.variants]]
+when = []
+text = "Costs"
+
+[film_scene_ledger_short]
+[[film_scene_ledger_short.variants]]
+when = []
+text = "Survives"
+
+[film_scene_desk_short]
+[[film_scene_desk_short.variants]]
+when = []
+text = "Desk"
+
+[film_t1_cap]
+[[film_t1_cap.variants]]
+when = []
+text = "A straightforward thesis, tested against public data."
+
+[film_t2_cap]
+[[film_t2_cap.variants]]
+when = []
+text = "One year of growth as distance from the centre: dollar money {m2_yoy}, NEAR's supply {g_365_at_m2}."
+
+[film_t3_cap]
+[[film_t3_cap.variants]]
+when = []
+text = "Money grew faster than NEAR's supply in {h1b_n_faster} of the {n_fiat_money} most-traded currencies."
+
+[film_t3_inside]
+[[film_t3_inside.variants]]
+when = []
+text = "Inside the blue ring:"
+
+[film_t3_inside_none]
+[[film_t3_inside_none.variants]]
+when = []
+text = "None stopped inside the blue ring."
+
+[film_tp_cap]
+[[film_tp_cap.variants]]
+when = []
+text = "Now the same currencies by what holding pays: inside the blue ring, a policy rate pays less than staking NEAR."
+
+[film_tp_hero1_label]
+[[film_tp_hero1_label.variants]]
+when = []
+text = "{spread_adj_365_dir} fed funds over the last year, like for like: liquid staking {y_lst_365} against fed funds compounded, {ffcomp_365}"
+
+[film_tp_hero2_label]
+[[film_tp_hero2_label.variants]]
+when = []
+text = "latest policy rates pay less than staking NEAR paid over the last year"
+
+[film_tp_note]
+[[film_tp_note.variants]]
+when = []
+text = "Staking pays in NEAR, so its dollar value moves with NEAR's price."
+
+[film_tp_rates]
+[[film_tp_rates.variants]]
+when = []
+text = "Latest policy rates:"
+
+[film_tp_fed]
+[[film_tp_fed.variants]]
+when = []
+text = "fed funds"
+
+[film_tp_norate]
+[[film_tp_norate.variants]]
+when = []
+text = "No policy rate:"
+
+[film_tp_now]
+[[film_tp_now.variants]]
+when = []
+text = "now"
+
+[film_asof_rates]
+[[film_asof_rates.variants]]
+when = []
+text = "Policy rates as of"
+
+[film_asof_money]
+[[film_asof_money.variants]]
+when = []
+text = "money growth over each currency's latest year, ending"
+
+[film_asof_to]
+[[film_asof_to.variants]]
+when = []
+text = "to"
+
+[film_orbit_near_pay]
+[[film_orbit_near_pay.variants]]
+when = []
+text = "NEAR staking"
+
+[film_orbit_aria_pay]
+[[film_orbit_aria_pay.variants]]
+when = []
+text = "Then the same picture by what holding pays: NEAR's liquid-staking yield against each currency's latest policy rate."
+
+[film_orbit_scale_pay]
+[[film_orbit_scale_pay.variants]]
+when = []
+text = "Distance from the centre is now the yearly rate holding pays; inside the blue ring a rate pays less than staking NEAR."
+
+[film_legend_pay_near]
+[[film_legend_pay_near.variants]]
+when = []
+text = "NEAR liquid-staking yield"
+
+[film_legend_pay_usd]
+[[film_legend_pay_usd.variants]]
+when = []
+text = "US fed funds, the rate now"
+
+[film_legend_pay_eur]
+[[film_legend_pay_eur.variants]]
+when = []
+text = "euro policy rate"
+
+[film_legend_pay_other]
+[[film_legend_pay_other.variants]]
+when = []
+text = "other policy rates"
+
+[film_legend_pay_hollow]
+[[film_legend_pay_hollow.variants]]
+when = []
+text = "policy rate pays more than staking NEAR"
+
+[film_tp_inst_cny]
+[[film_tp_inst_cny.variants]]
+when = []
+text = "one-year Loan Prime Rate, BIS's policy-rate series for China"
+
+[film_tp_inst_hkd]
+[[film_tp_inst_hkd.variants]]
+when = []
+text = "base rate, which follows the US rate under the peg"
+
+[film_tr_cap]
+[[film_tr_cap.variants]]
+when = []
+text = "Both at once: what a year did to a holder's share of the total, staking NEAR or holding cash at the policy rate. Staked NEAR ranks {hold_near_rank} of {hold_n_ranked}."
+
+[film_tr_hero1_label]
+[[film_tr_hero1_label.variants]]
+when = []
+text = "staked NEAR's place among staked NEAR and cash at each policy rate, ranked by a year's change in a holder's share of the total"
+
+[film_tr_hero2_label]
+[[film_tr_hero2_label.variants]]
+when = []
+text = "a staker's share of all NEAR over the year to {latest_rpc_date}: staking {y_lst_365} against supply growth {g_365}"
+
+[film_tr_note]
+[[film_tr_note.variants]]
+when = []
+text = "A policy rate is a benchmark that cash rarely earns in full. Staking is paid in NEAR, so its dollar value moves with the price."
+
+[film_tr_scale]
+[[film_tr_scale.variants]]
+when = []
+text = "Up the line: a year's change in a holder's share of the total. Staked NEAR: staking yield against supply growth. Cash: policy rate against money growth."
+
+[film_tr_up]
+[[film_tr_up.variants]]
+when = []
+text = "your share grows"
+
+[film_tr_down]
+[[film_tr_down.variants]]
+when = []
+text = "shrinks"
+
+[film_tr_unranked]
+[[film_tr_unranked.variants]]
+when = []
+text = "Not ranked, no policy rate:"
+
+[film_tr_list]
+[[film_tr_list.variants]]
+when = []
+text = "A year's change in a holder's share of the total:"
+
+[film_orbit_near_rank]
+[[film_orbit_near_rank.variants]]
+when = []
+text = "NEAR staked"
+
+[film_orbit_aria_rank]
+[[film_orbit_aria_rank.variants]]
+when = []
+text = "Then both at once, as a ladder: a year's change in a holder's share of the total, staked NEAR against cash at each policy rate."
+
+[film_legend_rank_near]
+[[film_legend_rank_near.variants]]
+when = []
+text = "staked NEAR"
+
+[film_legend_rank_usd]
+[[film_legend_rank_usd.variants]]
+when = []
+text = "US dollar cash at fed funds"
+
+[film_legend_rank_eur]
+[[film_legend_rank_eur.variants]]
+when = []
+text = "euro cash at the policy rate"
+
+[film_legend_rank_other]
+[[film_legend_rank_other.variants]]
+when = []
+text = "other cash at its policy rate"
+
+[film_H5_split_a]
+[[film_H5_split_a.variants]]
+when = []
+text = "After each currency's own inflation, NEAR's spread is wider than the panel median; against the US rate, it is narrower."
+
+[film_H5_split_b]
+[[film_H5_split_b.variants]]
+when = []
+text = "After each currency's own inflation, NEAR's spread is narrower than the panel median; against the US rate, it is wider."
+
+[film_t4_cap]
+[[film_t4_cap.variants]]
+when = ["H1b=Supported"]
+text = "That is the thesis in one picture. Next, each claim behind it is tested."
+[[film_t4_cap.variants]]
+when = []
+text = "That is the comparison in one picture. Next, each claim behind it is tested."
+
+[film_t4_recap_money]
+[[film_t4_recap_money.variants]]
+when = []
+text = "grew their money faster than NEAR's supply"
+
+[film_t4_recap_pay]
+[[film_t4_recap_pay.variants]]
+when = []
+text = "policy rates pay less than staking"
+
+[film_t4_recap_rank]
+[[film_t4_recap_rank.variants]]
+when = []
+text = "staked NEAR's rank by share of the total"
+
+[film_t4_cap_pay]
+[[film_t4_cap_pay.variants]]
+when = ["H1b=Supported", "H3=Supported"]
+text = "Slower than money, and paid more than fed funds: that is the thesis. Next, each claim is tested."
+[[film_t4_cap_pay.variants]]
+when = []
+text = "That is the comparison in one picture. Next, each claim behind it is tested."
+
+[film_orbit_aria]
+[[film_orbit_aria.variants]]
+when = []
+text = "One year of growth drawn as distance from the centre: NEAR's supply against the money of the most-traded currencies"
+
+[film_orbit_near]
+[[film_orbit_near.variants]]
+when = []
+text = "NEAR supply"
+
+[film_orbit_scale]
+[[film_orbit_scale.variants]]
+when = []
+text = "Distance from the centre is growth over the year; the faint rings mark equal steps from zero. Clockwise from the top, most traded first."
+
+[film_legend_near]
+[[film_legend_near.variants]]
+when = []
+text = "NEAR supply growth, year to {m2_month}"
+
+[film_legend_usd]
+[[film_legend_usd.variants]]
+when = []
+text = "US dollar money"
+
+[film_legend_eur]
+[[film_legend_eur.variants]]
+when = []
+text = "euro money"
+
+[film_legend_other]
+[[film_legend_other.variants]]
+when = []
+text = "other most-traded currencies"
+
+[film_legend_hollow]
+[[film_legend_hollow.variants]]
+when = []
+text = "money grew more slowly than NEAR's supply"
+
+# ---- scene: the word
+
+[film_w1_eyebrow]
+[[film_w1_eyebrow.variants]]
+when = []
+text = "read literally"
+
+[film_w1_mega_a]
+[[film_w1_mega_a.variants]]
+when = []
+text = "NEAR is"
+
+[film_w1_mega_b]
+[[film_w1_mega_b.variants]]
+when = []
+text = "deflationary."
+
+[film_w1_cap]
+[[film_w1_cap.variants]]
+when = []
+text = "Read literally, deflationary means the supply shrinks."
+
+[film_w2_g]
+[[film_w2_g.variants]]
+when = []
+text = "supply growth, year to {latest_rpc_date}"
+
+[film_w2_run]
+[[film_w2_run.variants]]
+when = []
+text = "in the current run of shrinking supply"
+
+[film_w2_burn]
+[[film_w2_burn.variants]]
+when = []
+text = "of what was minted, burned by fees"
+
+[film_w2_cap]
+[[film_w2_cap.variants]]
+when = ["H1=Refuted"]
+text = "Over the last year NEAR's supply grew {g_365}; fees burned {burn_share_365} of what was minted."
+[[film_w2_cap.variants]]
+when = []
+text = "Over the last year NEAR's supply changed by {g_365}; fees burned {burn_share_365} of what was minted."
+
+[film_w4_cap]
+[[film_w4_cap.variants]]
+when = ["H1=Refuted", "H10=Refuted"]
+text = "Read literally, NEAR is not deflationary, and fee burn does not offset issuance."
+[[film_w4_cap.variants]]
+when = ["H1=Refuted"]
+text = "Read literally, NEAR is not deflationary."
+[[film_w4_cap.variants]]
+when = ["H1=Supported"]
+text = "Read literally, the word holds: NEAR's supply shrank."
+[[film_w4_cap.variants]]
+when = []
+text = "The literal reading, tested on the chain's own supply."
+
+[film_w5_lead]
+[[film_w5_lead.variants]]
+when = ["H1=Refuted", "H1b=Supported"]
+text = "Read literally, the word fails."
+[[film_w5_lead.variants]]
+when = []
+text = ""
+
+[film_w5_mega_a]
+[[film_w5_mega_a.variants]]
+when = ["H1=Refuted", "H1b=Supported"]
+text = "The claim is"
+[[film_w5_mega_a.variants]]
+when = []
+text = "Next:"
+
+[film_w5_mega_b]
+[[film_w5_mega_b.variants]]
+when = ["H1=Refuted", "H1b=Supported"]
+text = "relative."
+[[film_w5_mega_b.variants]]
+when = []
+text = "relative to what?"
+
+[film_w5_cap]
+[[film_w5_cap.variants]]
+when = ["H1=Refuted", "H1b=Supported"]
+text = "But the thesis says relative: slower than the dollar and other currencies."
+[[film_w5_cap.variants]]
+when = []
+text = "The thesis says relative. Next: relative to what?"
+
+# ---- scene: slower than what?
+
+[film_m1_eyebrow]
+[[film_m1_eyebrow.variants]]
+when = []
+text = "Supply against money"
+
+[film_m1_g1]
+[[film_m1_g1.variants]]
+when = []
+text = "{gap_m2_dir} than the dollar's money"
+
+[film_m1_g2]
+[[film_m1_g2.variants]]
+when = []
+text = "median gap across the {n_fiat_money} currencies"
+
+[film_m1_cap]
+[[film_m1_cap.variants]]
+when = ["H1b=Supported", "gap_m2_dir=slower"]
+text = "Slower than what? Than money: {gap_m2:abs} slower than the dollar's, a median {h1b_gap_med:abs} across the {n_fiat_money} currencies."
+[[film_m1_cap.variants]]
+when = []
+text = "Slower than what? The gap to the dollar's money is {gap_m2}; the median gap across the {n_fiat_money}, {h1b_gap_med}."
+
+[film_m2_months]
+[[film_m2_months.variants]]
+when = []
+text = "months NEAR's supply grew more slowly than US money"
+
+[film_m2_when]
+[[film_m2_when.variants]]
+when = []
+text = "Those months: {h1b_below_run}."
+
+[film_m2_cap]
+[[film_m2_cap.variants]]
+when = []
+text = "Month by month, NEAR grew more slowly than US money in {h1b_months_below} of the last {h1b_months_with_data} months with data."
+
+[film_m3_cap]
+[[film_m3_cap.variants]]
+when = ["H1b=Supported"]
+text = "Supported, on growth rates, not on kinds of money."
+[[film_m3_cap.variants]]
+when = ["H1b=Refuted"]
+text = "Refuted: NEAR's supply did not grow more slowly than dollar money."
+[[film_m3_cap.variants]]
+when = []
+text = "The verdict compares growth rates, not kinds of money."
+
+[film_m4_g1]
+[[film_m4_g1.variants]]
+when = []
+text = "{gap_cpi_dir} than US consumer prices"
+
+[film_m4_g2]
+[[film_m4_g2.variants]]
+when = []
+text = "months in the last year near the claimed gap"
+
+[film_m4_cap]
+[[film_m4_cap.variants]]
+when = []
+text = "The hypothesis also named a gap to prices: NEAR's supply grew {gap_cpi:abs} {gap_cpi_dir} than US consumer prices."
+
+[film_m5_cap]
+[[film_m5_cap.variants]]
+when = ["H2=Partly"]
+text = "Partly: slower than prices, not by the stated margin."
+[[film_m5_cap.variants]]
+when = ["H2=Supported"]
+text = "Supported: slower than prices by about the stated margin."
+[[film_m5_cap.variants]]
+when = ["H2=Refuted"]
+text = "Refuted: not slower than prices."
+[[film_m5_cap.variants]]
+when = []
+text = "The gap to prices, against the stated margin."
+
+[film_m6_eyebrow]
+[[film_m6_eyebrow.variants]]
+when = ["H1b=Supported"]
+text = "What survives, one"
+[[film_m6_eyebrow.variants]]
+when = []
+text = "Against money"
+
+[film_m6_lead]
+[[film_m6_lead.variants]]
+when = ["H1b=Supported"]
+text = "NEAR's supply grows more slowly than money."
+[[film_m6_lead.variants]]
+when = []
+text = "NEAR's supply against money and against prices."
+
+[film_m6_cap]
+[[film_m6_cap.variants]]
+when = ["H1b=Supported"]
+text = "What survives, one: slower supply growth than money."
+[[film_m6_cap.variants]]
+when = []
+text = "Supply against money and prices, verdict by verdict."
+
+# ---- scene: paid to wait?
+
+[film_y1_lst]
+[[film_y1_lst.variants]]
+when = []
+text = "liquid staking, last year"
+
+[film_y1_ff]
+[[film_y1_ff.variants]]
+when = []
+text = "fed funds, compounded"
+
+[film_y1_spread]
+[[film_y1_spread.variants]]
+when = []
+text = "{spread_adj_365_dir} fed funds, like for like"
+
+[film_y1_cap]
+[[film_y1_cap.variants]]
+when = []
+text = "What does holding NEAR pay? Liquid staking paid {y_lst_365} over the last year; fed funds, compounded, {ffcomp_365}."
+
+[film_y2_cap]
+[[film_y2_cap.variants]]
+when = ["H3=Supported"]
+text = "Supported: the yield is real, small, and paid in NEAR."
+[[film_y2_cap.variants]]
+when = ["H3=Refuted"]
+text = "Refuted: staking did not beat fed funds."
+[[film_y2_cap.variants]]
+when = ["H3=Partly"]
+text = "Partly: staking beat fed funds by more than claimed."
+[[film_y2_cap.variants]]
+when = []
+text = "The staking yield, against what dollars paid."
+
+[film_y3_a]
+[[film_y3_a.variants]]
+when = []
+text = "rate minus own inflation, in points (as a ratio, the title's {hold_near_net}); panel median {panel_median_abs_a}"
+
+[film_y3_b]
+[[film_y3_b.variants]]
+when = []
+text = "rate minus the US rate; panel median {panel_median_abs_b}"
+
+[film_y3_cap]
+[[film_y3_cap.variants]]
+when = []
+text = "Stricter than plain rates: each rate net of its own inflation, then of the US rate, against the panel median."
+
+[film_y4_cap]
+[[film_y4_cap.variants]]
+when = ["H5=Partly"]
+text = "Partly: it depends on how the spread is read."
+[[film_y4_cap.variants]]
+when = ["H5=Supported"]
+text = "Supported on both readings of the spread."
+[[film_y4_cap.variants]]
+when = ["H5=Refuted"]
+text = "Refuted on both readings of the spread."
+[[film_y4_cap.variants]]
+when = []
+text = "The spread, on both readings."
+
+[film_y5_q]
+[[film_y5_q.variants]]
+when = []
+text = "full quarters under the issuance rule in force since {cut_date}"
+
+[film_y5_cap]
+[[film_y5_cap.variants]]
+when = []
+text = "Will the two rates stay in balance? The issuance rule changed on {cut_date}; {n_q_rule} full quarters have passed since."
+
+[film_y6_cap]
+[[film_y6_cap.variants]]
+when = ["H4=Not testable"]
+text = "Not testable: too soon to say."
+[[film_y6_cap.variants]]
+when = []
+text = "Staying in balance, under the rule in force."
+
+[film_y7_eyebrow]
+[[film_y7_eyebrow.variants]]
+when = ["H3=Supported"]
+text = "What survives, two"
+[[film_y7_eyebrow.variants]]
+when = []
+text = "Against the policy rate"
+
+[film_y7_lead]
+[[film_y7_lead.variants]]
+when = ["H3=Supported"]
+text = "Staking pays more than the policy rate."
+[[film_y7_lead.variants]]
+when = []
+text = "Staking against the policy rate, verdict by verdict."
+
+[film_y7_cap]
+[[film_y7_cap.variants]]
+when = ["H3=Supported"]
+text = "What survives, two: a small yield over the policy rate."
+[[film_y7_cap.variants]]
+when = []
+text = "Staking against the policy rate, at a glance."
+
+# ---- scene: what it costs
+
+[film_c1_staker]
+[[film_c1_staker.variants]]
+when = []
+text = "a staker's share of all NEAR, per year"
+
+[film_c1_non]
+[[film_c1_non.variants]]
+when = []
+text = "an unstaked holder's share, per year"
+
+[film_c1_cap]
+[[film_c1_cap.variants]]
+when = ["H12=Refuted"]
+text = "Issuance moves value from holders who do not stake to those who do."
+[[film_c1_cap.variants]]
+when = []
+text = "Who pays for issuance: stakers against holders who do not stake."
+
+[film_c2_fig]
+[[film_c2_fig.variants]]
+when = []
+text = "tests passed as a place for dollar cash"
+
+[film_c2_apart]
+[[film_c2_apart.variants]]
+when = []
+text = "Counted separately"
+
+[film_c2_cap]
+[[film_c2_cap.variants]]
+when = ["H6=Refuted", "H6_near=Supported"]
+text = "Not a place for dollar cash. For balances already held in NEAR, it passes the principal and yield tests."
+[[film_c2_cap.variants]]
+when = ["H6=Refuted"]
+text = "Not a place for dollar cash."
+[[film_c2_cap.variants]]
+when = []
+text = "Staked NEAR, tested as a place for cash."
+
+[film_c3_fig]
+[[film_c3_fig.variants]]
+when = []
+text = "of {n_windows_usd_1y} one-year windows ended near what fed funds paid, in dollars"
+
+[film_c3_cap]
+[[film_c3_cap.variants]]
+when = ["H9=Refuted"]
+text = "Counted in dollars, NEAR's price decides the year, not its yield."
+[[film_c3_cap.variants]]
+when = []
+text = "A NEAR yield, counted in dollars."
+
+[film_c4_rv]
+[[film_c4_rv.variants]]
+when = []
+text = "price volatility over a year"
+
+[film_c4_btc]
+[[film_c4_btc.variants]]
+when = []
+text = "bitcoin's"
+
+[film_c4_eur]
+[[film_c4_eur.variants]]
+when = []
+text = "the euro's"
+
+[film_c4_mdd]
+[[film_c4_mdd.variants]]
+when = []
+text = "largest fall within the year"
+
+[film_c4_cap]
+[[film_c4_cap.variants]]
+when = ["H7=Supported"]
+text = "Volatile, as claimed. This is the cost, not the case."
+[[film_c4_cap.variants]]
+when = []
+text = "How much NEAR's price moves."
+
+# ---- scene: what survives
+
+[film_l1_cap]
+[[film_l1_cap.variants]]
+when = ["H7=Supported"]
+text = "{n_claims_total} claims tested: {n_refuted} refuted, {n_partly} partly, {n_supported} supported (volatility among them), {n_untestable} not testable."
+[[film_l1_cap.variants]]
+when = []
+text = "{n_claims_total} claims tested: {n_refuted} refuted, {n_partly} partly, {n_supported} supported, {n_untestable} not testable."
+
+[film_l1_apart]
+[[film_l1_apart.variants]]
+when = []
+text = "Counted separately"
+
+[film_l2_one]
+[[film_l2_one.variants]]
+when = ["H1=Refuted", "H1b=Supported", "H3=Supported"]
+text = "Its supply grows more slowly than money."
+[[film_l2_one.variants]]
+when = []
+text = ""
+
+[film_l2_two]
+[[film_l2_two.variants]]
+when = ["H1=Refuted", "H1b=Supported", "H3=Supported"]
+text = "Staking pays more than the policy rate."
+[[film_l2_two.variants]]
+when = []
+text = ""
+
+[film_l2_cap]
+[[film_l2_cap.variants]]
+when = ["H1=Refuted", "H1b=Supported", "H3=Supported"]
+text = "Read literally, the word fails. Read as relative, two things survive: slower supply growth and a small yield."
+[[film_l2_cap.variants]]
+when = []
+text = "That is the thesis, tested claim by claim. The evidence follows."
+
+# ---- scene: the desk (figures on the frame come from the simulation's registry keys)
+
+[film_d1_badge]
+[[film_d1_badge.variants]]
+when = []
+text = "Scenario"
+
+[film_d1_lead]
+[[film_d1_lead.variants]]
+when = []
+text = "Put part of a desk's idle money in NEAR and run the year forward."
+
+[film_d1_cap]
+[[film_d1_cap.variants]]
+when = []
+text = "So is any of this worth something to a desk holding cash? Say {sim_desk_usd}, idle for {sim_horizon_days}."
+
+[film_d2_a]
+[[film_d2_a.variants]]
+when = []
+text = "Dollars and euros only"
+
+[film_d2_b]
+[[film_d2_b.variants]]
+when = []
+text = "The same, with a part in liquid-staked NEAR"
+
+[film_d2_near]
+[[film_d2_near.variants]]
+when = []
+text = "of the desk, {sim_near_usd}, in liquid-staked NEAR from both currencies: the largest share whose bad-year average fits in a year of the desk's interest"
+
+[film_d2_interest]
+[[film_d2_interest.variants]]
+when = []
+text = "interest over the year"
+
+[film_d2_cap]
+[[film_d2_cap.variants]]
+when = []
+text = "Two ways to hold it: dollars and euros only, or the same with {sim_share} moved into liquid-staked NEAR."
+
+[film_d3_carry]
+[[film_d3_carry.variants]]
+when = []
+text = "expected gain a year over dollars and euros only, price flat: {sim_carry_euro_usd} of it is euro cash earning less than dollar cash; staking over dollar cash adds {sim_mean_dollar_only_usd}"
+
+[film_d3_swing]
+[[film_d3_swing.variants]]
+when = []
+text = "One ordinary day's price move"
+
+[film_d3_es]
+[[film_d3_es.variants]]
+when = []
+text = "A bad year, on average"
+
+[film_d3_bar_carry]
+[[film_d3_bar_carry.variants]]
+when = []
+text = "A year's expected gain: {sim_carry_usd}"
+
+[film_d3_bar_swing]
+[[film_d3_bar_swing.variants]]
+when = []
+text = "One ordinary day's price move on the NEAR part: {sim_day_swing_usd}"
+
+[film_d3_bar_es]
+[[film_d3_bar_es.variants]]
+when = []
+text = "A bad year's average loss: {sim_es95_usd}"
+
+[film_d3_cap]
+[[film_d3_cap.variants]]
+when = []
+text = "Expected gain: {sim_carry_usd} a year, {sim_carry_euro_usd} of it the euro-dollar rate gap. One ordinary day moves {sim_day_swing_usd}."
+
+[film_d3_cap_es]
+[[film_d3_cap_es.variants]]
+when = []
+text = "Expected gain: {sim_carry_usd} a year, {sim_carry_euro_usd} of it the euro-dollar rate gap. A bad year costs {sim_es95_usd}."
+
+[film_d4_axis]
+[[film_d4_axis.variants]]
+when = []
+text = "Year-end difference against dollars and euros only"
+
+[film_d4_cap]
+[[film_d4_cap.variants]]
+when = []
+text = "The year, run {sim_paths} times with daily moves like the last year's. Each dot is one in {sim_dots}: filled ahead, hollow behind."
+
+[film_d2_key_usd]
+[[film_d2_key_usd.variants]]
+when = []
+text = "US dollars, {sim_split_usd} of the cash"
+
+[film_d2_key_eur]
+[[film_d2_key_eur.variants]]
+when = []
+text = "euros, {sim_split_eur} of the cash"
+
+[film_d2_key_near]
+[[film_d2_key_near.variants]]
+when = []
+text = "NEAR, liquid-staked: {sim_share} of the desk"
+
+[film_d3_so]
+[[film_d3_so.variants]]
+when = []
+text = "So one year cannot be read from the yield: the typical simulated year ends {sim_median_usd:abs} {sim_median_dir}."
+
+[film_plot_behind]
+[[film_plot_behind.variants]]
+when = []
+text = "{sim_p_behind_n} of {sim_dots} simulated years end behind"
+
+[film_plot_ahead]
+[[film_plot_ahead.variants]]
+when = []
+text = "{sim_p_beat_n} of {sim_dots} simulated years end ahead"
+
+[film_plot_zero]
+[[film_plot_zero.variants]]
+when = []
+text = "same as dollars and euros only"
+
+[film_plot_median]
+[[film_plot_median.variants]]
+when = []
+text = "typical year: {sim_median_usd:abs} {sim_median_dir}"
+
+[film_plot_mean]
+[[film_plot_mean.variants]]
+when = []
+text = "average, exact: {sim_mean_usd:abs} {sim_mean_dir}"
+
+[film_plot_p05]
+[[film_plot_p05.variants]]
+when = []
+text = "{sim_tail_n} of {sim_dots} simulated years end worse than {sim_p05_usd:abs} {sim_p05_dir}"
+
+[film_plot_p95]
+[[film_plot_p95.variants]]
+when = []
+text = "{sim_tail_hi_n} of {sim_dots} simulated years end better than {sim_p95_usd:abs} {sim_p95_dir}"
+
+[film_d5_cap]
+[[film_d5_cap.variants]]
+when = []
+text = "Now it is yours. Change the share, the price assumption or the window."
+
+[film_tile_mean]
+[[film_tile_mean.variants]]
+when = []
+text = "Expected benefit"
+
+[film_tile_median]
+[[film_tile_median.variants]]
+when = []
+text = "Typical year"
+
+[film_tile_beat]
+[[film_tile_beat.variants]]
+when = []
+text = "Simulated years that end ahead of dollars and euros"
+
+[film_tile_bad]
+[[film_tile_bad.variants]]
+when = []
+text = "Average loss in the worst simulated years"
+
+[film_tile_exit]
+[[film_tile_exit.variants]]
+when = []
+text = "To sell the NEAR part at a median day's trading volume"
+
+[film_tile_about]
+[[film_tile_about.variants]]
+when = []
+text = "about"
+
+[film_tile_of]
+[[film_tile_of.variants]]
+when = []
+text = "of"
+
+[film_tile_share]
+[[film_tile_share.variants]]
+when = []
+text = "NEAR's share of the desk"
+
+[film_tile_near]
+[[film_tile_near.variants]]
+when = []
+text = "The NEAR part, in dollars"
+
+[film_tile_low]
+[[film_tile_low.variants]]
+when = []
+text = "The low end of the simulated years"
+
+[film_tile_be_mu]
+[[film_tile_be_mu.variants]]
+when = []
+text = "Average price change the mix needs to come out ahead in most years"
+
+[film_tile_be_cost]
+[[film_tile_be_cost.variants]]
+when = []
+text = "Trading and custody costs that would erase the expected benefit"
+
+[film_d1_days]
+[[film_d1_days.variants]]
+when = []
+text = "until the desk needs it back"
+
+[film_d1_size]
+[[film_d1_size.variants]]
+when = []
+text = "of idle cash, in dollars and euros"
+
+[film_d3_from]
+[[film_d3_from.variants]]
+when = []
+text = "From"
+
+[film_desk_assumption]
+[[film_desk_assumption.variants]]
+when = []
+text = "A scenario, not a forecast: part of a trading desk's idle dollars and euros moved into liquid-staked NEAR for one year. The default outputs below assume NEAR's price is flat on average, daily moves like the last year's, and no trading or custody costs; the page lets a reader change each assumption."
+
+[film_desk_note]
+[[film_desk_note.variants]]
+when = []
+text = "This is a scenario tool, not investment advice. It shows what the measured yield, volatility and liquidity imply under an assumption you choose; it does not predict NEAR's price."
+
+# ---- evidence below the stage
+
+[film_evidence_h]
+[[film_evidence_h.variants]]
+when = []
+text = "The evidence, claim by claim"
+
+[film_evidence_intro]
+[[film_evidence_intro.variants]]
+when = []
+text = "Every claim in the film with the test that decided it, and every chart with the table behind it, in the film's order."
+
+# ---- verdict sentences and answers, one pair per claim
+
+[film_H1_sentence]
+[[film_H1_sentence.variants]]
+when = ["H1=Refuted"]
+text = "Supply grew {g_365} over the last year."
+[[film_H1_sentence.variants]]
+when = ["H1=Supported"]
+text = "Supply shrank {g_365:abs} over the last year."
+[[film_H1_sentence.variants]]
+when = []
+text = "Supply changed by {g_365} over the last year."
+
+[film_H1_answer]
+[[film_H1_answer.variants]]
+when = ["H1=Refuted", "H10=Refuted"]
+text = "Fair. Issuance outpaces fee burn, so on its own the word is wrong."
+[[film_H1_answer.variants]]
+when = ["H1=Refuted"]
+text = "Fair. On its own, the word is wrong."
+[[film_H1_answer.variants]]
+when = []
+text = ""
+
+[film_H10_sentence]
+[[film_H10_sentence.variants]]
+when = []
+text = "Fees burned {burn_share_365} of the NEAR minted over the last year."
+
+[film_H10_answer]
+[[film_H10_answer.variants]]
+when = ["H10=Refuted"]
+text = "Burn does not offset issuance."
+[[film_H10_answer.variants]]
+when = []
+text = ""
+
+[film_H1b_sentence]
+[[film_H1b_sentence.variants]]
+when = ["H1b=Supported"]
+text = "NEAR's supply grew {gap_m2:abs} {gap_m2_dir} than the dollar's money, and more slowly than the money of {h1b_n_faster} of {n_fiat_money} major currencies."
+[[film_H1b_sentence.variants]]
+when = []
+text = "The gap to the dollar's money is {gap_m2}; money grew faster than NEAR's supply in {h1b_n_faster} of {n_fiat_money} major currencies."
+
+[film_H1b_answer]
+[[film_H1b_answer.variants]]
+when = []
+text = "Broad money includes bank lending; NEAR's supply is protocol issuance only. The comparison is of growth rates, not of kinds of money."
+
+[film_H2_sentence]
+[[film_H2_sentence.variants]]
+when = ["H2=Partly"]
+text = "Slower than prices, but not steadily by the claimed margin."
+[[film_H2_sentence.variants]]
+when = ["H2=Supported"]
+text = "Slower than prices, by about the claimed margin."
+[[film_H2_sentence.variants]]
+when = ["H2=Refuted"]
+text = "Not slower than prices."
+[[film_H2_sentence.variants]]
+when = []
+text = "The gap to US consumer prices is {gap_cpi}."
+
+[film_H2_answer]
+[[film_H2_answer.variants]]
+when = []
+text = "The claimed gap held in {h2_months_in_band_12} of {h2_months_with_data_12} months with data in the last year."
+
+[film_H3_sentence]
+[[film_H3_sentence.variants]]
+when = []
+text = "Staking paid {spread_adj_365:abs} {spread_adj_365_dir} compounded fed funds over the last year."
+
+[film_H3_answer]
+[[film_H3_answer.variants]]
+when = ["H3=Supported"]
+text = "It is paid in NEAR, so its dollar value moves with the price."
+[[film_H3_answer.variants]]
+when = []
+text = ""
+
+[film_H5_sentence]
+[[film_H5_sentence.variants]]
+when = []
+text = "Readings on which NEAR's spread is narrower than the panel median: {h5_now_narrower}; wider: {h5_now_wider}."
+
+[film_H5_split]
+[[film_H5_split.variants]]
+when = []
+text = "On one reading NEAR's spread is narrower than the panel median; on the other it is wider."
+
+[film_H5_answer]
+[[film_H5_answer.variants]]
+when = ["H5=Partly"]
+text = "The title counts plain rates; this test compares spreads, and its two readings disagree. Its panel also holds high-rate economies the title leaves out."
+[[film_H5_answer.variants]]
+when = []
+text = ""
+
+[film_H4_sentence]
+[[film_H4_sentence.variants]]
+when = ["H4=Not testable"]
+text = "Too few quarters have passed under the issuance rule now in force."
+[[film_H4_sentence.variants]]
+when = []
+text = "Whether staking and fed funds stay in balance under the issuance rule now in force."
+
+[film_H4_answer]
+[[film_H4_answer.variants]]
+when = ["H4=Not testable"]
+text = "It becomes testable once enough quarters have passed; the test says how many."
+[[film_H4_answer.variants]]
+when = []
+text = ""
+
+[film_H12_sentence]
+[[film_H12_sentence.variants]]
+when = ["H12=Refuted"]
+text = "Stakers' and unstaked holders' shares of all NEAR moved in opposite directions."
+[[film_H12_sentence.variants]]
+when = ["H12=Supported"]
+text = "Stakers and unstaked holders kept the same share of all NEAR."
+[[film_H12_sentence.variants]]
+when = []
+text = "A staker's share changed by {staker_share_365} a year; an unstaked holder's, by {nonstaker_365}."
+
+[film_H12_answer]
+[[film_H12_answer.variants]]
+when = ["H12=Refuted"]
+text = "Unstaked NEAR is diluted. The thesis holds only for NEAR that is staked."
+[[film_H12_answer.variants]]
+when = []
+text = ""
+
+[film_H6_sentence]
+[[film_H6_sentence.variants]]
+when = []
+text = "As a place for dollar cash, staked NEAR passed {h6_rows_passed} of {h6_rows_total} tests and failed {h6_critical_failed} deciding ones."
+
+[film_H6_answer]
+[[film_H6_answer.variants]]
+when = ["H6=Refuted"]
+text = "It is not a cash equivalent for dollar balances."
+[[film_H6_answer.variants]]
+when = []
+text = ""
+
+[film_H6_near_sentence]
+[[film_H6_near_sentence.variants]]
+when = ["H6_near=Supported"]
+text = "For balances already held in NEAR, staking passes the principal and yield tests."
+[[film_H6_near_sentence.variants]]
+when = []
+text = "For balances already held in NEAR, the same checklist is read again."
+
+[film_H6_near_answer]
+[[film_H6_near_answer.variants]]
+when = []
+text = "Counted apart from the tally: it reframes the sweep claim for holders of NEAR."
+
+[film_H9_sentence]
+[[film_H9_sentence.variants]]
+when = []
+text = "Counted in dollars, {pct_within_2pp_1y} of one-year windows ended near what fed funds paid."
+
+[film_H9_answer]
+[[film_H9_answer.variants]]
+when = ["H9=Refuted"]
+text = "In dollars, the price decides the year, not the yield."
+[[film_H9_answer.variants]]
+when = []
+text = ""
+
+[film_H7_sentence]
+[[film_H7_sentence.variants]]
+when = ["H7=Supported"]
+text = "NEAR's price swings about {rv_365_near} a year: {x_btc} bitcoin's swings and {x_eur} the euro's."
+[[film_H7_sentence.variants]]
+when = []
+text = "NEAR's price volatility over the last year was {rv_365_near}."
+
+[film_H7_answer]
+[[film_H7_answer.variants]]
+when = ["H7=Supported"]
+text = "This is the cost, not the case."
+[[film_H7_answer.variants]]
+when = []
+text = ""
+
+[film_H8_sentence]
+[[film_H8_sentence.variants]]
+when = ["H8=Not testable"]
+text = "There is no NEAR options market to sell volatility in."
+[[film_H8_sentence.variants]]
+when = []
+text = "Whether NEAR's volatility can be sold for a premium."
+
+[film_H8_answer]
+[[film_H8_answer.variants]]
+when = []
+text = ""
+
+# ---------------------------------------------------------------- desk simulation (sim_*)
+# Written for the desk scene and its chapter; site/assets/sim.js re-selects each variant live from the sim_*
+# text keys (the same `when` grammar) and fills the same placeholders, so the no-JS page and the live page read
+# alike. Every figure is a registry key; the copy never names a number.
+
+# the desk simulation (pipeline/models/portfolio.py, site/assets/sim.js): sim.js re-picks every sim_* variant live against the sim_* text keys, so conditions here read sim_* keys only
+[sim_headline]
+[[sim_headline.variants]]
+when = ["sim_mean_dir=level", "sim_median_dir=level"]
+text = "With no NEAR part the desk is the same as dollars and euros only."
+[[sim_headline.variants]]
+when = ["sim_mean_dir=ahead", "sim_median_dir=behind"]
+text = "Putting {sim_share} of a {sim_desk_usd} desk, {sim_near_usd}, into liquid-staked NEAR gains about {sim_mean_usd:abs} on average over a year against dollars and euros only. But NEAR's price moves so much that the typical simulated year ends {sim_median_usd:abs} behind, and the mix comes out ahead in about {sim_p_beat_r} of {sim_dots} simulated years."
+[[sim_headline.variants]]
+when = ["sim_mean_dir=behind", "sim_median_dir=behind"]
+text = "Putting {sim_share} of a {sim_desk_usd} desk, {sim_near_usd}, into liquid-staked NEAR loses about {sim_mean_usd:abs} on average over a year against dollars and euros only, and the typical simulated year ends {sim_median_usd:abs} behind. The mix comes out ahead in about {sim_p_beat_r} of {sim_dots} simulated years."
+[[sim_headline.variants]]
+when = ["sim_mean_dir=ahead", "sim_median_dir=ahead"]
+text = "Putting {sim_share} of a {sim_desk_usd} desk, {sim_near_usd}, into liquid-staked NEAR gains about {sim_mean_usd:abs} on average over a year against dollars and euros only, and the typical simulated year ends {sim_median_usd:abs} ahead. The mix comes out ahead in about {sim_p_beat_r} of {sim_dots} simulated years."
+[[sim_headline.variants]]
+when = []
+text = "Putting {sim_share} of a {sim_desk_usd} desk, {sim_near_usd}, into liquid-staked NEAR ends {sim_mean_usd:abs} {sim_mean_dir} on average over a year and {sim_median_usd:abs} {sim_median_dir} in the typical simulated year, against dollars and euros only. The mix comes out ahead in about {sim_p_beat_r} of {sim_dots} simulated years."
+
+[sim_mu_label]
+[[sim_mu_label.variants]]
+when = ["sim_mu_mode=value"]
+text = "Assumption: the total dollar value of NEAR stays the same, so new supply dilutes the price"
+[[sim_mu_label.variants]]
+when = ["sim_mu_mode=thesis"]
+text = "The thesis's implication, not a forecast"
+[[sim_mu_label.variants]]
+when = ["sim_mu_mode=own"]
+text = "Your assumption"
+[[sim_mu_label.variants]]
+when = []
+text = "No price view: NEAR's price flat on average"
+
+[sim_why_typical]
+[[sim_why_typical.variants]]
+when = ["sim_median_dir=behind", "sim_mean_dir=ahead"]
+text = "Why the typical year trails when the average does not: NEAR's price swung about {rv_365_near} over the last year. A few very good years pull the average up, and most years end below it."
+[[sim_why_typical.variants]]
+when = ["sim_median_dir=behind"]
+text = "Why the typical year ends below the average: NEAR's price swung about {rv_365_near} over the last year. A few very good years pull the average up, and most years end below it."
+[[sim_why_typical.variants]]
+when = []
+text = ""
+
+[sim_tile_mean_text]
+[[sim_tile_mean_text.variants]]
+when = ["sim_cost_mode=none"]
+text = "Averaged over every simulated year and exact: {sim_carry_usd} from the staking yield over cash rates and {sim_price_usd} from the price assumption, before trading and custody costs."
+[[sim_tile_mean_text.variants]]
+when = []
+text = "Averaged over every simulated year and exact: {sim_carry_usd} from the staking yield over cash rates, {sim_price_usd} from the price assumption and {sim_cost_usd} in the costs entered."
+
+[sim_tile_mean_euro]
+[[sim_tile_mean_euro.variants]]
+when = []
+text = "Of the carry, {sim_carry_euro_usd} comes from euro cash earning less than dollar cash, with the euro flat on average."
+
+[sim_tile_median_text]
+[[sim_tile_median_text.variants]]
+when = ["sim_median_dir=ahead"]
+text = "In the middle simulated year the mix ends {sim_median_usd:abs} ahead, with NEAR's price {sim_median_price} over the year."
+[[sim_tile_median_text.variants]]
+when = ["sim_median_dir=behind"]
+text = "In the middle simulated year the mix ends {sim_median_usd:abs} behind, with NEAR's price {sim_median_price} over the year."
+[[sim_tile_median_text.variants]]
+when = []
+text = "In the middle simulated year the mix ends level with dollars and euros only."
+
+[sim_tile_beat_text]
+[[sim_tile_beat_text.variants]]
+when = []
+text = "Ahead of dollars and euros only in about {sim_p_beat_r} of {sim_dots} simulated years, whatever the NEAR share."
+
+[sim_tile_bad_text]
+[[sim_tile_bad_text.variants]]
+when = []
+text = "In the worst {sim_tail_n} of {sim_dots} simulated years the mix ends {sim_es95_usd} behind on average: about {sim_es_interest_years} years of the whole desk's interest, or {sim_es_desk_pct} of the whole desk."
+
+[sim_tile_bad_sub]
+[[sim_tile_bad_sub.variants]]
+when = []
+text = "In about {sim_p_half} of {sim_dots} simulated years the NEAR part is at some point worth half what it cost. {sim_tail_n} of {sim_dots} simulated years end worse than {sim_p05_usd:abs} {sim_p05_dir}."
+
+[sim_tile_exit_text]
+[[sim_tile_exit_text.variants]]
+when = ["sim_venue_mode=both"]
+text = "About {sim_exit_days} to sell the NEAR part at a whole median day of Coinbase and Binance volume over the last year, and {sim_exit_days_p} if the desk were {sim_participation} of each day's selling, an assumption. Unstaking takes {unstake_hours_lo} to {unstake_hours_hi} first."
+[[sim_tile_exit_text.variants]]
+when = []
+text = "About {sim_exit_days} to sell the NEAR part at a whole median day of Coinbase volume over the last year, and {sim_exit_days_p} if the desk were {sim_participation} of each day's selling, an assumption. Unstaking takes {unstake_hours_lo} to {unstake_hours_hi} first."
+
+[sim_tile_exit_sub]
+[[sim_tile_exit_sub.variants]]
+when = []
+text = "At the volume of the last {sim_window_short}: {sim_exit_days_short}. The instant-exit pool covers {sim_nslp_cover} of the NEAR part."
+
+[sim_strip_intro]
+[[sim_strip_intro.variants]]
+when = []
+text = "The expected benefit changes sign with the price assumption; the spread of outcomes does not. It is zero where NEAR's price changes by {sim_be_mu_mean} over the year."
+
+[sim_strip_value_flat]
+[[sim_strip_value_flat.variants]]
+when = []
+text = "If demand is flat in dollars (price {sim_mu_value_flat})"
+
+[sim_strip_flat]
+[[sim_strip_flat.variants]]
+when = []
+text = "If the price is flat on average"
+
+[sim_strip_thesis]
+[[sim_strip_thesis.variants]]
+when = []
+text = "If demand kept pace with dollar money (price {sim_mu_thesis_m2}; with consumer prices instead, {sim_mean_thesis_cpi_usd})"
+
+[sim_strip_parity]
+[[sim_strip_parity.variants]]
+when = []
+text = "If the euro is priced to offset its lower rate (interest parity)"
+
+[sim_strip_dollar_only]
+[[sim_strip_dollar_only.variants]]
+when = []
+text = "If the cash part were all dollars"
+
+[sim_strip_dgs1]
+[[sim_strip_dgs1.variants]]
+when = []
+text = "Against a one-year Treasury instead of overnight fed funds, dollar leg only (with interest parity, {sim_mean_dgs1_parity_usd})"
+
+[sim_hurdle]
+[[sim_hurdle.variants]]
+when = ["sim_be_mu_median_dir=rise"]
+text = "For the mix to come out ahead in most simulated years, NEAR's price would need to rise about {sim_be_mu_median:abs} on average over the year. If demand kept pace with dollar money, the price would change by {sim_mu_thesis_m2}."
+[[sim_hurdle.variants]]
+when = []
+text = "The mix comes out ahead in most simulated years unless NEAR's price falls more than about {sim_be_mu_median:abs} on average over the year."
+
+[sim_hurdle_cost]
+[[sim_hurdle_cost.variants]]
+when = ["sim_be_cost_dir=rise"]
+text = "Trading and custody costs above {sim_be_cost} of the NEAR part would erase the expected benefit."
+[[sim_hurdle_cost.variants]]
+when = []
+text = "Before any trading or custody costs, the expected benefit is already at or below zero."
+
+[sim_mu_note]
+[[sim_mu_note.variants]]
+when = ["sim_mu_mode=flat", "sim_median_dir=behind"]
+text = "With the price flat on average, the typical year is a loss, because a few very good years pay for many bad ones. NEAR's price in the typical simulated year: {sim_median_price}."
+[[sim_mu_note.variants]]
+when = ["sim_mu_mode=thesis"]
+text = "This assumes demand for NEAR keeps pace with dollar money, and nothing on this site measures demand. NEAR's supply grew slower than US money in {h1b_months_below} of {h1b_months_with_data} months; this asks what follows if today's gap persists."
+[[sim_mu_note.variants]]
+when = ["sim_mu_mode=value"]
+text = "This assumes the total dollar value of NEAR stays the same, so new supply dilutes the price by {sim_mu_value_flat}."
+[[sim_mu_note.variants]]
+when = ["sim_mu_mode=own"]
+text = "Your assumption: {sim_mu} over the year. It is not measured from past prices."
+[[sim_mu_note.variants]]
+when = []
+text = "The price change is an assumption you choose. It is never measured from past prices."
+
+[sim_method]
+[[sim_method.variants]]
+when = []
+text = "Each simulated year redraws {sim_horizon_days} of daily NEAR and euro moves from the chosen window, whole days at a time, rescaled so the price is flat on average before the assumption is applied. One year of data pins an average yearly price change only to about plus or minus {rv_365_near}, so the price change is never taken from past prices. Rates are held where they are today."
+
+[sim_split_note]
+[[sim_split_note.variants]]
+when = ["sim_split_basis=turnover"]
+text = "Default split {sim_split_usd} dollars, {sim_split_eur} euros: a benchmark proxy from the two currencies' shares of global currency trading (trading volume, not holdings)."
+[[sim_split_note.variants]]
+when = []
+text = "Default split {sim_split_usd} dollars, {sim_split_eur} euros: a scenario, not your desk's split."
+
+[sim_changed_note]
+[[sim_changed_note.variants]]
+when = ["sim_changed=yes"]
+text = "Changed from the defaults:"
+[[sim_changed_note.variants]]
+when = []
+text = ""
+
+[sim_stake_note]
+[[sim_stake_note.variants]]
+when = ["sim_stake_mode=unstaked"]
+text = "Not staked: NEAR held without yield, while new supply dilutes it."
+[[sim_stake_note.variants]]
+when = []
+text = ""
+
+[sim_window_note]
+[[sim_window_note.variants]]
+when = ["sim_window_mode=short"]
+text = "Daily moves like the last {sim_window_short}'s instead of the last year's."
+[[sim_window_note.variants]]
+when = []
+text = ""
+
+[sim_ctl_h]
+[[sim_ctl_h.variants]]
+when = []
+text = "Change the assumptions"
+
+[sim_ctl_share]
+[[sim_ctl_share.variants]]
+when = []
+text = "NEAR share of the desk"
+
+[sim_ctl_share_zero]
+[[sim_ctl_share_zero.variants]]
+when = []
+text = "Same as dollars and euros only"
+
+[sim_ctl_tick_budget]
+[[sim_ctl_tick_budget.variants]]
+when = []
+text = "Largest share whose bad-year average fits in a year of the desk's interest: {sim_w_budget}"
+
+[sim_ctl_tick_oneday]
+[[sim_ctl_tick_oneday.variants]]
+when = []
+text = "Share one median day of Coinbase trading could absorb: {sim_w_one_day}"
+
+[sim_ctl_split]
+[[sim_ctl_split.variants]]
+when = []
+text = "Dollar share of the cash part"
+
+[sim_ctl_mu]
+[[sim_ctl_mu.variants]]
+when = []
+text = "What happens to demand for NEAR?"
+
+[sim_ctl_mu_value]
+[[sim_ctl_mu_value.variants]]
+when = []
+text = "Demand flat in dollars"
+
+[sim_ctl_mu_flat]
+[[sim_ctl_mu_flat.variants]]
+when = []
+text = "Price flat on average"
+
+[sim_ctl_mu_thesis]
+[[sim_ctl_mu_thesis.variants]]
+when = []
+text = "Demand keeps pace with dollar money"
+
+[sim_ctl_mu_own]
+[[sim_ctl_mu_own.variants]]
+when = []
+text = "Your own price change over the year, percent"
+
+[sim_ctl_mu_off]
+[[sim_ctl_mu_off.variants]]
+when = []
+text = "off this scale"
+
+[sim_ctl_mu_marks]
+[[sim_ctl_mu_marks.variants]]
+when = []
+text = "For scale: if demand kept pace with dollar money, {sim_mu_thesis_m2}. The expected benefit is zero at {sim_be_mu_mean}; the mix is ahead in half the simulated years at {sim_be_mu_median}."
+
+[sim_ctl_stake]
+[[sim_ctl_stake.variants]]
+when = []
+text = "Staking"
+
+[sim_ctl_staked]
+[[sim_ctl_staked.variants]]
+when = []
+text = "Liquid-staked"
+
+[sim_ctl_unstaked]
+[[sim_ctl_unstaked.variants]]
+when = []
+text = "Not staked"
+
+[sim_ctl_window]
+[[sim_ctl_window.variants]]
+when = []
+text = "Daily moves like"
+
+[sim_ctl_window_year]
+[[sim_ctl_window_year.variants]]
+when = []
+text = "The last year"
+
+[sim_ctl_window_short]
+[[sim_ctl_window_short.variants]]
+when = []
+text = "The last {sim_window_short}"
+
+[sim_ctl_more]
+[[sim_ctl_more.variants]]
+when = []
+text = "Costs and exit"
+
+[sim_ctl_rt]
+[[sim_ctl_rt.variants]]
+when = []
+text = "Round-trip trading cost, basis points of the NEAR part"
+
+[sim_ctl_cu]
+[[sim_ctl_cu.variants]]
+when = []
+text = "Custody cost, basis points a year"
+
+[sim_ctl_costs_empty]
+[[sim_ctl_costs_empty.variants]]
+when = []
+text = "before trading and custody costs"
+
+[sim_ctl_venue]
+[[sim_ctl_venue.variants]]
+when = []
+text = "Where the NEAR part is sold"
+
+[sim_ctl_venue_cb]
+[[sim_ctl_venue_cb.variants]]
+when = []
+text = "Coinbase only"
+
+[sim_ctl_venue_all]
+[[sim_ctl_venue_all.variants]]
+when = []
+text = "Coinbase and Binance (Binance trades against USDT and is not open to US persons)"
+
+[sim_ctl_part]
+[[sim_ctl_part.variants]]
+when = []
+text = "Share of each day's selling the desk would be (assumption), percent"
+
+[sim_ctl_reset]
+[[sim_ctl_reset.variants]]
+when = []
+text = "Reset to defaults"
+
+[sim_plot_label]
+[[sim_plot_label.variants]]
+when = []
+text = "{sim_dots} simulated years, one dot each, by year-end difference against dollars and euros only"
+
+[sim_dot_year]
+[[sim_dot_year.variants]]
+when = []
+text = "Simulated year"
+
+[sim_dot_of]
+[[sim_dot_of.variants]]
+when = []
+text = "of"
+
+[sim_left_h]
+[[sim_left_h.variants]]
+when = []
+text = "What this leaves out"
+
+[sim_left_failure]
+[[sim_left_failure.variants]]
+when = []
+text = "An exchange or custodian failing."
+
+[sim_left_lst]
+[[sim_left_lst.variants]]
+when = []
+text = "The liquid-staking contract failing, or its token trading below what it redeems for."
+
+[sim_left_rates]
+[[sim_left_rates.variants]]
+when = []
+text = "Rates changing during the year: every rate is held where it is today."
+
+[sim_left_costs]
+[[sim_left_costs.variants]]
+when = []
+text = "Trading and custody costs, unless entered above."
+
+[sim_left_accounting]
+[[sim_left_accounting.variants]]
+when = []
+text = "Accounting and capital treatment: ask your auditor and your regulator."
+
+[sim_left_wrongway]
+[[sim_left_wrongway.variants]]
+when = []
+text = "A crypto desk needs cash most when crypto is falling, which is when NEAR is likely down and thin."
+
+[sim_grid_h]
+[[sim_grid_h.variants]]
+when = []
+text = "The same desk at other NEAR shares, under each price assumption"
+
+[sim_noscript]
+[[sim_noscript.variants]]
+when = []
+text = "These are the default outputs. With JavaScript on, the controls change every figure in place."
+
+[sim_ctl_split_out]
+[[sim_ctl_split_out.variants]]
+when = []
+text = "{sim_split_usd} dollars, {sim_split_eur} euros"
+
+[sim_ctl_split_hint]
+[[sim_ctl_split_hint.variants]]
+when = []
+text = "This moves the expected benefit a lot, because euro cash earns less than dollar cash, and barely moves the spread of outcomes."
+
+[sim_ctl_costs_note]
+[[sim_ctl_costs_note.variants]]
+when = []
+text = "Empty means none. Nothing on this site measures NEAR's trading depth or custody fees, so no cost is assumed."
+
+[sim_chip]
+[[sim_chip.variants]]
+when = []
+text = "From"
+
+[sim_chg_w]
+[[sim_chg_w.variants]]
+when = []
+text = "NEAR share"
+
+[sim_chg_s]
+[[sim_chg_s.variants]]
+when = []
+text = "dollar share"
+
+[sim_chg_mu]
+[[sim_chg_mu.variants]]
+when = []
+text = "price assumption"
+
+[sim_chg_k]
+[[sim_chg_k.variants]]
+when = []
+text = "staking"
+
+[sim_chg_win]
+[[sim_chg_win.variants]]
+when = []
+text = "window of daily moves"
+
+[sim_chg_c]
+[[sim_chg_c.variants]]
+when = []
+text = "costs"
+
+[sim_chg_venue]
+[[sim_chg_venue.variants]]
+when = []
+text = "exit venue"
+
+[sim_chg_p]
+[[sim_chg_p.variants]]
+when = []
+text = "share of each day's selling"
+
+[sim_plot_tail]
+[[sim_plot_tail.variants]]
+when = []
+text = "Worst {sim_tail_n}: {sim_es95_usd} behind on average"
+
+[sim_plot_keys]
+[[sim_plot_keys.variants]]
+when = []
+text = "Arrow keys step through the simulated years, worst to best."
+
+[sim_liq_h]
+[[sim_liq_h.variants]]
+when = []
+text = "Getting out"
+
+[sim_liq_where]
+[[sim_liq_where.variants]]
+when = ["sim_venue_mode=both"]
+text = "Selling on Coinbase and Binance. Binance trades against USDT and is not open to US persons."
+[[sim_liq_where.variants]]
+when = []
+text = "Selling on Coinbase only."
+
+[sim_liq_days]
+[[sim_liq_days.variants]]
+when = []
+text = "Days to sell at a whole median day's volume, last year"
+
+[sim_liq_days_p]
+[[sim_liq_days_p.variants]]
+when = []
+text = "Days to sell at {sim_participation} of each day's volume, an assumption"
+
+[sim_liq_short]
+[[sim_liq_short.variants]]
+when = []
+text = "Days to sell at a whole median day's volume, last {sim_window_short}"
+
+[sim_liq_pool]
+[[sim_liq_pool.variants]]
+when = []
+text = "Instant-exit pool, as a share of the NEAR part (its fee rises as it drains)"
+
+[sim_liq_unbond]
+[[sim_liq_unbond.variants]]
+when = []
+text = "Unbonding before unstaked NEAR can move"
+
+[sim_liq_unbond_v]
+[[sim_liq_unbond_v.variants]]
+when = []
+text = "{unstake_hours_lo} to {unstake_hours_hi}"
+
+[sim_liq_lst]
+[[sim_liq_lst.variants]]
+when = []
+text = "The NEAR part as a share of the liquid-staking market (at most: rNEAR has no measured price here)"
+
+[sim_liq_depth]
+[[sim_liq_depth.variants]]
+when = []
+text = "Liquid-staking token depth on exchanges"
+
+[sim_liq_depth_v]
+[[sim_liq_depth_v.variants]]
+when = []
+text = "not measured"
+
+[sim_notes_h]
+[[sim_notes_h.variants]]
+when = []
+text = "How this is worked out"

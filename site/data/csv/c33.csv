@@ -1,0 +1,13 @@
+case,expected_usd,typical_year_usd,one_year_in_twenty_worse_usd,one_year_in_twenty_better_usd,simulated_years_ahead_per_hundred,bad_year_average_usd
+"Whole days resampled one at a time (the default), moves like the last year's",88000.0,-7952000.0,-17098000.0,44216000.0,29.6,-17802000.0
+"Whole days resampled one at a time (the default), moves like the last ninety days'",88000.0,-10334000.0,-18082000.0,51979000.0,26.8,-18495000.0
+"Runs of whole days resampled together, moves like the last year's",88000.0,-9078000.0,-17376000.0,45168000.0,27.9,-17945000.0
+"Runs of whole days resampled together, moves like the last ninety days'",88000.0,-11662000.0,-18275000.0,52946000.0,24.4,-18637000.0
+"A smooth bell curve with the same volatility, moves like the last year's",88000.0,-7909000.0,-17081000.0,43077000.0,30.1,-17733000.0
+"A smooth bell curve with the same volatility, moves like the last ninety days'",88000.0,-10647000.0,-18105000.0,51111000.0,26.1,-18490000.0
+Staking yield of the last ninety days,117000.0,-7935000.0,-17095000.0,44312000.0,29.7,-17800000.0
+Staking yield if the staked share reached the tripwire level,-94000.0,-8058000.0,-17120000.0,43614000.0,29.3,-17816000.0
+Dollar leg at a one-year Treasury,30000.0,-8010000.0,-17157000.0,44158000.0,29.6,-17861000.0
+Dollar leg at fed funds compounded over the last year,116000.0,-7924000.0,-17070000.0,44244000.0,29.7,-17774000.0
+Euro priced to offset its lower rate (interest parity),22000.0,-8019000.0,-17166000.0,44147000.0,29.5,-17870000.0
+NEAR held but not staked,-675000.0,-8398000.0,-17184000.0,41696000.0,28.4,-17859000.0

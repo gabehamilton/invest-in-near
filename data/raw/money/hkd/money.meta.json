@@ -1,0 +1,34 @@
+{
+  "aggregate": "HK$ M2",
+  "basis": "stock at the end of the month",
+  "blank_rows": 0,
+  "columns": [
+    "period",
+    "value"
+  ],
+  "currency": "HKD",
+  "description": "Hong Kong dollar M2, adjusted to include foreign currency swap deposits (HKMA Monthly Statistical Bulletin table 1.1)",
+  "fetched_at": "2026-11-11T22:59:34+00:00",
+  "field": "money",
+  "file": "data/raw/money/hkd/money.csv",
+  "first_date": "2015-01-01",
+  "first_period": "2015-01",
+  "frequency": "monthly",
+  "last_date": "2026-09-01",
+  "last_observed_date": "2026-09-01",
+  "latest_period": "2026-09",
+  "method": "HKMA open API, money supply adjusted to include foreign currency swap deposits (JSON, keyless)",
+  "notes": [
+    "The bulletin carries only the latest monthly rows plus year-end rows (stored as December); the HKMA API that has full history refused this network (HTTP 405).",
+    "HK$ column, not total M2 (which mixes in foreign-currency deposits)."
+  ],
+  "publisher": "Hong Kong Monetary Authority",
+  "refresh": "history from 2015-01 re-downloaded every run; a failed fetch keeps the previous file",
+  "response_sha256": "bfd67a2ee9ccd192170e8c13d1b0b88f38e824283dd4e97603f811860bf184e7",
+  "role": "primary",
+  "rows": 141,
+  "seasonal_adjustment": "not seasonally adjusted",
+  "series_id": "T0101/M2 HK$",
+  "source_url": "https://api.hkma.gov.hk/public/market-data-and-statistics/monthly-statistical-bulletin/money/supply-adjusted?pagesize=1000&sortby=end_of_month&sortorder=asc",
+  "units": "HKD million"
+}

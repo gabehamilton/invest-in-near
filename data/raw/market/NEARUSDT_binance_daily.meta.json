@@ -1,0 +1,30 @@
+{
+  "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume_base",
+    "volume_quote"
+  ],
+  "complete": true,
+  "description": "Binance spot NEARUSDT daily candles (UTC days)",
+  "error": null,
+  "excluded": "unfinished candle for 2026-11-11 (UTC)",
+  "fetched_at": "2026-11-11T22:59:47+00:00",
+  "file": "data/raw/market/NEARUSDT_binance_daily.csv",
+  "first_date": "2020-10-14",
+  "last_date": "2026-11-10",
+  "pages": 3,
+  "params": {
+    "interval": "1d",
+    "limit": 1000,
+    "startTime": 0,
+    "symbol": "NEARUSDT"
+  },
+  "refresh": "full history re-downloaded every run; on a mid-run HTTP error the fetched rows replace matching cached dates and the rest of the cached file is kept (meta complete=false)",
+  "rows": 2219,
+  "rows_from_previous_file": 0,
+  "source_url": "https://data-api.binance.vision/api/v3/klines"
+}

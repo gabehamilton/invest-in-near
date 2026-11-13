@@ -1,0 +1,41 @@
+{
+  "aggregate": "M3",
+  "basis": "index of end-of-month notional stocks",
+  "blank_rows": 0,
+  "columns": [
+    "period",
+    "value"
+  ],
+  "currency": "EUR",
+  "description": "Monetary aggregate M3, euro area (changing composition), index of notional stocks (adjusted for reclassifications, revaluations and composition changes such as Bulgaria joining on 2026-01-01)",
+  "fetched_at": "2026-11-11T22:58:55+00:00",
+  "field": "money",
+  "file": "data/raw/money/eur/money.csv",
+  "first_date": "2015-01-01",
+  "first_period": "2015-01",
+  "frequency": "monthly",
+  "last_date": "2026-09-01",
+  "last_observed_date": "2026-09-01",
+  "latest_period": "2026-09",
+  "method": "ECB data portal SDMX (csvdata), series as published",
+  "notes": [
+    "Method: the ECB's own published index of notional stocks (not reconstructed from flows)."
+  ],
+  "published_attributes": {
+    "DECIMALS": "5",
+    "TITLE": "Monetary aggregate M3, Index",
+    "TITLE_COMPL": "Euro area (changing composition), Index of Notional Stocks, MFIs, central government and post office giro institutions reporting sector - Monetary aggregate M3, All currencies combined - Euro area (changing composition) counterpart, Non-MFIs excluding central government sector, denominated in Euro, data Working day and seasonally adjusted",
+    "UNIT": "EUR",
+    "UNIT_INDEX_BASE": "Dec10 = 100",
+    "UNIT_MULT": "0"
+  },
+  "publisher": "European Central Bank",
+  "refresh": "history from 2015-01 re-downloaded every run; a failed fetch keeps the previous file",
+  "response_sha256": "94e6b0cef8335308db47e78d83a8319b1bad7d87dd77979acd667205ee5a1eb8",
+  "role": "primary",
+  "rows": 141,
+  "seasonal_adjustment": "working-day and seasonally adjusted",
+  "series_id": "BSI.M.U2.Y.V.M30.X.I.U2.2300.Z01.E",
+  "source_url": "https://data-api.ecb.europa.eu/service/data/BSI/M.U2.Y.V.M30.X.I.U2.2300.Z01.E?format=csvdata&startPeriod=2015-01",
+  "units": "index (December 2010=100; ECB index of notional stocks)"
+}

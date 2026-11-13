@@ -1,0 +1,13 @@
+near_share_pct,price_assumption,expected_usd,typical_year_usd,one_year_in_twenty_worse_usd,simulated_years_ahead_per_hundred,days_to_sell_on_coinbase
+1.0,demand flat in dollars,-102000.0,-2223000.0,-4635000.0,28.9,0.83
+1.0,price flat on average,24000.0,-2149000.0,-4621000.0,29.6,0.83
+1.0,demand keeps pace with dollar money,188000.0,-2053000.0,-4603000.0,30.7,0.83
+2.0,demand flat in dollars,-204000.0,-4446000.0,-9271000.0,28.9,1.66
+2.0,price flat on average,48000.0,-4298000.0,-9242000.0,29.6,1.66
+2.0,demand keeps pace with dollar money,376000.0,-4107000.0,-9207000.0,30.7,1.66
+5.0,demand flat in dollars,-511000.0,-11114000.0,-23176000.0,28.9,4.14
+5.0,price flat on average,120000.0,-10746000.0,-23106000.0,29.6,4.14
+5.0,demand keeps pace with dollar money,939000.0,-10267000.0,-23017000.0,30.7,4.14
+10.0,demand flat in dollars,-1022000.0,-22228000.0,-46353000.0,28.9,8.29
+10.0,price flat on average,239000.0,-21491000.0,-46211000.0,29.6,8.29
+10.0,demand keeps pace with dollar money,1879000.0,-20534000.0,-46034000.0,30.7,8.29

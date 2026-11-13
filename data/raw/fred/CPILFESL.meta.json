@@ -1,0 +1,24 @@
+{
+  "blank_rows": 1,
+  "columns": [
+    "date",
+    "value"
+  ],
+  "description": "CPI for all urban consumers, all items less food and energy, monthly, SA, index 1982-1984=100",
+  "fetch_day_utc": "2026-11-11",
+  "fetched_at": "2026-11-11T22:58:36+00:00",
+  "file": "data/raw/fred/CPILFESL.csv",
+  "first_date": "1957-01-01",
+  "http_last_modified": "Tue, 10 Nov 2026 14:13:38 GMT",
+  "last_date": "2026-10-01",
+  "last_observed_date": "2026-10-01",
+  "missing_markers": [
+    ".",
+    ""
+  ],
+  "refresh": "full history re-downloaded every run (FRED revises past values; vintage_date is ignored here)",
+  "rows": 838,
+  "rows_after_fetch_date": 0,
+  "series_id": "CPILFESL",
+  "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPILFESL"
+}

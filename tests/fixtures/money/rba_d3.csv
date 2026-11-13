@@ -1,0 +1,14 @@
+D3 MONETARY AGGREGATES
+Title,Currency,Transaction Deposits with ADIs,M1,Certificates of deposit issued by ADIs,Non-Transaction Deposits with ADIs,M3,Other borrowings from private sector by AFIs,Broad money,Currency: Seasonally adjusted,M1: Seasonally adjusted,M3: Seasonally adjusted,Broad money: Seasonally adjusted,Money base,Offshore borrowings by AFIs
+Description,Currency – For series breaks see Series Breaks,Transaction Deposits with ADIs - For series breaks see Series Breaks,M1 – For series breaks see Series Breaks,Certificates of deposit issued by banks – For series breaks see Series Breaks,Non-Transaction Deposits with ADIs - For series breaks see Series Breaks,M3 – For series breaks see Series Breaks,Other borrowings from private sector by AFIs – For series breaks see Series Breaks,Broad money – For series breaks see Series Breaks,Currency: Seasonally adjusted – For series breaks see Series Breaks,M1: Seasonally adjusted – For series breaks see Series Breaks,M3: Seasonally adjusted – For series breaks see Series Breaks,Broad money: Seasonally adjusted – For series breaks see Series Breaks,Money base – For series breaks see Series Breaks,Offshore borrowings by AFIs – For series breaks see Series Breaks
+Frequency,Monthly,Monthly,Monthly,Monthly,Monthly,Monthly,Monthly,Monthly,Monthly,Monthly,Monthly,Monthly,Monthly,Monthly
+Type,Original,Original,Original,Original,Original,Original,Original,Original,Seasonally adjusted,Seasonally adjusted,Seasonally adjusted,Seasonally adjusted,Original,Original
+Units,$ billion,$ billion,$ billion,$ billion,$ billion,$ billion,$ billion,$ billion,$ billion,$ billion,$ billion,$ billion,$ billion,$ billion
+
+
+Source,RBA,RBA,RBA,RBA,RBA,RBA,RBA,RBA,RBA,RBA,RBA,RBA,RBA,RBA
+Publication date,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026,30-Oct-2026
+Series ID,DMACN,DMATD,DMAM1N,DMAODCD,DMANTD,DMAM3N,DMANBPA,DMABMN,DMACS,DMAM1S,DMAM3S,DMABMS,DMAMMB,DMAMOAFI
+31/07/2026,106.3,1925.3,2025.3,195.9,1289.2,3510.4,13.7,3524.1,106.6,2009.0,3490.6,3504.3,308.0,534.1
+31/08/2026,106.9,1903.0,2003.5,194.5,1297.8,3495.8,13.7,3509.5,106.9,2012.4,3492.9,3506.9,304.9,526.8
+30/09/2026,107.4,1922.0,2022.8,178.4,1297.2,3498.4,13.8,3512.1,107.2,2024.8,3499.0,3513.2,292.1,530.7

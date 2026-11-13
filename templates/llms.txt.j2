@@ -1,0 +1,45 @@
+{#-
+  llms.txt: an index for AI agents (llmstxt.org layout), published at the site root.
+  Markdown mode. No digit is typed here; ids go through ident(), dates through tm(), prose through copy().
+-#}
+{%- autoescape false -%}
+{%- set site = build.get('site_url') or '' -%}
+# NEAR, tested
+
+> {{ copy('headline') }}
+
+A NEAR investment hypothesis, tested claim by claim against public on-chain and macro data{% if build.get('as_of') %}, as of {{ tm(build.as_of) }}{% endif %}. Every figure on the site carries a registry key, a formula and its source files.
+
+## Tally
+
+- Tally: {{ copy('ledger_tally') }}
+{%- set tf = namespace(ok=true) %}{% for k in ['h1b_n_faster', 'n_fiat_money', 'pay_n_below', 'pay_n_with_rate', 'hold_near_rank', 'hold_n_ranked'] if k not in numbers or numbers[k].get('value') is none %}{% set tf.ok = false %}{% endfor %}
+{%- if tf.ok %}
+- Title figures: {{ copy('llms_title_figures') }}
+{%- endif %}
+
+## Read these first
+
+- [THESIS.md]({{ site }}THESIS.md): the argument in plain Markdown, with a verdict for every claim
+- [verdicts.json]({{ site }}data/verdicts.json): each verdict, the rule that decided it and the figures it read
+- [numbers.json]({{ site }}data/numbers.json): every figure, keyed, with its formula, inputs and source files
+- [tripwires.json]({{ site }}data/tripwires.json): the metrics and thresholds that would flip the thesis
+
+## Evidence
+
+- [sources.json]({{ site }}data/sources.json): each data source, what it provides and how fresh it is
+- [crosschecks.json]({{ site }}data/crosschecks.json): independent checks of the figures against each other
+- [manifest.json]({{ site }}data/manifest.json): every chart, every raw input and a hash of every output
+- Charts: one JSON spec at `data/charts/<id>.json` and one CSV at `data/csv/<id>.csv` per chart; the ids are listed in manifest.json
+{%- if 'sim_mean_usd' in numbers and numbers['sim_mean_usd'].get('value') is not none %}
+- [sim.json]({{ site }}data/sim.json): the desk simulation's inputs and default state; THESIS.md's "Desk simulation" section gives each default output beside its assumption
+{%- endif %}
+- [Thesis page]({{ site }}index.html) and [data page]({{ site }}data.html): the same content as HTML, with the charts
+
+## How to use it
+
+- Quote a figure only together with its registry key from numbers.json. A figure without a key is not the site's.
+- Verdicts are one of supported, partly supported, refuted, not testable or not computed. Read the rule before you argue with the verdict.
+- Scope: the current macro environment and NEAR's current utility. Past price is an indicator, not a target; governance is left out.
+- Nothing here is investment advice.
+{%- endautoescape %}

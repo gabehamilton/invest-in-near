@@ -1,0 +1,190 @@
+{#-
+  THESIS.md. Markdown mode: helpers return plain text.
+  No digit is typed here outside fenced code. Ids and keys go through ident(), figures through
+  num()/text(), dates through tm(), data-file strings through cite().
+-#}
+{%- autoescape false -%}
+{%- set ledger_main = ['H1', 'H1b', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8'] -%}
+{%- set ledger_hidden = ['H9', 'H10', 'H12'] -%}
+{%- set all_claims = ledger_main + ledger_hidden + ['H6_near'] -%}
+{#- sentences printed after the lede -#}
+{%- set lede_parts = ['lede_h6'] -%}
+{%- set objections = ['O1', 'O2', 'O3', 'O4', 'O5'] -%}
+{%- macro vword(cid) -%}{{ (verdicts.get(cid) or {}).get('verdict') or '' }}{%- endmacro -%}
+{%- macro cell(s) -%}{{ s|replace('|', '/')|replace('\n', ' ') }}{%- endmacro -%}
+{%- set labels = rules.get('labels') or {} -%}
+{#- ids link to the published page (build.site_url), or to site/index.html when no URL is set -#}
+{%- set page = (build.get('site_url') or 'site/') ~ 'index.html#' -%}
+{%- macro measured(cid) -%}
+{%- set keys = (verdicts.get(cid) or {}).get('metric_keys') or [] -%}
+{%- for k in keys if k in numbers %}{% if labels.get(k) %}{{ labels[k] }}{% else %}`{{ k }}`{% endif %} {{ num(k) }}{{ ', ' if not loop.last }}{% endfor -%}
+{%- endmacro -%}
+{%- macro clink(c) -%}{{ ident(c, page) }}{%- endmacro -%}
+{%- macro hlink(cid) -%}{{ ident(cid, page ~ 'claim-') }}{%- endmacro -%}
+{%- macro charts_of(cid, word=true) -%}
+{%- set cs = (verdicts.get(cid) or {}).get('chart_ids') or [] -%}
+{%- if not cs and cid in rules and rules[cid].get('chart') %}{% set cs = rules[cid].chart if rules[cid].chart is not string else [rules[cid].chart] %}{% endif -%}
+{% if word and cs %}{{ 'Charts ' if cs|length > 1 else 'Chart ' }}{% endif %}{%- for c in cs %}{{ clink(c) }}{{ ', ' if not loop.last }}{% endfor -%}
+{%- endmacro -%}
+{%- macro trip_table(group) -%}
+| Tripwire | Metric | Now | Threshold | State | What it would mean | Chart |
+|---|---|---|---|---|---|---|
+{% for tid, tw in tripwires.items() if (tw.get('group') or 'break') == group -%}
+| {{ ident(tid) }} | {% if ((rules.get('tripwires') or {}).get(tid) or {}).get('metric_label') %}{{ cell(rule(tid, 'metric_label')) }}{% else %}{{ ident(tw.get('metric') or tid) }}{% endif %} | {% if tw.get('metric') in numbers %}{{ trip_now(tid) }}{% else %}n/a{% endif %} | {{ cell(rule(tid, 'threshold_text')) }} | {{ tw.get('state') or 'not computed' }} | {{ cell(rule(tid, 'meaning')) }} | {% if tw.get('chart') %}{{ clink(tw.chart) }}{% endif %} |
+{% endfor -%}
+{%- endmacro -%}
+{#- by kind: a hidden assumption prints its assumption, a reframe the reframed claim, a stated claim its quote -#}
+{%- macro stated(cid) -%}{% if rules[cid].get('kind') == 'hidden' and rules[cid].get('assumption') %}Assumed: {{ rule(cid, 'assumption')|trim('.') }}{% elif rules[cid].get('kind') == 'reframe' and rules[cid].get('title') %}{{ rule(cid, 'title') }}{% elif rules[cid].get('claimed') %}{{ claimed(cid) }}{% elif rules[cid].get('title') %}{{ rule(cid, 'title') }}{% endif %}{%- endmacro -%}
+# NEAR, tested
+
+**{{ copy('headline') }}**
+
+**The claim under test:** {{ claimed('thesis') }}
+
+{{ copy('lede') }}{% for part in lede_parts %}{% set t = copy(part) %}{% if t|trim %} {{ t }}{% endif %}{% endfor %}
+
+_{% if build.get('as_of') %}Data as of {{ tm(build.as_of) }}. {% endif %}Every figure comes from `site/data/numbers.json`, where each one has its formula, inputs and raw files. The charts are on the site{% if build.get('site_url') %}, {{ build.site_url }} (`site/index.html` in this repository){% else %}: `site/index.html`{% endif %}, with sources and formulas on its data page._
+
+## The claim
+
+{{ copy('thesis_claim') }}
+
+**Scope.** {{ copy('scope_statement') }}
+{% set strong, weak, thin = copy('strongest'), copy('weakest'), copy('thinnest') %}
+{%- if strong|trim %}
+**Strongest:** {{ strong }} Chart {{ clink(copy_chart('strongest', 'c02')) }}.
+{% endif %}
+{%- if weak|trim %}
+**Weakest:** {{ weak }} Chart {{ clink(copy_chart('weakest', 'c01')) }}.
+{% endif %}
+{%- if thin|trim %}
+**Thinnest margin among what holds:** {{ thin }} Chart {{ clink(copy_chart('thinnest', 'c01')) }}.
+{% endif %}
+{{ copy('no_price_target') }}
+
+## Terms
+
+{{ copy('id_key') }}
+
+{% for t in glossary -%}
+- **{{ text(t.term) }}**: {{ text(t.text) }}
+{% endfor %}
+## The thesis that survives
+
+{{ copy('thesis_paragraph') }}
+
+**{{ copy('tile_money_title') }}** ({{ ident('H1b') }} {{ chip('H1b') }} · {{ ident('H2') }} {{ chip('H2') }}). {{ copy('tile_money_label') }}: {{ num('h1b_gap_med') }}. {{ copy('tile_money_sub') }} Charts {{ clink('c21') }}, {{ clink('c11') }}.
+
+**{{ copy('tile_rates_title') }}** ({{ ident('H3') }} {{ chip('H3') }} · {{ ident('H5') }} {{ chip('H5') }} · {{ ident('H4') }} {{ chip('H4') }}). {{ copy('tile_rates_label') }}: {{ num('spread_adj_365') }}. {{ copy('tile_rates_sub') }} Charts {{ clink('c01') }}, {{ clink('c13') }}, {{ clink('c12') }}.
+{%- set pr_need = ['pay_n_below', 'pay_n_with_rate', 'hold_near_rank', 'hold_n_ranked', 'hold_near_net', 'y_lst_365', 'g_365', 'latest_rpc_date'] %}
+{%- set pr = namespace(ok=true) %}{% for k in pr_need if k not in numbers or numbers[k].get('value') is none %}{% set pr.ok = false %}{% endfor %}
+{%- if pr.ok %}
+
+**{{ copy('payrank_title') }}**. {{ copy('payrank_pay') }} {{ copy('payrank_rank') }}
+{%- endif %}
+
+## Evidence for
+{% for cid in all_claims if vword(cid) == 'Supported' and cid in rules %}
+- {{ hlink(cid) }} {{ stated(cid) }}: {{ chip(cid) }}.{% set got = measured(cid) %}{% if got %} Measured: {{ got }}.{% endif %} {{ charts_of(cid) }}.
+{%- endfor %}
+
+## Evidence against
+
+{% for cid in all_claims if vword(cid) in ['Refuted', 'Partly'] and cid in rules -%}
+- {% if vword(cid) == 'Partly' %}Partly: {% endif %}{{ hlink(cid) }} {{ stated(cid) }}: {{ chip(cid) }}.{% if rules[cid].get('test') %} Test: {{ rule(cid, 'test') }}{% endif %}{% set got = measured(cid) %}{% if got %} Measured: {{ got }}.{% endif %} {{ charts_of(cid) }}.
+{% endfor -%}
+- {{ copy('against_endogeneity') }}
+- {{ copy('against_intents') }}
+- {{ copy('against_treasury') }}
+
+### The objections, answered
+
+{% for o in objections -%}
+**{{ ident(o, page) }} {{ copy(o ~ '_heading') }}** Stance: {{ copy(o ~ '_stance') }}. {{ copy(o ~ '_answer') }}
+
+{% endfor -%}
+
+## What would change my mind
+
+{{ copy('tripwires_intro') }} The supply comparison fails on {{ ident('H1b') }}'s own rule, {{ rule('H1b', 'refuted') }}; the staking comparison on {{ ident('H3') }}'s, {{ rule('H3', 'refuted') }}.
+
+### What would break it
+
+{{ copy('tripwires_break_intro') }}
+
+{{ trip_table('break') }}
+### What would confirm it
+
+{{ copy('tripwires_confirm_intro') }}
+
+{{ trip_table('confirm') }}
+## The original hypothesis, audited
+
+| Claim | As stated | Test | Verdict | Measured | Chart |
+|---|---|---|---|---|---|
+{% for cid in ledger_main + ledger_hidden if cid in rules -%}
+| {{ hlink(cid) }} | {{ cell(stated(cid)) }} | {% if rules[cid].get('test') %}{{ cell(rule(cid, 'test')) }}{% endif %} | {% if cid in verdicts %}{{ chip(cid) }}{% endif %} | {{ cell(measured(cid)) }} | {{ charts_of(cid, false) }} |
+{% endfor %}
+The rules that decided each verdict are listed at the end.
+
+## Not computed, and why
+
+{# one line per claim that has no verdict, in words, with the figures its rule needs and cannot get (bookkeeping
+   nulls such as margins and cross-check keys stay in numbers.json with their reasons) -#}
+{% set ns = namespace(any=false) -%}
+{% for cid in all_claims if vword(cid) in ['Not testable', 'Not computed'] and cid in rules -%}
+{% set ns.any = true -%}
+{% set r = rules[cid] -%}
+{% set toks = ((r.get('supported') or '') ~ ' ' ~ (r.get('partly') or '') ~ ' ' ~ (r.get('refuted') or '')).replace('(', ' ').replace(')', ' ').split() -%}
+{% set missing = [] -%}
+{% for k in toks if k in numbers and numbers[k].get('value') is none and k not in missing %}{% set _ = missing.append(k) %}{% endfor -%}
+- {{ hlink(cid) }} {{ rule(cid, 'title') }}, {{ chip(cid) }}: {% if vword(cid) == 'Not testable' and r.get('untestable_reason') %}{{ rule(cid, 'untestable_reason') }}{% elif (verdicts.get(cid) or {}).get('null_reason') %}{{ cite(verdicts[cid].null_reason) }}{% elif r.get('not_computed_reason') %}{{ rule(cid, 'not_computed_reason') }}{% endif %}.{% if r.get('trigger') %} Would make it testable: {{ rule(cid, 'trigger') }}.{% endif %}{% if missing %} Not computed until then: {% for k in missing %}{% if labels.get(k) %}{{ labels[k] }} ({{ ident(k) }}){% else %}{{ ident(k) }}{% endif %}{{ ', ' if not loop.last }}{% endfor %}.{% endif %}
+{% endfor -%}
+{% for cid, ch in charts|dictsort if ch.get('status') == 'unavailable' -%}
+{% set ns.any = true -%}
+{% set es = ch.get('empty_state') or {} -%}
+- Chart {{ ident(cid) }}: {{ cite((es.get('reason') or 'unavailable')|trim|trim('.')) }}.{% if es.get('needs') %} Needs {{ cite(es.needs|trim|trim('.')) }}.{% endif %}
+{% endfor -%}
+{% if not ns.any -%}
+Every claim and chart has its data.
+{% endif %}
+{%- set desk_need = ['sim_mean_usd', 'sim_mean_dir', 'sim_desk_usd', 'sim_horizon_days', 'sim_split_usd', 'sim_split_eur', 'sim_share', 'sim_near_usd', 'sim_carry_usd', 'sim_carry_euro_usd', 'sim_mean_dollar_only_usd', 'sim_median_usd', 'sim_median_dir', 'sim_p05_usd', 'sim_p05_dir', 'sim_es95_usd', 'sim_es_interest_years', 'sim_p_beat_n', 'sim_dots', 'sim_tail_n', 'sim_be_mu_median', 'sim_be_cost', 'sim_exit_days', 'sim_mean_value_flat_usd', 'sim_mean_value_flat_dir', 'sim_mean_thesis_usd', 'sim_mean_thesis_dir', 'sim_mu_thesis_m2', 'effr_latest', 'estr_latest', 'y_lst_365', 'rv_365_near', 'sim_paths'] %}
+{%- set dk = namespace(ok=true) %}{% for k in desk_need if k not in numbers or numbers[k].get('value') is none %}{% set dk.ok = false %}{% endfor %}
+{%- if dk.ok %}
+## Desk simulation
+
+{{ copy('film_desk_assumption') }}
+
+Each default output, beside the assumption it rests on:
+
+- The desk: {{ num('sim_desk_usd') }} held for {{ num('sim_horizon_days') }}, {{ num('sim_split_usd') }} in dollar cash at the effective fed funds rate ({{ num('effr_latest') }}) and {{ num('sim_split_eur') }} in euro cash at €STR ({{ num('estr_latest') }}). Assumes rates stay where they are today; the split is a benchmark proxy from the two currencies' shares of currency trading, not any desk's holdings.
+- The NEAR part: {{ num('sim_share') }} of the desk, {{ num('sim_near_usd') }}, liquid-staked at {{ num('y_lst_365') }} and bought with dollars and euros in the cash's own proportions. Assumes the largest share whose bad-year average fits inside one year of the whole desk's interest.
+- Expected benefit: {{ num('sim_mean_usd', absolute=true) }} {{ num('sim_mean_dir') }} of dollars and euros only; the yield over cash, before any price change, is {{ num('sim_carry_usd') }} of it, and {{ num('sim_carry_euro_usd') }} of that is the euro-dollar rate gap (euro cash earns less than dollar cash), so against dollar cash alone staking adds {{ num('sim_mean_dollar_only_usd') }}. Assumes NEAR's price is flat on average and no trading or custody costs; it is exact (closed form), not simulated.
+- The same expected benefit under the other price assumptions: {{ num('sim_mean_value_flat_usd', absolute=true) }} {{ num('sim_mean_value_flat_dir') }} if demand for NEAR is flat in dollars, {{ num('sim_mean_thesis_usd', absolute=true) }} {{ num('sim_mean_thesis_dir') }} if the thesis's implication holds ({{ num('sim_mu_thesis_m2') }}, which assumes demand for NEAR keeps pace with dollar money).
+- Typical year: {{ num('sim_median_usd', absolute=true) }} {{ num('sim_median_dir') }}. Assumes the next year's daily moves look like the last year's, a volatility of {{ num('rv_365_near') }}, over {{ num('sim_paths') }} simulated years.
+- Ahead of dollars and euros only in {{ num('sim_p_beat_n') }} of {{ num('sim_dots') }} simulated years, whatever the NEAR share.
+- Bad year: {{ num('sim_tail_n') }} in {{ num('sim_dots') }} simulated years end worse than {{ num('sim_p05_usd', absolute=true) }} {{ num('sim_p05_dir') }}, and those years average {{ num('sim_es95_usd') }} behind, about {{ num('sim_es_interest_years') }} years of the whole desk's interest.
+- For the mix to come out ahead in most years, NEAR's price would need to rise about {{ num('sim_be_mu_median') }} on average; costs above {{ num('sim_be_cost') }} of the NEAR part would erase the expected benefit.
+- Getting out: about {{ num('sim_exit_days') }} to sell the NEAR part at a whole median day of Coinbase volume, before unstaking.
+
+{{ copy('film_desk_note') }}
+{% endif %}
+## Limits and open questions
+
+{{ copy('limits_intro') }}
+
+{% set items = open_items.get('items', []) if open_items is mapping else open_items -%}
+{% for it in items -%}
+- **{{ text(it.title) }}** ({{ it.status }}{% if it.get('refs') %}; {% for r in it.refs %}{{ ident(r) }}{{ ', ' if not loop.last }}{% endfor %}{% endif %}). {{ text(it.text) }} Would resolve it: {{ text(it.resolve) }}
+{% endfor %}
+## Rules, applied in order
+
+A null input gives Not computed; then Not testable, Supported, Refuted; anything else is Partly.
+
+{% for cid in claim_order if cid in rules -%}
+- {{ ident(cid) }}: {{ rule(cid) }}.{% if cid in verdicts and verdicts[cid].get('binding_condition') %} Deciding condition: {{ rule(cid, 'binding') }}.{% endif %}
+{% endfor %}
+---
+
+{{ copy('disclosure') }}
+{% endautoescape %}

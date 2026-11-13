@@ -1,0 +1,33 @@
+{
+  "aggregate": "M3",
+  "basis": "monthly average of daily levels",
+  "blank_rows": 0,
+  "boj_last_update": "20261111",
+  "columns": [
+    "period",
+    "value"
+  ],
+  "currency": "JPY",
+  "description": "M3, average amounts outstanding (Bank of Japan money stock)",
+  "fetched_at": "2026-11-11T22:59:01+00:00",
+  "field": "money",
+  "file": "data/raw/money/jpy/money.csv",
+  "first_date": "2015-01-01",
+  "first_period": "2015-01",
+  "frequency": "monthly",
+  "last_date": "2026-10-01",
+  "last_observed_date": "2026-10-01",
+  "latest_period": "2026-10",
+  "method": "Bank of Japan time-series data search API (CSV, keyless)",
+  "name_of_time_series": "M3/Average Amounts Outstanding/Seasonally Adjusted/Money Stock",
+  "notes": [],
+  "publisher": "Bank of Japan",
+  "refresh": "history from 2015-01 re-downloaded every run; a failed fetch keeps the previous file",
+  "response_sha256": "e2d27cce0010bbd348ffa759435587232cf8aef602e47d855c5077ab58595815",
+  "role": "primary",
+  "rows": 142,
+  "seasonal_adjustment": "seasonally adjusted",
+  "series_id": "MAM1XAM3M3MO",
+  "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=csv&lang=en&db=MD02&startDate=201501&code=MAM1XAM3M3MO%2CMAM1XAM2M2MO",
+  "units": "JPY 100 million"
+}

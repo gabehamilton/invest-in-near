@@ -1,0 +1,654 @@
+{#-
+  Shared HTML macros for index.html and data.html.
+
+  Rules for everything in templates/:
+  - Never type a digit into visible text. Figures come through num() / text(), ids through ident(),
+    dates through tm(), thresholds through rule(), hypothesis fragments through claimed().
+  - Strings that come from data files (table cells, source names, paths, model-written reasons)
+    go through raw(), which wraps them in <code class="raw"> so the number lint treats them as data,
+    not prose. Style makes .raw read like body text.
+  - Every macro body sets autoescape itself, so escaping does not depend on how the build configures
+    autoescape for partials.
+  - Import with context: {% import '_macros.html.j2' as m with context %}.
+-#}
+
+{#- Data-provided text: escaped, lint-exempt, None shown as n/a. -#}
+{% macro raw(s) -%}{% autoescape true -%}
+{%- if s is none -%}<span class="na">n/a</span>
+{%- elif s is sameas true -%}<code class="raw">yes</code>
+{%- elif s is sameas false -%}<code class="raw">no</code>
+{%- else -%}<code class="raw">{{ s }}</code>
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- A comma-separated list of ids. -#}
+{% macro ids(list) -%}{% autoescape true -%}
+{%- for x in list -%}{{ ident(x) }}{{ ', ' if not loop.last }}{%- endfor -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- Links to chart cards on the main page (or the same page when here=true). here=true is the main page; data.html
+    passes here=false. -#}
+{% macro chart_links(list, here=true) -%}{% autoescape true -%}
+{%- for c in list -%}
+{%- set href = ('' if here else 'index.html') ~ '#' ~ c -%}
+<a class="chart-link" href="{{ href }}">{{ ident(c) }}</a>{{ ' ' if not loop.last }}{%- endfor -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- Words for source states in sources.json. -#}
+{% macro state_word(state) -%}{% autoescape true -%}
+{%- set words = {'ok': 'current', 'lagging': 'lagging', 'stale': 'stale', 'partial': 'partial', 'not_configured': 'not configured', 'failed': 'cache in use', 'withheld': 'withheld'} -%}
+{{- words.get(state, state) -}}
+{%- endautoescape %}{%- endmacro %}
+
+{#- Measured values for a claim: every metric key its verdict read. -#}
+{#- Measured values of a claim. labelled: the plain-English label from rules.toml [labels], with the registry key
+    in the tooltip (the ledger); otherwise the raw key (the verdict detail, next to the rule that names it). -#}
+{#- plain: labelled figures only, with no key in a tooltip (the film page and its evidence show no key names). -#}
+{% macro measured(cid, labelled=false, plain=false) -%}{% autoescape true -%}
+{%- set v = verdicts.get(cid) -%}
+{%- set labels = rules.get('labels') or {} -%}
+{%- if v is mapping -%}
+{%- set keys = v.get('metric_keys') or [] -%}
+{%- for k in keys if k in numbers and (not plain or labels.get(k)) -%}
+{%- if plain -%}<span class="measured"><span class="k-label">{{ labels[k] }}</span> {{ num(k) }}</span>
+{%- elif labelled and labels.get(k) -%}<span class="measured" title="{{ k }}"><span class="k-label">{{ labels[k] }}</span> {{ num(k) }}</span>
+{%- else -%}<span class="measured"><code class="k">{{ k }}</code> {{ num(k) }}</span>{%- endif -%}
+{{ ' ' if not loop.last }}{%- endfor -%}
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- Verdict chip with its rule and result in a disclosure. -#}
+{% macro verdict_detail(cid) -%}{% autoescape true -%}
+{%- if cid in verdicts and cid in rules -%}
+{%- set v = verdicts[cid] -%}
+{%- set r = rules[cid] -%}
+<details class="verdict" data-claim="{{ cid }}">
+  <summary>{{ chip(cid) }}<span class="verdict-more">rule and result</span></summary>
+  <dl class="verdict-rule">
+    {%- if r.get('not_computed_if') %}<dt>Not computed if</dt><dd>{{ rule(cid, 'not_computed_if') }}</dd>{% endif %}
+    {%- if r.get('untestable_if') %}<dt>Not testable if</dt><dd>{{ rule(cid, 'untestable_if') }}</dd>{% endif %}
+    {%- if r.get('supported') %}<dt>Supported if</dt><dd>{{ rule(cid, 'supported') }}</dd>{% endif %}
+    {%- if r.get('refuted') %}<dt>Refuted if</dt><dd>{{ rule(cid, 'refuted') }}</dd>{% endif %}
+    <dt>Partly</dt><dd>{% if r.get('partly') %}if {% endif %}{{ rule(cid, 'partly') }}</dd>
+    <dt>Result</dt>
+    <dd>
+      {%- set got = measured(cid) -%}
+      {%- if got|trim %}{{ got }}{% else %}<span class="na">no metric value</span>{% endif -%}
+    </dd>
+    {%- if v.get('binding_condition') %}<dt>Decided by</dt><dd>{{ rule(cid, 'binding') }}</dd>{% endif %}
+    {%- set mk = v.get('margin_key') -%}
+    {%- set mkeys = (v.get('margin_detail') or {}).get('keys') or [] -%}
+    {%- set mlabel = (rules.get('labels') or {}).get(mkeys[0]) if mkeys else none -%}
+    {%- if mk and mk in numbers and numbers[mk].get('value') is not none %}<dt>Margin</dt><dd>{{ num(mk) }} <span class="note-inline">from the deciding threshold{% if mlabel %}, on {{ mlabel }}{% endif %}</span></dd>{% endif %}
+    {%- if v.get('null_reason') %}<dt>Why not computed</dt><dd>{{ raw(v.null_reason) }}</dd>
+    {%- elif v.get('reason') %}<dt>Why</dt><dd>{{ raw(v.reason) }}</dd>{% endif %}
+    {%- if v.get('trigger') %}<dt>Would change if</dt><dd>{{ raw(v.trigger) }}</dd>{% endif %}
+  </dl>
+</details>
+{%- elif cid in verdicts -%}
+{{ chip(cid) }}
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- Stance badge for an objection: neutral ink, it describes our position, not a measurement. -#}
+{% macro stance(name) -%}{% autoescape true -%}
+<span class="stance"><span class="stance-k">Stance:</span> {{ copy(name) }}.</span>
+{%- endautoescape %}{%- endmacro %}
+
+{#- Status banner for charts that are not ok. -#}
+{% macro banner(ch) -%}{% autoescape true -%}
+{%- set kind = ch.status -%}
+{%- set label = {'fallback': 'Fallback series', 'partial': 'Partial data', 'error': 'Cached data', 'unavailable': 'Not computed'}.get(kind, 'Note') -%}
+{%- set default = {
+  'fallback': 'Built from a secondary computed series because the primary source was unavailable.',
+  'partial': 'The source ends early. The chart stops at its last real date.',
+  'error': 'The latest pull failed, so this chart uses the last good copy of the data.'
+}.get(kind, '') -%}
+{%- if ch.get('status_banner') or default -%}
+<p class="banner" data-kind="{{ kind }}" role="note"><span class="banner-k">{{ label }}</span> {% if ch.get('status_banner') %}{{ raw(ch.status_banner) }}{% else %}{{ default }}{% endif %}</p>
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- Empty state for an unavailable chart: neutral, names the reason and the input. -#}
+{% macro empty_state(ch) -%}{% autoescape true -%}
+{%- set es = ch.get('empty_state') or {} -%}
+<div class="empty" role="note">
+  <p class="empty-k">Not computed</p>
+  {%- if es.get('reason') %}<p>{{ raw(es.reason) }}</p>{% endif %}
+  <p>This chart needs {{ raw(es.get('needs') or 'an input that is missing') }}. The query is below, so you can see exactly what it asks for.</p>
+</div>
+{%- endautoescape %}{%- endmacro %}
+
+{#- A tripwire's metric in words (rules.toml metric_label); the registry key is the fallback. -#}
+{% macro trip_metric(tid, tw) -%}{% autoescape true -%}
+{%- if ((rules.get('tripwires') or {}).get(tid) or {}).get('metric_label') -%}{{ rule(tid, 'metric_label') }}
+{%- elif tw.get('metric_label') -%}{{ raw(tw.metric_label) }}
+{%- else -%}<code class="k">{{ tw.get('metric') or tid }}</code>
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- Table column heads: snake_case data columns read as words; a few long ones get a short head. -#}
+{% macro twin_head(col) -%}{% autoescape true -%}
+{%- set heads = {'checked_at_http_status': 'Checked at', 'checked_at': 'Checked at', 'http_status': 'HTTP', 'endpoint': 'Endpoint'} -%}
+{%- set c = col|string -%}
+{%- set units = {'pct': '(%)', 'pp': '(pp)', 'bp': '(bp)'} -%}
+{%- set names = {'lst': 'LST', 'dff': 'DFF', 'ffcomp': 'fed funds compounded', 'usd': 'USD', 'near': 'NEAR', 'cpi': 'CPI', 'pce': 'PCE', 'yoy': 'YoY', 'fomc': 'FOMC', 'eur': 'EUR', 'btc': 'BTC', 'eth': 'ETH', 'stnear': 'stNEAR'} -%}
+{%- set words = c.split('_') -%}
+{%- set unit = units.get(words|last) if words|length > true|int else none -%}
+{%- set ns = namespace(out=[]) -%}
+{%- for w in words -%}{%- if w and not (loop.last and unit) -%}{%- set ns.out = ns.out + [names.get(w|lower, w)] -%}{%- endif -%}{%- endfor -%}
+{%- if c in heads %}{{ heads[c] }}{% else %}{{ ns.out|join(' ') }}{% if unit %} {{ unit }}{% endif %}{% endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- One table cell. Most cells print the data string as is; an endpoint URL becomes a short link (the
+    full URL is its href and tooltip), and a "timestamp (HTTP status)" check reads as a time and a badge. -#}
+{% macro twin_cell(col, v) -%}{% autoescape true -%}
+{%- set c = col|string -%}
+{%- if v is string and c == 'endpoint' and v.startswith('http') -%}
+<a class="endpoint" href="{{ v }}" title="{{ v }}" rel="noopener">endpoint</a>
+{%- elif v is string and c in ['checked_at_http_status', 'checked_at'] and v -%}
+{%- set parts = v.split(' (', 1) -%}
+<span class="checked">{{ tm(parts|first) }}{% if parts|length > true|int %} <span class="http">{{ raw(parts|last|replace(')', '')) }}</span>{% endif %}</span>
+{%- elif c == 'http_status' and v is not none -%}
+<span class="http">{{ raw(v) }}</span>
+{%- elif v is number and v is not boolean and c.endswith('_pct') -%}{{ datum(v, '%') }}
+{%- elif v is number and v is not boolean and c.endswith('_pp') -%}{{ datum(v, 'pp') }}
+{%- elif v is float and v == v|round -%}{{ raw(v|int) }}
+{%- else -%}
+{{ raw(v) }}
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- A table twin: every value behind a chart (visible=true makes it the chart itself, for table forms). -#}
+{% macro table_twin(tid, t, visible=false, caption='') -%}{% autoescape true -%}
+{%- if t and t.get('rows') -%}
+<div class="twin{{ ' twin-visible' if visible }}" id="{{ tid }}"{% if not visible %} data-twin{% endif %} tabindex="0" role="region" aria-label="{{ caption or 'Table view' }}">
+  <table>
+    {%- if caption and visible %}
+    <caption class="tcap">{{ raw(caption) }}</caption>
+    {%- else %}
+    <caption class="vh">Table view{% if caption %}: {{ raw(caption) }}{% else %}: every value behind this chart{% endif %}</caption>
+    {%- endif %}
+    {%- set cols = t.get('columns') or [] %}
+    <thead><tr>{% for c in cols %}<th scope="col">{{ twin_head(c) }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {%- for row in t.rows %}
+      <tr>{% for v in row %}{% set c = cols[loop.index0] if loop.index0 < cols|length else '' %}{% if loop.first %}<th scope="row">{{ twin_cell(c, v) }}</th>{% else %}<td>{{ twin_cell(c, v) }}</td>{% endif %}{% endfor %}</tr>
+    {%- endfor %}
+    </tbody>
+  </table>
+  {%- if t.get('footnote') %}
+  <p class="tnote">{{ raw(t.footnote) }}</p>
+  {%- endif %}
+</div>
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- A table twin built from a panel's own series, for a plotted panel that ships no table (c14 liquidity).
+    Values go through datum(), so they are chart data, never typed figures. -#}
+{% macro series_twin(tid, ser, caption='', x_head='Date') -%}{% autoescape true -%}
+{%- set second = true|int -%}{#- index of the value in a [x, value, ...] point, without typing a digit -#}
+{%- if ser -%}
+<div class="twin" id="{{ tid }}" data-twin tabindex="0" role="region" aria-label="{{ caption or 'Table view' }}">
+  {%- for se in ser %}
+  <table>
+    <caption class="vh">Table view: {{ raw(se.get('label') or se.get('id')) }}</caption>
+    <thead><tr><th scope="col">{{ x_head }}</th><th scope="col">{{ raw(se.get('label') or se.get('id')) }}</th></tr></thead>
+    <tbody>
+    {%- for pt in se.get('points') or [] %}
+      <tr><th scope="row">{{ datum(pt|first) }}</th><td>{{ datum(pt[second] if pt|length > second else none, se.get('unit')) }}</td></tr>
+    {%- endfor %}
+    </tbody>
+  </table>
+  {%- endfor %}
+</div>
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- A checklist panel (row_templates): each cell is a registry template, so every figure is a .num span. -#}
+{% macro cell_text(tpl) -%}{% autoescape true -%}
+{%- if tpl is none -%}<span class="na">n/a</span>
+{%- elif '{' in tpl -%}{{ text(tpl) }}
+{%- else -%}{{ raw(tpl) }}
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{% macro outcome(key) -%}{% autoescape true -%}
+{%- if key and key in numbers -%}
+{#- the state word (pass, partial, fail) is a text figure; it only picks the chip style, num() prints it -#}
+{%- set state = (numbers[key].get('value') or '')|string|lower -%}
+<span class="outcome" data-outcome="{{ state }}"><span class="outcome-icon" aria-hidden="true"></span>{{ num(key) }}</span>
+{%- elif key -%}<span class="na">not computed</span>
+{%- else -%}<span class="na">n/a</span>
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{% macro checklist(p) -%}{% autoescape true -%}
+<div class="twin twin-visible checklist" tabindex="0" role="region" aria-label="{{ p.get('label') or 'Checklist' }}">
+  <table>
+    <caption class="vh">{{ raw(p.get('label') or 'Checklist') }}</caption>
+    <thead><tr><th scope="col">Requirement</th><th scope="col">As a dollar sweep</th><th scope="col">Result</th><th scope="col">For balances held in NEAR</th><th scope="col">Result</th></tr></thead>
+    <tbody>
+    {#- data-label names each cell's column when narrow screens stack a row into blocks (style.css) -#}
+    {%- for r in p.row_templates %}
+      <tr>
+        <th scope="row">{{ raw(r.get('requirement')) }}</th>
+        <td data-label="As a dollar sweep">{{ cell_text(r.get('usd')) }}</td>
+        <td class="res" data-label="Result">{{ outcome(r.get('usd_outcome_key')) }}</td>
+        {%- if r.get('near') and r.get('near') == r.get('usd') %}
+        <td data-label="For balances held in NEAR"><span class="same">Same evidence as the dollar column</span></td>
+        {%- else %}
+        <td data-label="For balances held in NEAR">{{ cell_text(r.get('near')) }}</td>
+        {%- endif %}
+        <td class="res" data-label="Result">{{ outcome(r.get('near_outcome_key')) }}</td>
+      </tr>
+    {%- endfor %}
+    </tbody>
+  </table>
+</div>
+{%- endautoescape %}{%- endmacro %}
+
+{#- Distinct category labels across a chart's series, in first-seen order (reserves row heights). -#}
+{% macro row_count(ch) -%}
+{%- set ns = namespace(cats=[]) -%}
+{%- for s in ch.get('series') or [] -%}{%- for p in s.points -%}{%- set x = p|first -%}{%- if x not in ns.cats -%}{%- set ns.cats = ns.cats + [x] -%}{%- endif -%}{%- endfor -%}{%- endfor -%}
+{{- ns.cats|length -}}
+{%- endmacro %}
+
+{#- The legend and plot shell that charts.js draws into, shared by the card and the film's chart figure.
+    film=true: the picture is aria-hidden inside a figure whose caption carries the words, so it takes no tab stop. -#}
+{% macro plot_markup(ch, film=false, focus='') -%}{% autoescape true -%}
+{%- set form = ch.get('form') or 'empty' -%}
+{%- set series = ch.get('series') or [] -%}
+{%- set ns = namespace(plot=[]) -%}
+{%- for p in ch.get('panels') or [] -%}
+  {%- set own = series|selectattr('panel', 'equalto', p.get('id'))|list -%}
+  {%- if p.get('series_ids') or own %}{% set ns.plot = ns.plot + [p] %}{% endif -%}
+{%- endfor -%}
+{%- set table_form = form == 'table' -%}
+{%- set plot_form = 'line' if table_form else form -%}
+{%- set row_form = form in ['bar', 'dot-range'] -%}
+{%- set nplot = ns.plot|length -%}
+{%- set nlabels = series|map(attribute='label')|unique|list|length -%}
+{%- set legend = form in ['dot-range', 'diverging-bar'] or (form == 'table-heatmap' and ch.get('reference_lines')) or (form not in ['bar', 'table', 'table-heatmap'] and nlabels > true|int) -%}
+<div class="legend{{ ' has-legend' if legend }}" aria-hidden="true"></div>
+  <div class="plot{{ ' multi' if nplot > true|int }}{{ ' mini' if table_form }}" data-form="{{ plot_form }}"
+    {%- if row_form %} style="--rows: {{ row_count(ch)|trim }}"{% elif form == 'table-heatmap' %} style="--rows: {{ series|length }}"{% endif %}
+    {%- if film %} aria-hidden="true"{% else %} tabindex="0" role="group" aria-label="Interactive chart. Arrow keys step through the values; Escape clears."{% endif %}>
+    {%- if nplot %}{% for p in ns.plot %}<div class="panel{{ ' focus' if focus and p.get('id') in focus.split() }}" data-panel="{{ p.get('id') }}"></div>{% endfor %}{% else %}<div class="panel"></div>{% endif -%}
+    <div class="tip" role="status" hidden></div>
+  </div>
+{%- endautoescape %}{%- endmacro %}
+
+{#- One chart card.
+    labels: ids shown in the eyebrow before the chart id (objection or audit id).
+    kicker: plain words for the eyebrow (e.g. "Lead chart").
+    method_key: registry key of a text number naming the method (shown in the eyebrow).
+    nested: true renders the title as h4 (card inside an objection section).
+    Panels: a panel with series is drawn by charts.js; a panel with only row_templates (checklist) or a
+    table is printed here. A plotted panel that carries its own table gets its own twin. -#}
+{% macro card(cid, labels=[], kicker='', method_key='', nested=false, plain=false) -%}{% autoescape true -%}
+{%- if cid in charts -%}
+{%- set ch = charts[cid] -%}
+{%- set form = ch.get('form') or 'empty' -%}
+{%- set status = ch.get('status') or 'ok' -%}
+{%- set unavailable = status == 'unavailable' or form == 'empty' -%}
+{%- set series = ch.get('series') or [] -%}
+{%- set ns = namespace(plot=[], tables=[], twins=[]) -%}
+{%- for p in ch.get('panels') or [] -%}
+  {%- set own = series|selectattr('panel', 'equalto', p.get('id'))|list -%}
+  {%- if p.get('series_ids') or own -%}
+    {%- set ns.plot = ns.plot + [p] -%}
+    {%- if (p.get('table') or {}).get('rows') %}{% set ns.twins = ns.twins + [p] %}{% endif -%}
+  {%- elif p.get('row_templates') or (p.get('table') or {}).get('rows') -%}
+    {%- set ns.tables = ns.tables + [p] -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- set table_form = form == 'table' -%}
+{%- set svg_form = (not unavailable) and series and (not table_form or ns.plot|length > 0) -%}
+{%- set chart_twin = not ns.twins and not (table_form and ns.tables) -%}
+{%- set ns2 = namespace(stw=[]) -%}
+{%- if not chart_twin and not ns.twins -%}
+  {%- for p in ns.plot -%}{%- set ns2.stw = ns2.stw + (series|selectattr('panel', 'equalto', p.get('id'))|list) -%}{%- endfor -%}
+{%- endif -%}
+{%- set has_twin = ns.twins or ns2.stw or (chart_twin and (ch.get('table') or {}).get('rows')) -%}
+<figure class="card" id="{{ cid }}" data-chart="{{ cid }}" data-form="{{ form }}" data-status="{{ status }}" aria-labelledby="{{ cid }}-t">
+  <p class="eyebrow">
+    {%- if kicker %}{{ kicker }} · {% endif -%}
+    {%- for l in labels %}{{ ident(l) }} · {% endfor -%}
+    {{ ident(cid) }}
+    {%- set tested = [] -%}
+    {%- for c in (ch.get('claims') or []) %}{% set _ = tested.append(c) %}{% endfor -%}
+    {%- if tested %} · tests {{ ids(tested) }}{% endif -%}
+    {%- if method_key and method_key in numbers %} · method: {{ num(method_key) }}{% endif -%}
+  </p>
+  {%- if nested %}
+  <h4 class="card-title" id="{{ cid }}-t">{{ text(ch.get('title_template') or ch.get('title') or '') }}</h4>
+  {%- else %}
+  <h3 class="card-title" id="{{ cid }}-t">{{ text(ch.get('title_template') or ch.get('title') or '') }}</h3>
+  {%- endif %}
+  <p class="card-lede">{{ text(ch.get('sentence_template') or ch.get('sentence') or '') }}</p>
+  {%- if ch.get('caveat_template') or ch.get('caveat') %}
+  <p class="card-caveat">{{ text(ch.get('caveat_template') or ch.get('caveat')) }}</p>
+  {%- endif %}
+  {%- set cv = [] %}
+  {%- for v in (ch.get('verdicts') or []) if v in verdicts %}{% set _ = cv.append(v) %}{% endfor %}
+  {%- if cv %}
+  <div class="chips card-chips">
+    {%- for v in cv %}
+    <div class="chip-row"><span class="chip-id">{{ ident(v) }}</span>{% if plain %}<a href="#claim-{{ v }}">{{ chip(v) }}</a>{% else %}{{ verdict_detail(v) }}{% endif %}</div>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+  {%- if not unavailable %}{% for p in ns.tables %}
+  {%- if p.get('row_templates') %}
+  {{ checklist(p) }}
+  {%- else %}
+  {{ table_twin(cid ~ '-' ~ p.get('id'), p.table, true, p.get('label') or '') }}
+  {%- endif %}
+  {%- endfor %}{% endif %}
+  {%- if svg_form %}
+  {{ plot_markup(ch) }}
+  {%- endif %}
+  {%- if unavailable %}
+  {{ empty_state(ch) }}
+  {%- elif status != 'ok' %}
+  {{ banner(ch) }}
+  {%- elif ch.get('status_banner') %}
+  <p class="banner" data-kind="note" role="note"><span class="banner-k">Note</span> {{ raw(ch.status_banner) }}</p>
+  {%- endif %}
+  <p class="load-note" role="note" hidden></p>
+  <footer class="card-foot">
+    <p class="src">Source: {% for s in ch.get('sources') or [] %}{{ raw(s) }}{{ '; ' if not loop.last }}{% endfor -%}
+      {%- if (ch.get('coverage') or {}).get('last') %} · data through {{ tm(ch.coverage.last) }}{% endif -%}
+      {%- if ch.get('as_of') %} · fetched {{ tm(ch.as_of) }}{% endif %}</p>
+    <div class="card-actions">
+      {%- if svg_form and has_twin %}<button type="button" class="tbl-btn" aria-expanded="false" aria-controls="{{ cid }}-table">Table</button>{% endif -%}
+      {%- if (ch.get('table') or {}).get('rows') %}<a class="csv" href="data/csv/{{ cid }}.csv" download>CSV</a>{% endif -%}
+    </div>
+    {%- set notes = ch.get('notes_templates') or ch.get('notes') or [] %}
+    {%- if notes %}
+    <details class="method-notes">
+      <summary>Method notes</summary>
+      <ul>
+        {%- for t in notes %}
+        <li>{{ text(t) }}</li>
+        {%- endfor %}
+      </ul>
+    </details>
+    {%- endif %}
+    <details class="query">
+      <summary>Show query</summary>
+      {%- for q in ch.get('queries') or [] %}
+      <div class="q">
+        <p class="q-head"><span class="q-kind">{{ q.get('kind') }}</span> {{ raw(q.get('endpoint')) }}{% if q.get('file') and not plain %} · {{ raw(q.file) }}{% endif %}</p>
+        {%- if q.get('body_or_sql') %}<pre><code>{{ q.body_or_sql }}</code></pre>{% endif %}
+      </div>
+      {%- endfor %}
+      {%- if plain %}
+      <p class="q-meta"><a href="data.html#numbers">Every formula, with its inputs and source files</a></p>
+      {%- else %}
+      <p class="q-meta">
+        {%- if ch.get('formula_ids') %}Formulas: {% for f in ch.formula_ids %}<a href="data.html#{{ f }}">{{ raw(f) }}</a>{{ ', ' if not loop.last }}{% endfor %} · {% endif -%}
+        Code: {{ raw(ch.get('code_ref')) }}</p>
+      {%- endif %}
+    </details>
+  </footer>
+  {%- if ns.twins %}
+  {%- for p in ns.twins %}
+  {{ table_twin(cid ~ '-table' ~ ('' if loop.first else '-' ~ p.get('id')), p.table, false, p.get('label') or '') }}
+  {%- endfor %}
+  {%- elif ns2.stw %}
+  {{ series_twin(cid ~ '-table', ns2.stw, '', 'Date' if (ch.get('x') or {}).get('type') == 'time' else 'Category') }}
+  {%- elif chart_twin %}
+  {{ table_twin(cid ~ '-table', ch.get('table') or {}, table_form and not unavailable) }}
+  {%- endif %}
+</figure>
+{%- else -%}
+<figure class="card" id="{{ cid }}" data-status="unavailable" aria-labelledby="{{ cid }}-t">
+  <p class="eyebrow">{% if kicker %}{{ kicker }} · {% endif %}{% for l in labels %}{{ ident(l) }} · {% endfor %}{{ ident(cid) }}</p>
+  {%- if nested %}<h4 class="card-title" id="{{ cid }}-t">This chart was not built</h4>{% else %}<h3 class="card-title" id="{{ cid }}-t">This chart was not built</h3>{% endif %}
+  <div class="empty" role="note"><p class="empty-k">Not computed</p><p>This chart has no data file.</p></div>
+</figure>
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- Source-status pill in the data page's top bar: three counts from the registry, linking to the status board.
+    Source names live only in the tooltip and on the board. Narrow screens keep one count: what needs
+    attention, or how many are current when nothing does. Older registries without the attention and
+    not-configured keys fall back to the stale and missing counts. -#}
+{% macro status_pill() -%}{% autoescape true -%}
+{%- set ok_k = 'n_sources_ok' if 'n_sources_ok' in numbers else '' -%}
+{%- set att_k = 'n_sources_attention' if 'n_sources_attention' in numbers else ('n_sources_stale' if 'n_sources_stale' in numbers else '') -%}
+{%- set nc_k = 'n_sources_not_configured' if 'n_sources_not_configured' in numbers else ('n_sources_missing' if 'n_sources_missing' in numbers else '') -%}
+{%- set att_n = ((numbers[att_k].get('value') or false|int) if att_k else false|int) -%}
+{%- set pstate = 'attention' if att_n > false|int else 'ok' -%}
+<a class="pill" href="data.html#status" data-state="{{ pstate }}" title="{% for s in sources %}{{ s.get('name') or s.get('id') or '' }}: {{ state_word(s.get('state') or '') }}{{ '; ' if not loop.last }}{% endfor %}">
+  <span class="pill-ico" data-state="{{ pstate }}" aria-hidden="true"></span>
+  <span class="vh">Source status: </span>
+  {%- if ok_k and att_k and nc_k %}
+  <span class="pill-text"><span class="pp{{ ' pp-narrow' if pstate == 'ok' }}">{{ num(ok_k) }} current</span><span class="pp-sep"> · </span><span class="pp{{ ' pp-narrow' if pstate != 'ok' }}">{{ num(att_k) }} {{ 'needs' if att_n == true|int else 'need' }} attention</span><span class="pp-sep"> · </span><span class="pp">{{ num(nc_k) }} not configured</span></span>
+  {%- else %}
+  <span class="pill-text">Source status</span>
+  {%- endif %}
+</a>
+{%- endautoescape %}{%- endmacro %}
+
+{#- Top bar shared by both pages. page: 'index' or 'data'. -#}
+{% macro topbar(page) -%}{% autoescape true -%}
+{%- set here = page == 'index' -%}
+{%- set base = '' if here else 'index.html' -%}
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">NEAR, tested</a>
+    <nav class="nav" aria-label="Sections">
+      <ul>
+        <li><a href="{{ base }}#evidence">Evidence</a></li>
+        <li><a href="{{ base }}#ledger">Ledger</a></li>
+        <li><a href="{{ base }}#mind">Change my mind</a></li>
+        <li><a href="{{ base }}#agent">Test yours</a></li>
+        <li><a href="data.html"{% if not here %} aria-current="page"{% endif %}>Data</a></li>
+        <li><a href="THESIS.md">THESIS.md</a></li>
+        <li><a href="https://github.com/gabehamilton/invest-in-near">Repo</a></li>
+      </ul>
+    </nav>
+    <div class="topbar-tools">
+      {%- if not here %}
+      {{ status_pill() }}
+      {%- endif %}
+      <button type="button" class="theme-btn" aria-label="Color theme" hidden><span class="theme-ico" aria-hidden="true"></span><span class="theme-label">Auto</span></button>
+    </div>
+  </div>
+</header>
+{%- endautoescape %}{%- endmacro %}
+
+{#- Footer shared by both pages. -#}
+{% macro footer() -%}{% autoescape true -%}
+<footer class="site-foot">
+  <div class="wrap">
+    <p>{% if build.get('as_of') %}Data as of {{ tm(build.as_of) }} · {% endif -%}
+      <a href="https://github.com/gabehamilton/invest-in-near/blob/main/LICENSE">MIT licence</a>
+      · <a href="https://github.com/gabehamilton/invest-in-near">Source on GitHub</a>
+      {%- if build.get('site_url') %} · live at <a href="{{ build.site_url }}">{{ build.site_url }}</a>{% endif %}</p>
+    <p class="disclosure">{{ copy('disclosure') }}</p>
+  </div>
+</footer>
+{%- endautoescape %}{%- endmacro %}
+
+{#- Document head shared by both pages. film=true (the film page): dark only, the two display fonts preloaded,
+    film.css (and sim.css when the desk scene is on the page, so its tiles are styled without JavaScript and sim.js
+    finds the link and adds none), and the one-line class setter as the only script in the head; the page's scripts
+    load deferred at the end of the body (film_scripts), so the thesis is in the document before any of them. -#}
+{% macro head(title, description, film=false, sim=false) -%}{% autoescape true -%}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="{{ 'dark' if film else 'light dark' }}">
+<title>{{ title }}</title>
+<meta name="description" content="{{ description }}">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+{%- if film %}
+<link rel="preload" href="assets/fonts/InstrumentSerif-Italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/MonaSans-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/film.css">
+{%- if sim %}
+<link rel="stylesheet" href="assets/sim.css">
+{%- endif %}
+<script>(function(d){d.documentElement.classList.add('js');d.documentElement.setAttribute('data-theme','dark');})(document);</script>
+{%- else %}
+<link rel="stylesheet" href="assets/style.css">
+<script>(function(d){d.documentElement.classList.add('js');try{var t=localStorage.getItem('near-theme');if(t==='light'||t==='dark')d.documentElement.setAttribute('data-theme',t);}catch(e){}})(document);</script>
+<script src="assets/charts.js" defer></script>
+{%- endif %}
+{%- endautoescape %}{%- endmacro %}
+
+{#- The film page's scripts, at the end of the body. sim.js is not here: film.js loads it from #sim's data-src
+    when the desk scene is near. -#}
+{% macro film_scripts() -%}{% autoescape true -%}
+<script src="assets/charts.js" defer></script>
+<script src="assets/film.js" defer></script>
+{%- endautoescape %}{%- endmacro %}
+
+{#- ------------------------------------------------------------------ the film page and its evidence
+    Verdict glyphs are inline SVG (none of the page fonts has the check, cross or half disc); the verdict word is the
+    exact word in verdicts.json. -#}
+{% macro glyph(word) -%}{% autoescape true -%}
+<svg class="glyph" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+{%- if word == 'Supported' %}<path d="M3 8.5l3.2 3.2L13 4.5" fill="none" stroke="currentColor" stroke-width="2"/>
+{%- elif word == 'Partly' %}<circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 2.5a5.5 5.5 0 0 0 0 11z" fill="currentColor"/>
+{%- elif word == 'Refuted' %}<path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2"/>
+{%- elif word == 'Not testable' %}<circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="1.5 2.2"/>
+{%- else %}<path d="M3.5 8h9" fill="none" stroke="currentColor" stroke-width="2"/>
+{%- endif %}</svg>
+{%- endautoescape %}{%- endmacro %}
+
+{#- A verdict chip. link=true makes it a link to the claim's block in the evidence (film.js opens the dialog on it). -#}
+{% macro vchip(cid, link=false) -%}{% autoescape true -%}
+{%- if cid in verdicts -%}
+{%- set word = verdicts[cid].get('verdict') or 'Not computed' -%}
+{%- if link %}<a class="chip vchip" href="#claim-{{ cid }}" data-claim="{{ cid }}" data-verdict="{{ word }}">{% else %}<span class="chip vchip" data-claim="{{ cid }}" data-verdict="{{ word }}">{% endif -%}
+{{ glyph(word) }}<span class="chip-id">{{ ident(cid) }}</span> <span class="chip-v">{{ word }}</span>
+{%- if link %}</a>{% else %}</span>{% endif -%}
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- The verdict stamp: glyph and word, bordered. at: seconds from the start of its shot. -#}
+{% macro stamp(cid, at='0.15') -%}{% autoescape true -%}
+{%- set word = verdicts[cid].get('verdict') or 'Not computed' -%}
+<div class="stamp" data-verdict="{{ word }}" data-claim="{{ cid }}" data-at="{{ at }}">{{ glyph(word) }}<span class="stamp-word">{{ word }}</span></div>
+{%- endautoescape %}{%- endmacro %}
+
+{#- What a claim says, by kind: a hidden assumption prints its assumption, a reframe its reframed claim, a stated
+    claim its verbatim fragment. -#}
+{% macro as_stated(cid, hidden_in=false) -%}{% autoescape true -%}
+{%- if cid in rules -%}
+{%- set r = rules[cid] -%}
+{%- if r.get('kind') == 'hidden' and r.get('assumption') -%}
+<span class="assumption"><span class="assumption-k">Assumed:</span> {{ rule(cid, 'assumption') }}</span>
+{%- if hidden_in and r.get('claimed') %}<span class="hidden-in">Hidden in: {{ claimed(cid) }}</span>{% endif -%}
+{%- elif r.get('kind') == 'reframe' and r.get('title') -%}
+<span class="reframe">{{ rule(cid, 'title') }}</span>
+{%- elif r.get('claimed') -%}
+{{ claimed(cid) }}
+{%- elif r.get('title') -%}
+{{ rule(cid, 'title') }}
+{%- endif -%}
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- "Claim H1 · stated" -#}
+{% macro claim_eyebrow(cid) -%}{% autoescape true -%}
+{%- set kind = (rules.get(cid) or {}).get('kind') -%}
+Claim {{ ident(cid) }} · {{ {'hidden': 'hidden assumption', 'reframe': 'reframe'}.get(kind, 'stated') }}
+{%- endautoescape %}{%- endmacro %}
+
+{#- A claim's verdict sentence. H5's split reading is a numeric branch, taken here and not in copy.toml. -#}
+{% macro claim_sentence(cid) -%}{% autoescape true -%}
+{%- set nn = (numbers.get('h5_now_narrower') or {}).get('value') -%}
+{%- set nw = (numbers.get('h5_now_wider') or {}).get('value') -%}
+{%- set ra = (numbers.get('near_reading_a') or {}).get('value') -%}
+{%- set ma = (numbers.get('panel_median_abs_a') or {}).get('value') -%}
+{%- if cid == 'H5' and nn == true|int and nw == true|int -%}
+{#- the split, with each reading named: which one is wider is read from the figures, never assumed -#}
+{%- if ra is not none and ma is not none %}{{ copy('film_H5_split_a' if ra|abs > ma else 'film_H5_split_b') }}{% else %}{{ copy('film_H5_split') }}{% endif -%}
+{%- else -%}{{ copy('film_' ~ cid ~ '_sentence') }}{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- The film's verdict frame: stamp, sentence, the answer that concedes or qualifies, and the decision rule in the
+    claim's plain test words (never the rule's key names). -#}
+{% macro film_verdict(cid, also='') -%}{% autoescape true -%}
+{%- set answer = copy('film_' ~ cid ~ '_answer') -%}
+<div class="vframe">
+  <p class="eyebrow">Verdict · claim {{ ident(cid) }} · {{ rule(cid, 'title') }}</p>
+  {{ stamp(cid) }}
+  <p class="sentence" data-at="0.9">{{ claim_sentence(cid) }}</p>
+  {%- if answer|trim %}
+  <p class="answer" data-at="1.6">{{ answer }}</p>
+  {%- endif %}
+  {{ also }}
+  <p class="decision" data-at="0.4"><span class="k">The test</span> {{ rule(cid, 'test') }}</p>
+</div>
+{%- endautoescape %}{%- endmacro %}
+
+{#- A claim in the evidence: what it says, its verdict, the test, the result, and why. The dialog moves this node;
+    it carries no formula ids or key names. -#}
+{% macro claim_block(cid, charts_of=[]) -%}{% autoescape true -%}
+{%- if cid in rules and cid in verdicts -%}
+{%- set v = verdicts[cid] -%}
+{%- set word = v.get('verdict') or 'Not computed' -%}
+{%- set answer = copy('film_' ~ cid ~ '_answer') -%}
+{%- set got = measured(cid, plain=true) -%}
+{%- set cs = v.get('chart_ids') or charts_of -%}
+<article class="claim-block" id="claim-{{ cid }}" data-claim="{{ cid }}" data-verdict="{{ word }}" aria-labelledby="claim-{{ cid }}-h">
+  <p class="eyebrow">{{ claim_eyebrow(cid) }}</p>
+  <h4 class="claim-title" id="claim-{{ cid }}-h">{{ rule(cid, 'title') }}</h4>
+  <blockquote class="quote">{{ as_stated(cid, hidden_in=true) }}</blockquote>
+  <p class="claim-verdict">{{ vchip(cid) }}</p>
+  <p class="sentence">{{ claim_sentence(cid) }}</p>
+  {%- if answer|trim %}
+  <p class="answer">{{ answer }}</p>
+  {%- endif %}
+  <dl class="claim-facts">
+    <div><dt>The test</dt><dd>{{ rule(cid, 'test') }}</dd></div>
+    {%- if got|trim %}
+    <div><dt>Result</dt><dd>{{ got }}</dd></div>
+    {%- endif %}
+    {%- if v.get('null_reason') %}
+    <div><dt>Why not computed</dt><dd>{{ raw(v.null_reason) }}</dd></div>
+    {%- elif v.get('reason') %}
+    <div><dt>Why</dt><dd>{{ raw(v.reason) }}</dd></div>
+    {%- endif %}
+    {%- if v.get('trigger') %}
+    <div><dt>Would change if</dt><dd>{{ raw(v.trigger) }}</dd></div>
+    {%- endif %}
+    {%- if cs %}
+    <div><dt>Charts</dt><dd>{{ chart_links(cs) }}</dd></div>
+    {%- endif %}
+  </dl>
+</article>
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}
+
+{#- A chart inside the film: the card's legend and plot shell, ids prefixed so none repeats the evidence card's.
+    charts.js draws it (start(fig)); a checklist panel prints as its table. focus: the panel ids at full strength
+    (marked .focus here; the rest dim, and hide on a phone). -#}
+{% macro chart_shell(cid, prefix, focus='', at='0.3') -%}{% autoescape true -%}
+{%- if cid in charts -%}
+{%- set ch = charts[cid] -%}
+{%- set form = ch.get('form') or 'empty' -%}
+{%- set unavailable = (ch.get('status') or 'ok') == 'unavailable' or form == 'empty' -%}
+{%- set ns = namespace(checks=[]) -%}
+{%- for p in ch.get('panels') or [] if p.get('row_templates') %}{% set ns.checks = ns.checks + [p] %}{% endfor -%}
+{%- set drawn = (ch.get('series') or []) and not unavailable and not ns.checks -%}
+<figure class="film-chart" id="{{ prefix }}-{{ cid }}"{% if drawn %} data-chart="{{ cid }}"{% endif %} data-form="{{ form }}"{% if focus %} data-focus="{{ focus }}"{% endif %} data-at="{{ at }}">
+  <figcaption class="card-title chart-title">{{ text(ch.get('title_template') or ch.get('title') or '') }}</figcaption>
+  {%- if ns.checks and not unavailable %}{% for p in ns.checks %}
+  {{ checklist(p) }}
+  {%- endfor %}{% elif drawn %}
+  {{ plot_markup(ch, film=true, focus=focus) }}
+  {%- endif %}
+  <p class="twin-link"><a href="#{{ cid }}">The chart and its table, in the evidence</a></p>
+</figure>
+{%- endif -%}
+{%- endautoescape %}{%- endmacro %}

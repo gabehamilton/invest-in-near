@@ -1,0 +1,130 @@
+{
+ "c01": {
+  "caveat": "On the right, NEAR's line ends at the latest chain sample (2026-11-10) and CPI's at 2026-09, so the title compares the same month: NEAR 2.67% against CPI 3.72%.",
+  "notes": [
+   "BLS published no CPI for 2025-10 during the federal shutdown, so that month and the same month a year later are blank.",
+   "Markers show the issuance ceiling cut, where the Fed turned to hiking or cutting, and where liquid-staking data starts (2022-04-01).",
+   "The formula line uses validator stake, which lags the sampled block by about two epochs.",
+   "The fed funds line is the monthly average of the effective rate."
+  ],
+  "sentence": "Left, what you earn: liquid staking over trailing ninety days (blue), the protocol formula before fees (gray) and fed funds (orange); right, what inflation takes: NEAR supply growth over the trailing year (blue) against US consumer prices (orange).",
+  "title": "In the last ninety days NEAR's staking rate ran 0.38 pp above fed funds; over the year to 2026-09 its supply grew 1.04 pp slower than US prices."
+ },
+ "c02": {
+  "caveat": "The gray line compounds the nominal ceiling as it mints, so a full year at today's 2.50% allows 2.53%; growth of 2.48% sits below both.",
+  "notes": [
+   "Samples are monthly until 2022-04-04, weekly until 2025-10-06 and daily since, so the line grows denser to the right.",
+   "The gray line switches rate at the exact block of each ceiling change.",
+   "Over the last year the 1,201 epochs minted at the ceiling with a median gap of -0.008 pp, from -0.410 pp to -0.001 pp."
+  ],
+  "sentence": "Blue is how much NEAR's supply grew over the trailing year at each sample date; gray is the most the issuance ceiling allowed over the same window, and a point below zero would mean supply shrank.",
+  "title": "NEAR's supply grew 2.48% over the last year, against an issuance ceiling of 2.50%."
+ },
+ "c03": {
+  "caveat": "",
+  "notes": [],
+  "sentence": "For each period, the upward bar is how much a liquid staker's fraction of all NEAR grew per year, and the downward bar is how much an unstaked holder's shrank; 55.6% of supply is unstaked today.",
+  "title": "Inflation is a transfer: over the last year stakers' share of all NEAR grew 1.61% and non-stakers' shrank 2.42%."
+ },
+ "c05": {
+  "caveat": "",
+  "notes": [
+   "Over the trailing year the protocol minted 88,303 NEAR a day and burned 1,337 NEAR.",
+   "The one-epoch-a-month sample read 1.52% over the same year, from 13 epochs; the exact figure replaces it.",
+   "The upper bound comes from supply alone and counts rewards left unminted by offline validators as burn, so the true share cannot exceed it; over the trailing year it is 2.00%.",
+   "The developer gas rebate ended at block 223,012,337 on 2026-11-04, so from then the whole gas fee burns; before, part of it went to the called contract.",
+   "The axis is scaled to the columns, which sit far below the full-issuance line."
+  ],
+  "sentence": "Each column is NEAR burned as a share of NEAR minted in that period; supply stops growing only when burn reaches all of issuance.",
+  "title": "Fees burned 1.51% of the NEAR minted in the last year: usage does not offset issuance."
+ },
+ "c06": {
+  "caveat": "Volume measures usage of the network, not value that accrues to the token.",
+  "notes": [
+   "DefiLlama's figures come from a Dune table maintained by NEAR.",
+   "The latest 3 days are provisional and may be revised.",
+   "Month to date: $1.31 billion through 2026-11-10.",
+   "Fees over the last year: $54.0 million.",
+   "From 2026-10-27, one-click API swaps settle confidentially on the NEAR Private Shard (NEAR Intents documentation)."
+  ],
+  "sentence": "Each column is one month of swap volume routed through NEAR Intents, as reported by DefiLlama.",
+  "title": "NEAR Intents settled $3.76 billion in the last thirty days; the last ninety days were 1.84× the ninety days before."
+ },
+ "c07": {
+  "caveat": "Consecutive windows share most of their days, so the points are not independent years.",
+  "notes": [
+   "Windows end each Monday, plus the latest sample.",
+   "The axis stops at a total loss, the most a dollar can lose."
+  ],
+  "sentence": "Each point is what a dollar held in staked NEAR for the year before that date returned in dollars; of the windows that ended in the last year it landed within two percentage points of fed funds in 3.77%.",
+  "title": "Of the 53 weekly one-year windows that ended in the last year, a dollar in stNEAR beat a dollar at fed funds in 20.8%."
+ },
+ "c08": {
+  "caveat": "",
+  "notes": [],
+  "sentence": "Staking ran 0.32 pp above fed funds over the year, about 0.06× a single typical day's move (5.41%); on 93.4% of days in the last year NEAR moved more than that whole annual gap.",
+  "title": "The staking edge over fed funds is smaller than one ordinary day's price move."
+ },
+ "c09": {
+  "caveat": "The title compares trailing-year volatility (103.3% for NEAR, 44.0% for bitcoin, 5.48% for the euro), so the lines' end values differ from it.",
+  "notes": [
+   "The median one-month reading for NEAR since listing is 105.5%.",
+   "Volatility is the annualized standard deviation of daily log returns."
+  ],
+  "sentence": "Each line is the price volatility of NEAR, bitcoin or the euro against the dollar over the trailing ninety days.",
+  "title": "NEAR's price is 2.35× as volatile as bitcoin's and 18.8× the euro's."
+ },
+ "c11": {
+  "caveat": "NEAR supply is a quantity of tokens while consumer prices are a price index, so only the money-supply panel compares like with like.",
+  "notes": [
+   "NEAR's supply grew slower than US money in 17 of 60 months, in 2021-10 to 2022-06 and 2026-02 to 2026-09.",
+   "US data run to 2026-09 for consumer prices, 2026-09 for the money supply and 2026-09 for PCE.",
+   "BLS published no consumer prices for 2025-10 (federal shutdown), so the CPI and core panels have no value for that month and no year-over-year change a year later.",
+   "Each gap compares NEAR's growth over the year to the end of a US month with the US figure for that month: over the year to 2026-09 NEAR's supply grew 2.67% against CPI's 3.72%.",
+   "The headline 2.48% runs to the latest chain sample (2026-11-10), so it differs from the month-end figure."
+  ],
+  "sentence": "In each panel blue is NEAR supply growth over the trailing year and orange is one US measure's year-over-year change.",
+  "title": "Over the year to 2026-09, NEAR's supply grew 3.04 pp slower than the US money supply, 1.04 pp slower than CPI and 0.11 pp faster than core CPI."
+ },
+ "c13": {
+  "caveat": "NEAR's left reading is a different kind of measure, staking yield minus supply growth, and the United States sits at zero on the right by construction.",
+  "notes": [
+   "The gray bars show each gap's five-year range as context; the comparison in the title uses today's readings only.",
+   "Argentina is excluded: BIS reports no Argentine policy rate after 2025-06.",
+   "Australia CPI is quarterly."
+  ],
+  "sentence": "Each dot is a currency's rate gap today, its policy rate minus its own inflation on the left and minus the US rate on the right, and the gray bar is how far that gap swung over five years.",
+  "title": "Against 10 economies, NEAR's rate gap today is wider than the median on rate minus own inflation (1.65 pp against 0.85 pp) and narrower on rate minus US rate (0.44 pp against 1.38 pp)."
+ },
+ "c14": {
+  "caveat": "",
+  "notes": [],
+  "sentence": "Rows list what a broker sweep must provide under SEC rules, next to what staked NEAR measured on each test, once as a dollar vehicle and once for balances already held in NEAR.",
+  "title": "NEAR fails the sweep-account tests that decide the verdict: principal stability and the legal-vehicle rule; same-day cash is only partial."
+ },
+ "c15": {
+  "caveat": "",
+  "notes": [
+   "The unchecked venues refused requests from a US network.",
+   "Where options exist, one-month implied minus realized volatility averaged +8.38 pp for bitcoin and +4.57 pp for ether (a proxy, not NEAR)."
+  ],
+  "sentence": "The table lists which derivatives venues offer options, on what, and whether NEAR is one.",
+  "title": "0 of the 3 options venues I could check list NEAR options; 2 more could not be checked."
+ },
+ "c16": {
+  "caveat": "",
+  "notes": [],
+  "sentence": "The line is BigQuery's end-of-day total supply minus the RPC sample taken at the last block of the same UTC day; the gray band marks days after 2026-11-10, where BigQuery has no data.",
+  "title": "BigQuery and NEAR RPC agree on total supply to within 0.00 NEAR on 639 matched days; BigQuery has blocks through 2026-11-10."
+ },
+ "c21": {
+  "caveat": "",
+  "notes": [
+   "Each currency is compared with NEAR's supply growth over the same twelve months; the median of those gaps is +2.12 pp, the figure the supply claim tests.",
+   "Broad money includes deposits created by bank lending; NEAR's supply is issued by protocol only, so it is nearer to base money.",
+   "The dollar's money grew 5.71% on FRED's broad US money series."
+  ],
+  "sentence": "NEAR's supply grew 2.48% over the year to the latest chain sample (the line) and 2.67% over the year to 2026-09, against a median 4.79% for the major currencies' money, each over its latest year; this is supply only, not demand.",
+  "title": "NEAR's supply grew more slowly than the major currencies' money over the past year"
+ }
+}

@@ -1,0 +1,480 @@
+# Verdict rules: every threshold the site applies lives here and nowhere else.
+#
+# Read by pipeline/models/verdicts.py (claims, tripwires) and pipeline/build.py (cross-checks).
+# Pages print these rules only through rule(id, field), inside <span class="rule">.
+#
+# Claim tables (one per claim, in ledger order). Fields:
+#   kind           stated | hidden (assumption hiding in the hypothesis) | reframe
+#   title          short label
+#   claimed        verbatim fragment of [meta].hypothesis or [meta].thesis (the sentence a hidden assumption hides in)
+#   assumption     hidden assumptions only: the assumption in one line
+#   test           the test in one line
+#   metrics        registry keys shown with the verdict
+#   requires       keys that must be non-null, else Not computed (default: metrics)
+#   not_computed_if / not_computed_reason   extra Not computed condition (evaluated first)
+#   untestable_if / untestable_reason / trigger   Not testable condition and what would make it testable
+#   supported / partly / refuted   expressions over registry keys
+#   chart / charts / section   where the evidence is shown
+#
+# Expressions: comparisons (< <= > >= == !=), and / or / not, + - * /, abs(), numbers, quoted strings
+# (text keys only, == and !=), registry keys. Parsed by an ast whitelist, never eval.
+# Evaluation per claim: a required key is null -> Not computed (with its null_reason); not_computed_if
+# -> Not computed; untestable_if -> Not testable; supported -> Supported; refuted -> Refuted; partly
+# (if given) -> Partly; with no partly expression, Partly. A key that is null inside an expression
+# makes it unknown; an unknown decisive expression gives Not computed, never a guess.
+
+[meta]
+hypothesis = "NEAR is deflationary compared to other currencies. Compared to the US dollar, NEAR's inflation rate of 2.5% is approximately 1.5% lower. Current staking rewards of 4.13% are approximately 0.25% higher than the effective federal funds rate of 3.88%. Though both the inflation rate and fed rate change, they stay in balance over time. Other currencies have a wider spread. This makes NEAR ideal for sweep funds and other currency storage. In addition, NEAR is volatile. Rather than being a disadvantage this is an asset, volatility can be sold."
+tally_note = "The tally counts the stated claims and the hidden assumptions (ids starting with H). H6_near reframes H6 and sits beside it, outside the count. Not testable and Not computed are listed on their own and never folded into supported or refuted."
+thesis = "NEAR is deflationary relative to the dollar and other currencies."
+boundaries = "Past and future governance conditions are not relevant, if the conditions change investors can move elsewhere with plenty of notice. Similarly, past performance and market conditions are only useful in so far as they are indicative of near term behavior. Future investors don't own NEAR yet so don't care about where it is relative to the peak (which would be a sunk cost anyway). In other words we are concerned with the current macro-economic environment and NEAR's current utility."
+
+# ---------------------------------------------------------------- stated claims
+
+[H1]
+kind = "stated"
+title = "NEAR is deflationary"
+claimed = "NEAR is deflationary"
+test = "Did NEAR's total supply shrink over the last 365 days, and keep shrinking for at least 90 consecutive days?"
+metrics = ["g_365", "g_365_neg_run_days"]
+requires = ["g_365"]
+supported = "g_365 < 0 and g_365_neg_run_days >= 90"
+refuted = "g_365 > 0"
+chart = "c02"
+charts = ["c02"]
+section = "O1"
+
+[H1b]
+kind = "stated"
+title = "NEAR's supply grows slower than major currencies' money"
+claimed = "NEAR is deflationary compared to other currencies."
+test = "Over each currency's latest year, did NEAR's supply grow slower than US broad money and than the median broad-money growth of the most-traded currencies?"
+metrics = ["gap_m2", "h1b_gap_med", "h1b_n_faster", "n_fiat_money", "m2_yoy", "g_365_at_m2"]
+requires = ["gap_m2", "h1b_gap_med", "n_fiat_money"]
+not_computed_if = "n_fiat_money < 7"
+not_computed_reason = "fewer than seven of the panel's most-traded currencies have a latest money-growth reading"
+supported = "gap_m2 > 0 and h1b_gap_med > 0"
+refuted = "gap_m2 <= 0"
+chart = "c21"
+charts = ["c21", "c11"]
+section = "A1"
+
+[H2]
+kind = "stated"
+title = "NEAR's supply grows about 1.5 pp slower than US prices"
+claimed = "Compared to the US dollar, NEAR's inflation rate of 2.5% is approximately 1.5% lower."
+test = "Is US CPI-U inflation minus NEAR supply growth within 0.5 pp of 1.5 pp now, and in at least 9 of the last 12 months with data?"
+metrics = ["gap_cpi", "cpi_yoy", "g_365_at_cpi", "h2_months_in_band_12", "h2_months_with_data_12"]
+requires = ["gap_cpi"]
+supported = "abs(gap_cpi - 1.5) <= 0.5 and h2_months_in_band_12 >= 9"
+refuted = "gap_cpi <= 0"
+chart = "c11"
+charts = ["c11"]
+section = "A1"
+
+[H3]
+kind = "stated"
+title = "Staking pays about 0.25 pp more than fed funds"
+claimed = "Current staking rewards of 4.13% are approximately 0.25% higher than the effective federal funds rate of 3.88%."
+test = "Over the last 365 days, did liquid-staking yield beat compounded fed funds by more than zero and at most 1 pp (like for like)?"
+metrics = ["spread_adj_365", "y_lst_365", "ffcomp_365", "spread_naive_365", "effr_mean_365"]
+requires = ["spread_adj_365"]
+supported = "spread_adj_365 > 0 and spread_adj_365 <= 1.0"
+partly = "spread_adj_365 > 1.0"
+refuted = "spread_adj_365 <= 0"
+chart = "c01"
+charts = ["c01", "c12"]
+section = "A2"
+
+[H4]
+kind = "stated"
+title = "Staking yield and fed funds stay in balance"
+claimed = "Though both the inflation rate and fed rate change, they stay in balance over time."
+test = "Under the issuance rule now in force, over at least 8 full quarters that include a Fed move of 100 bp or more, is the quarterly spread's standard deviation below 1 pp with a level correlation above 0.5?"
+metrics = ["spread_q_sd_rule", "corr_levels_rule", "n_q_rule", "fed_range_q_bp_rule"]
+requires = ["n_q_rule"]
+untestable_if = "n_q_rule < 8"
+untestable_reason = "fewer than 8 full quarters have passed under the issuance rule now in force"
+trigger = "8 full quarters under the issuance rule now in force"
+supported = "spread_q_sd_rule < 1.0 and corr_levels_rule > 0.5 and n_q_rule >= 8 and fed_range_q_bp_rule >= 100"
+refuted = "spread_q_sd_rule > 1.5 or corr_levels_rule < 0.2"
+chart = "c12"
+charts = ["c12", "c01"]
+section = "A2"
+
+[H5]
+kind = "stated"
+title = "Other currencies have a wider spread"
+claimed = "Other currencies have a wider spread."
+test = "On both fixed readings of 'spread', is NEAR's latest spread narrower than the latest median of the panel's economies?"
+metrics = ["h5_now_narrower", "h5_now_wider", "near_reading_a", "near_reading_b", "panel_median_abs_a", "panel_median_abs_b", "n_panel"]
+requires = ["h5_now_narrower", "h5_now_wider"]
+supported = "h5_now_narrower == 2 and h5_now_wider == 0"
+refuted = "h5_now_wider == 2"
+chart = "c13"
+charts = ["c13"]
+section = "A3"
+
+[H6]
+kind = "stated"
+title = "NEAR is ideal for sweep funds (as a dollar vehicle)"
+claimed = "This makes NEAR ideal for sweep funds and other currency storage."
+test = "Does staked NEAR pass every row of the sweep-account checklist as a US dollar vehicle?"
+metrics = ["h6_rows_passed", "h6_rows_total", "h6_critical_failed"]
+supported = "h6_rows_total > 0 and h6_rows_passed == h6_rows_total and h6_critical_failed == 0"
+refuted = "h6_critical_failed >= 1"
+chart = "c14"
+charts = ["c14"]
+section = "A4"
+
+[H7]
+kind = "stated"
+title = "NEAR is volatile"
+claimed = "In addition, NEAR is volatile."
+test = "Is NEAR's realized volatility at least 50% a year over the last 365 days and over the last 90 days?"
+metrics = ["rv_365_near", "rv_90_near", "rv_365_btc"]
+requires = ["rv_365_near", "rv_90_near"]
+supported = "rv_365_near >= 50 and rv_90_near >= 50"
+refuted = "rv_365_near < 25"
+chart = "c08"
+charts = ["c08", "c09"]
+section = "O5"
+
+[H8]
+kind = "stated"
+title = "NEAR's volatility can be sold"
+claimed = "Rather than being a disadvantage this is an asset, volatility can be sold."
+test = "Is there a NEAR options market, and has NEAR implied volatility exceeded later realized volatility (mean above zero, t above 2, at least 180 days)?"
+metrics = ["n_venues_with_near_options", "n_option_venues_checked", "venues_unchecked"]
+requires = ["n_venues_with_near_options", "n_option_venues_checked"]
+not_computed_if = "n_option_venues_checked == 0"
+not_computed_reason = "no options venue could be checked from the network that pulled the data"
+untestable_if = "n_venues_with_near_options == 0"
+untestable_reason = "none of the options venues I could check lists NEAR options, so there is no NEAR implied volatility to sell"
+trigger = "a checked venue lists NEAR options"
+supported = "vrp_near_mean > 0 and vrp_near_t > 2 and vrp_near_days >= 180"
+refuted = "vrp_near_mean <= 0"
+chart = "c15"
+charts = ["c15"]
+section = "A5"
+
+# ---------------------------------------------------------------- hidden assumptions
+
+[H9]
+kind = "hidden"
+title = "A NEAR yield is comparable to a dollar yield"
+assumption = "A yield paid in NEAR can be compared with a yield paid in dollars."
+claimed = "Current staking rewards of 4.13% are approximately 0.25% higher than the effective federal funds rate of 3.88%."
+test = "In what share of the weekly one-year windows that end within the last 365 days did a dollar held in staked NEAR land within 2 pp of fed funds?"
+metrics = ["pct_within_2pp_1y", "n_windows_usd_1y"]
+requires = ["pct_within_2pp_1y", "n_windows_usd_1y"]
+not_computed_if = "n_windows_usd_1y < 26"
+not_computed_reason = "fewer than 26 weekly one-year windows end within the last year"
+supported = "pct_within_2pp_1y >= 50"
+partly = "pct_within_2pp_1y >= 20"
+refuted = "pct_within_2pp_1y < 20"
+chart = "c07"
+charts = ["c07"]
+section = "O5"
+
+[H10]
+kind = "hidden"
+title = "Fee burn offsets issuance"
+assumption = "Fees burned by usage offset new issuance, so net supply growth is small or negative."
+claimed = "NEAR is deflationary"
+test = "What share of the NEAR minted in the last 365 days did fees burn? An upper bound can refute but cannot support."
+metrics = ["burn_share_365", "burn_method", "n_burn_epochs_365", "burn_share_365_ub", "burn_share_365_sampled"]
+requires = ["burn_share_365"]
+supported = "burn_share_365 >= 50 and burn_method != 'upper bound' and burn_share_365_ub >= 50"
+refuted = "burn_share_365 < 10"
+chart = "c05"
+charts = ["c05"]
+section = "O3"
+
+[H12]
+kind = "hidden"
+title = "Inflation dilutes every holder equally"
+assumption = "Supply growth costs every NEAR holder the same share."
+claimed = "Compared to the US dollar, NEAR's inflation rate of 2.5% is approximately 1.5% lower."
+test = "Over the latest window, did stakers' and non-stakers' shares of supply change by the same amount (within 0.1 pp a year)?"
+metrics = ["staker_share_365", "nonstaker_365"]
+supported = "abs(staker_share_365 - nonstaker_365) < 0.1"
+refuted = "staker_share_365 * nonstaker_365 < 0 and abs(staker_share_365 - nonstaker_365) >= 0.1"
+chart = "c03"
+charts = ["c03"]
+section = "O2"
+
+# ---------------------------------------------------------------- reframe
+
+[H6_near]
+kind = "reframe"
+title = "Staked NEAR as storage for balances already held in NEAR"
+claimed = "This makes NEAR ideal for sweep funds and other currency storage."
+test = "For balances already in NEAR: do the principal-stability and yield rows pass, with same-day liquidity not failing?"
+metrics = ["h6n_rows13_pass", "h6n_row2_fail"]
+supported = "h6n_rows13_pass == 2 and h6n_row2_fail == 0"
+refuted = "h6n_rows13_pass == 0"
+chart = "c14"
+charts = ["c14"]
+section = "A4"
+
+# ---------------------------------------------------------------- tripwires (what would change my mind)
+
+[tripwires.T1]
+group = "break"          # break: part of the thesis fails; confirm: the thesis gains ground, or a closed test opens
+metric = "g_365"
+metric_label = "NEAR supply growth over the last year"
+keys = ["g_365", "i_max_now"]
+threshold_text = "more than 0.5 pp above the issuance ceiling in force"
+expr = "g_365 > i_max_now + 0.5"
+meaning = "Supply growth breaks from the protocol rule that keeps it below the major currencies' money growth."
+chart = "c02"
+
+[tripwires.T2]
+group = "break"
+metric = "staker_share_365"
+metric_label = "Change in stakers' share of supply over the last year"
+keys = ["staker_share_365"]
+threshold_text = "at or below zero"
+expr = "staker_share_365 <= 0"
+meaning = "Stakers lose share of supply, so staking no longer keeps a holder ahead of issuance."
+chart = "c03"
+
+[tripwires.T3]
+group = "confirm"
+metric = "burn_share_365"
+metric_label = "Fees burned as a share of issuance over the last year"
+keys = ["burn_share_365"]
+threshold_text = "25% or more of issuance"
+expr = "burn_share_365 >= 25"
+meaning = "Fees burned start to offset a real share of issuance."
+chart = "c05"
+
+[tripwires.T4]
+group = "confirm"
+metric = "burn_share_365"
+metric_label = "Fees burned as a share of issuance over the last year"
+keys = ["burn_share_365"]
+threshold_text = "100% or more of issuance"
+expr = "burn_share_365 >= 100"
+meaning = "NEAR becomes deflationary: burn exceeds issuance."
+chart = "c05"
+
+[tripwires.T5]
+group = "break"
+metric = "intents_vol_90d_seq_ratio"
+metric_label = "NEAR Intents volume, latest ninety days against the ninety before"
+keys = ["intents_vol_90d_seq_ratio"]
+threshold_text = "below 0.5 times the previous ninety days"
+expr = "intents_vol_90d_seq_ratio < 0.5"
+meaning = "Demand for the network, which the supply comparison leaves out, is shrinking."
+chart = "c06"
+
+[tripwires.T6]
+group = "break"
+metric = "s_now"
+metric_label = "Share of NEAR supply staked"
+keys = ["s_now", "y_s60"]
+threshold_text = "staked share above 60%"
+expr = "s_now > 60"
+meaning = "The staking yield compresses toward the cell for that staked share in c10."
+chart = "c10"
+
+[tripwires.T7]
+group = "break"
+metric = "spread_adj_90"
+metric_label = "Staking yield minus fed funds over the last ninety days"
+keys = ["spread_adj_90"]
+threshold_text = "below zero"
+expr = "spread_adj_90 < 0"
+meaning = "H3 flips: staking pays less than fed funds."
+chart = "c01"
+
+[tripwires.T8]
+group = "confirm"
+metric = "n_venues_with_near_options"
+metric_label = "Venues listing NEAR options"
+keys = ["n_venues_with_near_options"]
+threshold_text = "one venue or more lists NEAR options"
+expr = "n_venues_with_near_options >= 1"
+meaning = "H8 becomes testable."
+chart = "c15"
+
+# ---------------------------------------------------------------- model parameters
+# Author-chosen thresholds and scenario inputs the models use. They are not external facts (those live in
+# thesis/constants.toml with a source and a quote). Read by pipeline/models/params.py. Every parameter that also
+# appears as a literal in a rule above is pinned to that literal by tests/test_params.py, so a rule and the model
+# that feeds it cannot drift apart. Changing one means changing both.
+
+[params]
+h2_target_pp = 1.5        # H2: "approximately 1.5% lower" (the centre of the band h2_months_in_band_12 counts)
+h2_tol_pp = 0.5           # H2: a month is in band when |gap - h2_target_pp| <= h2_tol_pp
+h2_window_months = 12     # H2: months counted by h2_months_in_band_12 / h2_months_with_data_12
+h4_sd_pp = 1.0            # H4 supported needs spread_q_sd_rule below this; the c12 title switches on it
+band_pp = 0.5             # c12: a quarter with abs(spread) <= band_pp sits in the gray band
+burn_majority_pct = 50    # H10 supported needs burn_share_365 at or above this; the c05 title switches on it
+within_pp = 2.0           # H9: a window counts toward pct_within_2pp_1y when |ret - cash| <= within_pp
+sweep_majority = 0.5      # c14 row 3: partial when at least this share of windows beat the benchmark
+s_hypo = 0.60             # c10: the hypothetical staked share (a fraction); tripwire T6 fires above it
+t3_burn_pct = 25          # tripwire T3's burn share of issuance; burn_needed_t3 is this share of mint_per_day_365
+# the desk simulation (pipeline/models/portfolio.py and its browser twin site/assets/sim.js)
+sim_seed = 20261109       # xoshiro128** seed (through splitmix32); the browser replays the same stream
+sim_paths = 20000         # simulated years; a multiple of 200 so each of the hundred dots is one sorted year
+sim_horizon_days = 365    # days drawn per simulated year
+sim_windows = [365, 90]   # the calendar-day windows whose daily moves are resampled; the first is the default
+sim_block_days = 7        # c33 sensitivity row only: runs of whole days resampled together
+sim_mu_default = 0.0      # the default NEAR price assumption: flat on average
+sim_half = 0.5            # a simulated year counts as "halved at some point" when the price factor falls to this
+sim_tail_lo = 0.05        # the worst-years quantile shown (type-7)
+sim_tail_mid = 0.5        # the typical year
+sim_tail_hi = 0.95        # the best-years quantile shown
+sim_es_every = 20         # bad-year average: the mean of the worst sim_paths / sim_es_every years
+sim_es_deep_every = 40    # the deeper tail on the data page: the worst sim_paths / sim_es_deep_every years
+sim_dots = 100            # dots in the plot (each the middle year of its hundredth)
+sim_seed_checks = [1, 2, 3, 4, 5]   # five other seeds: their spread sets the precision of every simulated figure
+sim_usd_step_exact = 10000   # closed-form dollar figures round to this many dollars
+# simulated figures round to the first step above their spread across the seeds (scaled to the NEAR part), so a
+# different seed cannot move a printed figure by a whole step
+sim_steps_usd = [10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000, 10000000, 20000000, 50000000]
+sim_steps_pp = [1, 2, 5, 10, 20, 50]
+sim_steps_count = [1, 5, 10]
+sim_day_var = 0.99        # one-day value at risk level, from the raw daily moves of each window
+sim_day_es = 0.975        # one-day expected shortfall level
+
+# ---------------------------------------------------------------- metric labels
+# The plain-English name the ledger and THESIS.md print next to each metric a claim or tripwire shows (the raw
+# registry key stays in the tooltip and in the verdict detail). No digits: figures come from the registry.
+
+[labels]
+g_365 = "NEAR supply growth, last year"
+g_365_neg_run_days = "days in the current run of shrinking supply"
+gap_m2 = "how much slower NEAR supply grew than US money"
+m2_yoy = "US money supply, year over year"
+g_365_at_m2 = "NEAR supply growth, year to the money-supply month"
+gap_cpi = "how much slower NEAR supply grew than US prices"
+cpi_yoy = "US consumer prices, year over year"
+g_365_at_cpi = "NEAR supply growth, year to the price month"
+h2_months_in_band_12 = "months in the last year near the claimed gap"
+h2_months_with_data_12 = "months in the last year with data"
+spread_adj_365 = "staking minus fed funds, like for like, last year"
+y_lst_365 = "liquid staking yield, last year"
+ffcomp_365 = "fed funds compounded, last year"
+spread_naive_365 = "staking minus the average fed funds rate, last year"
+effr_mean_365 = "average effective fed funds rate, last year"
+n_panel = "economies in the panel"
+h6_rows_passed = "sweep tests passed as a dollar vehicle"
+h6_rows_total = "sweep tests"
+h6_critical_failed = "deciding sweep tests failed"
+rv_365_near = "NEAR price volatility, last year"
+rv_365_btc = "bitcoin price volatility, last year"
+n_venues_with_near_options = "venues listing NEAR options"
+n_option_venues_checked = "options venues checked"
+venues_unchecked = "options venues that could not be checked"
+vrp_near_mean = "NEAR implied minus realized volatility, mean"
+vrp_near_t = "t-statistic of that premium"
+vrp_near_days = "days of NEAR implied volatility"
+burn_share_365 = "fees burned as a share of issuance, last year"
+burn_method = "how the burn share was measured"
+n_burn_epochs_365 = "epochs behind the burn share"
+burn_share_365_sampled = "the burn share from one epoch a month"
+burn_share_365_ub = "upper bound on the burn share"
+i_max_now = "issuance ceiling now"
+cut_date = "date of the ceiling cut"
+staker_share_365 = "change in a staker's share of all NEAR, per year"
+nonstaker_365 = "change in an unstaked holder's share, per year"
+h6n_rows13_pass = "NEAR treasury tests passed, principal and yield"
+h6n_row2_fail = "NEAR treasury liquidity test failed"
+intents_vol_365d = "NEAR Intents volume, last year"
+s_now = "share of supply staked"
+y_s60 = "staking yield at the tripwire's staked share"
+spread_adj_90 = "staking minus fed funds, like for like, last ninety days"
+h1b_gap_med = "median of how much faster each major currency's money grew than NEAR supply"
+h1b_n_faster = "major currencies whose money grew faster than NEAR supply"
+n_fiat_money = "major currencies with a latest money-growth reading"
+spread_q_sd_rule = "standard deviation of the quarterly spread, current issuance rule"
+corr_levels_rule = "correlation of the two rates, quarterly levels, current issuance rule"
+n_q_rule = "full quarters under the current issuance rule"
+fed_range_q_bp_rule = "how far the Fed's target ceiling moved in those quarters, basis points"
+h5_now_narrower = "readings where NEAR's latest spread is narrower than the panel median"
+h5_now_wider = "readings where NEAR's latest spread is wider than the panel median"
+near_reading_a = "NEAR's spread, rate minus own inflation"
+near_reading_b = "NEAR's spread, rate minus US rate"
+panel_median_abs_a = "panel median spread, rate minus own inflation"
+panel_median_abs_b = "panel median spread, rate minus US rate"
+rv_90_near = "NEAR price volatility, last ninety days"
+pct_within_2pp_1y = "one-year windows ending in the last year within two points of fed funds"
+n_windows_usd_1y = "one-year dollar windows ending in the last year"
+mint_vs_ceiling_median_365_pp = "median epoch mint minus the ceiling, last year"
+n_mint_epochs_365 = "epochs in the mint check, last year"
+intents_vol_90d_seq_ratio = "NEAR Intents volume, last ninety days against the ninety before"
+
+# ---------------------------------------------------------------- cross-checks (computed by pipeline/build.py)
+
+[crosschecks.X1]
+title = "RPC and BigQuery total supply at matched heights"
+tolerance_text = "largest absolute difference at most 1 NEAR"
+max_abs_near = 1.0
+blocks_verify = true
+needs = "BigQuery (GCP_PROJECT and application-default credentials)"
+fix = "set GCP_PROJECT in .env, run gcloud auth application-default login, then uv run python -m pipeline.pull --only bigquery"
+
+[crosschecks.X2]
+title = "Epoch mint against max_inflation_rate x supply x epoch duration"
+tolerance_text = "median ratio of minted to i x S x dt / year within 0.97 to 1.0005, over the last 30 boundaries"
+lo = 0.97
+hi = 1.0005
+last_n = 30
+blocks_verify = false
+needs = "rpc/epoch_mints.csv and protocol samples bracketing each boundary"
+fix = "uv run python -m pipeline.pull --only near_rpc"
+
+[crosschecks.X3]
+title = "Binance NEARUSDT close against Coinbase NEAR-USD close"
+tolerance_text = "median absolute difference at most 20 bp, from 2022-09-01"
+start = "2022-09-01"
+max_median_bp = 20
+blocks_verify = true
+needs = "market/NEARUSDT_binance_daily.csv and market/near_usd_coinbase_daily.csv"
+fix = "uv run python -m pipeline.pull --only prices"
+
+[crosschecks.X4]
+title = "FRED CPI-U (not seasonally adjusted) year-over-year against BIS US consumer prices (unit 771)"
+tolerance_text = "largest absolute difference at most 0.05 pp over the latest 12 common months"
+max_abs_pp = 0.05
+months = 12
+blocks_verify = false
+needs = "fred/CPIAUCNS.csv and bis/cpi_yoy_monthly.csv"
+fix = "uv run python -m pipeline.pull --only fred,bis"
+
+[crosschecks.X5]
+title = "stNEAR against LiNEAR 365-day yield"
+tolerance_text = "absolute difference at most 0.5 pp"
+max_abs_pp = 0.5
+blocks_verify = false
+needs = "y_st_365 and y_li_365 (RPC liquid-staking prices)"
+fix = "uv run python -m pipeline.pull --only near_rpc"
+
+[crosschecks.X7]
+title = "Exact trailing-year burn share (every epoch boundary) against the upper bound from supply alone"
+tolerance_text = "exact share at or below the upper bound (the bound counts unminted rewards as burn); shows how far the one-epoch-a-month sample sat from the exact share"
+max_excess_pp = 0
+blocks_verify = false
+needs = "rpc/epoch_mints.csv covering every epoch boundary of the trailing year (chained rows)"
+fix = "uv run python -m pipeline.pull --only near_rpc"
+
+[crosschecks.X6]
+title = "NEAR Intents Explorer (1Click) daily volume against DefiLlama"
+tolerance_text = "Explorer / DefiLlama at most 1.05 on at least 95% of covered final days"
+max_ratio = 1.05
+min_share_pct = 95
+blocks_verify = false
+needs = "partner access to the NEAR Intents Explorer API, and written permission to publish its aggregates"
+fix = "partner access from NEAR Intents (see README), then uv run python -m pipeline.pull --only intents"
+
+[crosschecks.X9]
+title = "National money series against the OECD mirror of the same aggregate"
+tolerance_text = "relative difference at most 0.1% in the latest common month, for each currency the OECD mirrors"
+max_rel_pct = 0.1
+blocks_verify = false
+needs = "data/raw/money/oecd/monagg.csv and the national money files"
+fix = "uv run python -m pipeline.pull --only money"

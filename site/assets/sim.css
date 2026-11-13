@@ -1,0 +1,100 @@
+/* NEAR, tested: the desk simulation's own layer (site/assets/sim.js links it when the page has not). The tiles
+   hold five equal cells; the controls, the strip and the panels below them exist only once sim.js runs. */
+#sim { --g: clamp(10px, 1.6vw, 18px); }
+#sim .sim-fig { margin: 0; }
+#sim .sim-plot-box { position: relative; container-type: inline-size; outline-offset: 4px; }
+#sim .sim-plot-box:focus-visible { outline: 2px solid var(--focus, currentColor); }
+/* on the film's closed stage the plot takes the frame's height, not its width (--r is the dots' own ratio; the
+   counts and the label rows under the axis are pixels), so its heading and the labels stay inside the frame */
+.js .film:not(.article):not(.open) #sim .sim-plot-box { width: min(100%, calc((100dvh - 450px) * var(--r, 3))); }
+#sim .sim-dots { display: block; width: 100%; height: auto; }
+/* the counts over the stacks, and one marker to a row just under the axis: type in pixels with a floor, never
+   scaled with the plot, a row wrapping inside the plot rather than past its edge */
+#sim .sim-lab { font: 400 clamp(11px, 2.4cqi, 14px)/1.25 var(--sans, sans-serif); color: var(--ink); }
+#sim .sim-counts { display: flex; justify-content: space-between; align-items: end; gap: 4px 16px; margin: 10px 0 6px; }
+#sim .sim-counts > .sim-lab { max-width: 48%; }
+#sim .sim-counts > [data-for="ahead"] { text-align: right; }
+#sim .sim-labs { position: relative; isolation: isolate; overflow: hidden; display: grid; justify-items: start; gap: 2px; padding-top: 6px; }
+#sim .sim-labs > .sim-lab { position: relative; margin-left: var(--x); max-width: calc(100% - var(--x)); }
+/* a knockout in the sky's colour round each line of text, so a leader passing behind a row never runs through it */
+#sim .sim-labs > .sim-lab > span { padding: 0 0.35em; background: var(--sky); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+#sim .sim-labs > [data-anchor="end"] { justify-self: end; margin: 0 calc(100% - var(--x)) 0 0; max-width: var(--x); text-align: right; }
+/* each leader runs up to the axis behind the rows above it */
+#sim .sim-labs > .sim-lab::before { content: ""; position: absolute; z-index: -1; bottom: 100%; left: -0.5px; height: 100vh; border-left: 1px solid var(--ink); }
+#sim .sim-labs > [data-anchor="end"]::before { left: auto; right: -0.5px; }
+#sim .sim-labs > [data-mark="zero"]::before { border-left: 1px dashed var(--ctx, currentColor); }
+#sim .sim-live circle { fill: var(--sky); stroke: var(--near); stroke-width: 1.4px; transition: cx 0.4s ease, cy 0.4s ease; }
+#sim .sim-live circle.is-ahead { fill: var(--near); stroke: none; }
+#sim .sim-dots circle.cur { stroke: var(--ink); stroke-width: 2.5px; }
+/* the worst years' bracket marks the tail only while a reader steps through the years */
+#sim .sim-br { display: none; fill: none; stroke: var(--ink-2); stroke-width: 1px; }
+#sim .sim-plot-box.sel .sim-br { display: inline; }
+#sim .sim-sub, #sim .sim-stamp, #sim .sim-read { margin: 0.25em 0; font: 500 12px/1.5 var(--mono, monospace); color: var(--ink-2); }
+#sim .sim-sub.own, #sim .sim-stamp, #sim .sim-own { color: var(--v-part); }
+#sim .sim-read { min-height: 1.5em; color: var(--ink); }
+#sim .sim-own { font-weight: 600; }
+
+#sim .sim-rest { display: grid; gap: var(--g); margin-top: var(--g); }
+#sim .sim-rest > * { margin: 0; }
+#sim .sim-rest > noscript { display: grid; gap: var(--g); }
+#sim .sim-headline { max-width: 62ch; }
+#sim .sim-tiles { list-style: none; padding: 0; display: grid; gap: var(--g); grid-template-columns: repeat(5, minmax(0, 1fr)); }
+#sim .sim-tile { margin: 0; padding: 12px 14px; background: var(--sky-2, var(--surface)); border-top: 2px solid var(--near, var(--c-near)); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+#sim .sim-tile > p { margin: 0; }
+#sim .sim-tile-l { font: 500 11px/1.4 var(--mono, monospace); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3, var(--muted)); }
+#sim .sim-tile-v { font: 400 clamp(24px, 2.4vw, 34px)/1.1 var(--serif, serif); color: var(--ink); }
+#sim .sim-tile-t, #sim .sim-tile-s { font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+#sim .sim-tile-s { color: var(--ink-3, var(--muted)); }
+@media (max-width: 1100px) { #sim .sim-tiles { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); } }
+
+#sim .sim-strip > p, #sim .sim-hurdle > p, #sim .sim-notes > p { margin: 0 0 0.4em; max-width: 72ch; }
+#sim .sim-strip > ul { list-style: none; margin: 0.5em 0 0; padding: 0; display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#sim .sim-strip li { padding: 8px 10px; border: 1px solid var(--hair, var(--border)); font-size: 13px; line-height: 1.4; color: var(--ink-2); }
+#sim .sim-strip li.on { border-color: var(--near); color: var(--ink); }
+#sim .sim-strip li.mut { opacity: 0.75; }
+#sim .sim-strip b { display: block; font: 400 22px/1.2 var(--serif, serif); color: var(--ink); }
+@media (max-width: 720px) { #sim .sim-strip > ul { grid-template-columns: minmax(0, 1fr); } }
+
+#sim .sim-ctl { display: grid; gap: var(--g); grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); padding: var(--g); background: var(--sky-2, var(--surface)); }
+#sim .sim-ctl > :is(h3, details, button) { grid-column: 1 / -1; margin: 0; }
+#sim .sim-ctl > button { justify-self: start; }
+#sim .sim-ctl :is(fieldset, .sim-f) { margin: 0; padding: 0; border: 0; min-width: 0; display: grid; gap: 4px; align-content: start; }
+#sim .sim-ctl :is(legend, .sim-f > label, summary, h3) { padding: 0; font: 600 14px/1.4 var(--sans, sans-serif); color: var(--ink); }
+#sim .sim-ctl legend { margin-bottom: 4px; }
+#sim .sim-ctl output { font: 500 12px/1.4 var(--mono, monospace); color: var(--ink); }
+#sim .sim-ctl small { font-size: 12px; line-height: 1.45; color: var(--ink-3, var(--muted)); }
+#sim .sim-ctl input[type="range"] { width: 100%; min-height: 24px; accent-color: var(--near); }
+#sim .sim-ctl input[type="number"] { width: 7em; min-height: 24px; background: var(--sky, var(--page)); color: var(--ink); border: 1px solid var(--rule, var(--border)); padding: 2px 6px; font: inherit; }
+#sim .sim-ctl .r { display: flex; gap: 6px; align-items: center; min-height: 24px; font-size: 14px; color: var(--ink-2); }
+#sim .sim-ctl .r > .tag { flex: none; }
+#sim .sim-ctl details > div { display: grid; gap: var(--g); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); margin-top: 8px; }
+#sim .sim-ctl summary { cursor: pointer; }
+#sim .sim-ctl button { background: transparent; color: var(--ink); border: 1px solid var(--rule, var(--border)); padding: 6px 12px; font: 600 13px/1.2 var(--sans, sans-serif); cursor: pointer; }
+#sim .sim-ctl :is(input, button, summary):focus-visible { outline: 2px solid var(--focus, currentColor); outline-offset: 2px; }
+
+#sim .sim-liq > dl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; margin: 0.5em 0 0; font-size: 14px; }
+#sim .sim-liq dt { color: var(--ink-2); }
+#sim .sim-liq dd { margin: 0; text-align: right; color: var(--ink); }
+#sim .sim-left > ul { margin: 0.4em 0 0; padding-left: 1.1em; color: var(--ink-2); font-size: 14px; }
+#sim :is(.sim-liq, .sim-notes, .sim-left) > h3 { margin: 0 0 0.3em; }
+#sim [hidden] { display: none !important; }
+
+/* the desk's first frames on the film's stage (d1 to d3): the two ways to hold the cash, each with room to read */
+.film .is-desk .lead + .figs { margin-top: 28px; }
+.film .is-desk .fig-l { max-width: 38ch; }
+.film .is-desk .words > .fig + .fig { margin-top: 32px; }
+.film .desk-row { margin: 34px 0 10px; color: var(--ink-2); }
+.film .desk-row:first-child { margin-top: 0; }
+.film .desk-bar { display: block; overflow: visible; }
+html:not(.js) .desk-bar.is-ghost, .film.article .desk-bar.is-ghost { display: none; }
+.film .desk-key { justify-content: flex-start; margin-top: 14px; }
+.film :is(.seg, .edge-bar) { transform-box: fill-box; }
+/* d3: each bar under its own label, the year's gain against one day's move on one dollar axis */
+.film .edge { display: grid; gap: 8px; }
+.film .edge-lab { font-size: clamp(13px, 1.1vw, 15px); line-height: 1.35; color: var(--ink-2); }
+.film .edge-lab .num { color: var(--ink); font-weight: 600; }
+.film .edge-bars { display: block; height: clamp(12px, 1.4vw, 20px); }
+.film .edge-bars + .edge-lab { margin-top: 16px; }
+.film .edge + .lead { margin-top: 32px; }
+@media (prefers-reduced-motion: reduce) { #sim .sim-live circle { transition: none; } }
+.film.rm #sim .sim-live circle { transition: none; }

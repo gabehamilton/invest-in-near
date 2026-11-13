@@ -1,0 +1,10 @@
+measure,key,value,bar_value
+"Yield gap over fed funds, one year",spread_adj_365,0.3154,0.3154
+Typical one-day move (one standard deviation),sigma_d,5.4078,5.4078
+Typical one-year move (one standard deviation),rv_365_near,103.3154,103.3154
+Worst single day since listing (fall),worst_day,-36.5247,36.5247
+Largest fall within the last year,mdd_365,-65.4826,65.4826
+rv_365_btc,rv_365_btc,43.9574,
+rv_365_eth,rv_365_eth,60.0288,
+rv_365_eur,rv_365_eur,5.4847,
+worst_day_date,worst_day_date,2021-05-19,

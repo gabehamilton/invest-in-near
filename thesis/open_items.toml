@@ -1,0 +1,95 @@
+# Known gaps and UNVERIFIED items, rendered on index.html (limits), data.html (known gaps) and THESIS.md.
+#
+# Schema: one [[items]] table per item.
+#   id       stable slug, used as the HTML anchor (gap-<id>)
+#   title    short label
+#   status   one of: unverified, not measured, not checkable, open, stale, depends on BigQuery
+#   text     what we know and why it matters
+#   resolve  what would close the item
+#   refs     identifiers shown verbatim through ident() (proposal numbers and the like)
+#   affects  claim and chart ids this item touches, shown through ident()
+#   links    [{label, href}] rendered through cite()
+#   resolved_if / resolved_status  a registry key; when it is non-null, the item's status becomes
+#            resolved_status (default "partly resolved")
+# Prose fields (title, text, resolve, link labels) never contain a digit. They may use {key}
+# placeholders for registry keys; text() turns those into numbers with provenance.
+
+[[items]]
+id = "slashing"
+title = "Slashing"
+status = "unverified"
+refs = []
+affects = ["H6", "c14"]
+text = "As far as I can tell NEAR does not slash validator stake today, but I have not confirmed it in the protocol spec or the nearcore source. If slashing exists, liquid staking carries a loss path that none of the yield figures include."
+resolve = "Cite the nearcore code path or the Nomicon section that governs slashing, pinned to a commit."
+links = [{ label = "Nomicon, the NEAR protocol specification", href = "https://nomicon.io/" }]
+
+[[items]]
+id = "linear-instant-exit"
+title = "LiNEAR instant-exit depth"
+status = "not measured"
+refs = []
+affects = ["H6", "c14"]
+text = "Meta Pool's instant-unstake pool holds {nslp_near}, read from its contract. LiNEAR's equivalent was not measured, so the same-day liquidity row of the sweep checklist is marked partial."
+resolve = "Read LiNEAR's instant-unstake liquidity and fee from its contract at the same height as the Meta Pool read."
+links = []
+
+[[items]]
+id = "options-venues-us"
+title = "Binance and Bybit options, not checkable from the US"
+status = "not checkable"
+refs = []
+affects = ["H8", "c15"]
+text = "Binance's options API and Bybit's public endpoints refuse requests from US addresses, so the venue table marks them not checked rather than no. Unchecked venues: {venues_unchecked}."
+resolve = "A venue check from a non-US network, with each venue's HTTP status."
+links = []
+
+[[items]]
+id = "treasury-outflow"
+title = "Purpose of the treasury outflow"
+status = "unverified"
+refs = []
+affects = []
+text = "The treasury.near balance, column treasury_near in data/raw/rpc/history_samples.csv, dropped sharply in one quarter this year. I could not find a published purpose. Supply growth is unaffected; sell pressure might not be."
+resolve = "A treasury report or an on-chain trace that names where the NEAR went."
+links = []
+
+[[items]]
+id = "quoted-staking-rate"
+title = "Origin of the quoted staking rate"
+status = "unverified"
+refs = []
+affects = ["H3", "c01"]
+text = "The hypothesis quotes a staking rate without saying where it came from. The ledger tests the claim against the measured trailing-year liquid staking yield, {y_lst_365}, and shows both."
+resolve = "Name the dashboard and the date the quoted rate came from."
+links = []
+
+[[items]]
+id = "bigquery-freshness"
+title = "BigQuery freshness"
+status = "depends on BigQuery"
+refs = []
+affects = ["H10", "c05", "c16"]
+text = "Exact burn figures need the public NEAR BigQuery dataset, whose latest block date is {bq_max_date}; where it has no data the figure is labelled sampled or upper bound."
+resolve = "The BigQuery dataset keeping pace with the chain (the data page shows its lag in days)."
+links = [{ label = "NEAR docs: BigQuery public dataset", href = "https://docs.near.org/data-infrastructure/big-query" }]
+
+[[items]]
+id = "intents-explorer-permission"
+title = "Permission to publish Intents Explorer aggregates"
+status = "open"
+refs = []
+affects = ["c06"]
+text = "The NEAR Intents Explorer comparison needs partner access and written permission to publish under its terms. It is not included, so the Intents volume chart rests on DefiLlama alone."
+resolve = "Partner access and a written answer from NEAR Intents."
+links = [{ label = "NEAR Intents Explorer API documentation", href = "https://docs.near-intents.org/integration/distribution-channels/1click-api/explorer/introduction" }]
+
+[[items]]
+id = "gbp-money-refetch"
+title = "Bank of England money series"
+status = "open"
+refs = []
+affects = ["c21"]
+text = "Sterling money here is the wide aggregate the Bank publishes as {mon_gbp_aggregate}; the narrower version that excludes intermediate financial companies is the closer match for other currencies' broad money, but its series code is not confirmed."
+resolve = "The confirmed Bank of England series code for the narrower aggregate."
+links = []

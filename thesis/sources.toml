@@ -1,0 +1,209 @@
+# Every source the build reads, with how freshness is judged. Read by pipeline/build.py, which writes
+# site/data/sources.json (the status board on data.html#status).
+#
+# Fields per [sources.<id>]:
+#   name, class ("approved-primary" | "approved-crosscheck" | "declared-constant"), endpoint, auth
+#   paths          globs under the repo root (sidecars *.meta.json and bigquery/_chunks are skipped)
+#   requires_env   credentials a pull needs; no files + credentials needed -> not_configured
+#   publish        false -> the aggregates are withheld (default true)
+#   stale          default freshness rule for the source's files; [sources.<id>.file_stale] overrides by file stem
+#   stale_text     the threshold in words
+#   committed      yes | aggregates only | no
+#   tos_note, fix  terms in one line; the command that refreshes the source
+#
+# Freshness rules (lag measured against the build's as_of = latest fetched_at of the raw sidecars,
+# never the wall clock):
+#   days                  calendar days from the last observation to as_of
+#   business_days         weekdays after the last observation up to as_of
+#   days_after_month_end  days from the end of the last observed month to as_of
+#   behind_rpc_tip        days the last observation trails the NEAR RPC tip (BigQuery)
+#   none                  not judged (projections, state files)
+# A file over its threshold is "lagging" when it was fetched in the latest pull (the upstream itself is
+# behind) and "stale" when the cached file is older than one day before as_of (our copy is old).
+# "failed" = the sidecar records an incomplete pull (cache in use); "partial" = fewer planned samples than
+# min_planned_pct. Source state = worst file state (failed > stale > lagging > partial > ok).
+
+[sources.near_rpc]
+name = "NEAR mainnet JSON-RPC"
+class = "approved-primary"
+endpoint = "https://archival-rpc.mainnet.fastnear.com (history), https://rpc.mainnet.fastnear.com (latest block)"
+auth = "none"
+paths = ["data/raw/rpc/*.csv", "data/raw/rpc/*.json"]
+stale = { rule = "days", max = 1 }
+stale_text = "RPC tip more than 1 day before the build, or fewer than 95% of planned monthly samples (partial)"
+planned_monthly_from = "2020-11-01"
+planned_file = "history_samples"
+min_planned_pct = 95
+committed = "yes"
+tos_note = "Public JSON-RPC; chain data is public. FastNEAR rate-limits archival calls (HTTP 429), so samples are cached append-only."
+fix = "uv run python -m pipeline.pull --only near_rpc"
+
+# Event and per-sample files: the newest date in protocol_changes is the last parameter change and in epoch_history
+# the last monthly sample, not the RPC tip. The tip's freshness is judged on history_samples (latest row),
+# protocol_config_samples, epoch_mints and snapshot_now.
+[sources.near_rpc.file_stale]
+protocol_changes = { rule = "none" }
+epoch_history = { rule = "none" }
+
+[sources.fred]
+name = "FRED, Federal Reserve Bank of St. Louis"
+class = "approved-primary"
+endpoint = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=<SERIES>"
+auth = "none"
+paths = ["data/raw/fred/*.csv"]
+stale = { rule = "business_days", max = 5 }
+stale_text = "daily series more than 5 business days behind; monthly series more than 45 days after month-end"
+committed = "yes"
+tos_note = "Keyless FRED graph CSV. FRED terms of use apply; each series is credited to its original publisher (BLS, BEA, Federal Reserve Board, New York Fed). FRED keeps no vintages here, and BLS published no October 2025 CPI."
+fix = "uv run python -m pipeline.pull --only fred"
+
+[sources.fred.file_stale]
+CPIAUCSL = { rule = "days_after_month_end", max = 45 }
+CPIAUCNS = { rule = "days_after_month_end", max = 45 }
+CPILFESL = { rule = "days_after_month_end", max = 45 }
+PCEPI = { rule = "days_after_month_end", max = 45 }
+M2SL = { rule = "days_after_month_end", max = 45 }
+FEDTARMD = { rule = "none" }
+FEDTARMDLR = { rule = "none" }
+
+[sources.bis]
+name = "BIS data portal (policy rates, including China and Hong Kong; consumer prices)"
+class = "approved-primary"
+endpoint = "https://stats.bis.org/api/v2/data/dataflow/BIS/<WS_CBPOL|WS_LONG_CPI>/1.0/<KEY>?format=csv"
+auth = "none"
+paths = ["data/raw/bis/*.csv"]
+stale = { rule = "days_after_month_end", max = 70 }
+stale_text = "latest month more than 70 days after its month-end"
+committed = "yes"
+tos_note = "Keyless BIS SDMX API; BIS statistics may be reused with the source credited. Argentina has no policy rate after 2025-07-10; Australia's CPI is quarterly."
+fix = "uv run python -m pipeline.pull --only bis"
+
+[sources.binance]
+name = "Binance spot klines (NEARUSDT, BTCUSDT, ETHUSDT)"
+class = "approved-primary"
+endpoint = "https://data-api.binance.vision/api/v3/klines?interval=1d"
+auth = "none"
+paths = ["data/raw/market/*_binance_daily.csv"]
+stale = { rule = "days", max = 3 }
+stale_text = "last daily candle more than 3 days before the build"
+committed = "yes"
+tos_note = "Binance public market-data host; Binance terms of use apply. Quotes are in USDT, not USD (cross-checked against Coinbase NEAR-USD)."
+fix = "uv run python -m pipeline.pull --only prices"
+
+[sources.coinbase]
+name = "Coinbase Exchange candles (NEAR-USD)"
+class = "approved-crosscheck"
+endpoint = "https://api.exchange.coinbase.com/products/NEAR-USD/candles?granularity=86400"
+auth = "none"
+paths = ["data/raw/market/near_usd_coinbase_daily.csv"]
+stale = { rule = "days", max = 3 }
+stale_text = "last daily candle more than 3 days before the build"
+committed = "yes"
+tos_note = "Coinbase Exchange public market data; Coinbase terms apply. Series starts 2022-09-01."
+fix = "uv run python -m pipeline.pull --only prices"
+
+[sources.option_venues]
+name = "Options venue check (Deribit, OKX, Aevo, Bybit, Binance)"
+class = "approved-primary"
+endpoint = "Deribit public/get_instruments, OKX public/underlying, Aevo /markets, Bybit v5 instruments-info, Binance eapi exchangeInfo"
+auth = "none"
+paths = ["data/raw/market/options_venues.json"]
+stale = { rule = "days", max = 3 }
+stale_text = "venue check more than 3 days before the build"
+committed = "yes"
+tos_note = "Public exchange APIs. Bybit and Binance block US addresses; an unreachable venue is recorded as not checked, never as no."
+fix = "uv run python -m pipeline.pull --only derivatives"
+
+[sources.dvol_deribit]
+name = "Deribit DVOL (BTC, ETH implied volatility)"
+class = "approved-primary"
+endpoint = "https://www.deribit.com/api/v2/public/get_volatility_index_data?resolution=1D"
+auth = "none"
+paths = ["data/raw/market/dvol_deribit_*_daily.csv"]
+stale = { rule = "days", max = 3 }
+stale_text = "last daily close more than 3 days before the build"
+committed = "yes"
+tos_note = "Deribit public API; context only (no NEAR implied volatility exists)."
+fix = "uv run python -m pipeline.pull --only derivatives"
+
+[sources.defillama]
+name = "DefiLlama (NEAR Intents volume and fees)"
+class = "approved-primary"
+endpoint = "https://api.llama.fi/summary/dexs/near-intents, https://api.llama.fi/summary/fees/near-intents"
+auth = "none"
+paths = ["data/raw/intents/defillama_*_daily.csv"]
+stale = { rule = "days", max = 3 }
+stale_text = "last day more than 3 days before the build"
+committed = "yes"
+tos_note = "DefiLlama open API. The volume adapter reads a Dune table maintained by NEAR, so it is not independent of Dune; the 3 most recent days are provisional."
+fix = "uv run python -m pipeline.pull --only defillama"
+
+[sources.intents_explorer]
+name = "NEAR Intents Explorer API (1Click daily aggregates)"
+class = "approved-crosscheck"
+endpoint = "https://explorer.near-intents.org/api/v0/transactions"
+auth = "partner token (Bearer)"
+requires_env = ["NEAR_INTENTS_JWT"]
+paths = ["data/raw/intents/explorer_daily.csv", "data/raw/intents/explorer_state.json"]
+# false until NEAR Intents grants written permission to publish the aggregates; then true
+publish = false
+stale = { rule = "days", max = 3, last_obs = "final_day" }
+stale_text = "newest final day more than 3 days before the build"
+committed = "aggregates only"
+tos_note = "1ClickSwap API Terms 4.1(e): API data may not be stored for more than 24 hours, so rows never leave memory and only daily aggregates are written. Publishing them waits for written permission from NEAR Intents."
+fix = "partner access from NEAR Intents (see README), then uv run python -m pipeline.pull --only intents"
+
+[sources.intents_explorer.file_stale]
+explorer_state = { rule = "none" }
+
+[sources.money]
+name = "Fiat money panel: central banks and their statistics portals (FRED, ECB, BoJ, BoE, OECD, SNB, RBA, BoC, HKMA, SingStat)"
+class = "approved-primary"
+endpoint = "one endpoint per publisher (pipeline/sources/money.py docstring); the exact source_url of every series is in its sidecar"
+auth = "none"
+paths = ["data/raw/money/*/*.csv"]
+stale = { rule = "days_after_month_end", max = 90 }
+stale_text = "monthly money more than 90 days after month-end"
+committed = "yes"
+tos_note = "Keyless public statistics; each series is credited to its publisher on the data page. The BoE and HKMA responses are archived unchanged under each currency's _raw folder; every other series records the full request URL and the SHA-256 of the response."
+fix = "uv run python -m pipeline.pull --only money"
+
+[sources.bis_fx]
+name = "BIS Triennial Central Bank Survey 2025 (FX turnover by currency)"
+class = "approved-primary"
+endpoint = "https://stats.bis.org/api/v2/data/dataflow/BIS/WS_DER_OTC_TOV/1.0/A.U.A.B.5J.A.5J.A..TO1.A.A.3.C?format=csv&startPeriod=2025&endPeriod=2025"
+auth = "none"
+paths = ["data/raw/bis_fx/*.csv"]
+stale = { rule = "none" }
+stale_text = "a triennial survey: not stale until the next survey"
+committed = "yes"
+tos_note = "Keyless BIS SDMX API; BIS statistics may be reused with the source credited. Picks the ten most-traded currencies for the money panel."
+fix = "uv run python -m pipeline.pull --only bis_fx"
+
+[sources.bigquery]
+name = "BigQuery public dataset crypto_near_mainnet_us"
+class = "approved-crosscheck"
+endpoint = "bigquery-public-data.crypto_near_mainnet_us (sql/*.sql)"
+auth = "Google application-default credentials and GCP_PROJECT (billed per query)"
+requires_env = ["GCP_PROJECT"]
+paths = ["data/raw/bigquery/*.csv"]
+stale = { rule = "none" }
+stale_text = "MAX(block_date) more than 7 days behind the NEAR RPC tip"
+committed = "aggregates only"
+tos_note = "Google Cloud public dataset published by NEAR; query outputs only are committed. tokens_burnt overstates the supply burn by the developer gas rebate (burnt_gas_reward) only before HSP-027 took effect (the burnt_gas_reward change in rpc/protocol_changes.csv); from that block gross equals net."
+fix = "set GCP_PROJECT in .env, run gcloud auth application-default login, then uv run python -m pipeline.pull --only bigquery"
+
+[sources.bigquery.file_stale]
+freshness = { rule = "behind_rpc_tip", max = 7, last_obs = "max_block_date" }
+
+[sources.constants]
+name = "Declared constants (nearcore, core-contracts, eCFR, press)"
+class = "declared-constant"
+endpoint = "thesis/constants.toml (each entry: source URL, verbatim quote, retrieval date)"
+auth = "none"
+paths = ["thesis/constants.toml"]
+stale = { rule = "none" }
+stale_text = "not judged; an entry with quote_status set is unverified and marks the source partial"
+committed = "yes"
+tos_note = "Quoted under fair use with links to pinned source revisions."
+fix = "verify each quote_status entry against its source and edit thesis/constants.toml"

@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "min_block_date",
+    "max_block_date",
+    "days_present",
+    "days_spanned",
+    "max_block_height",
+    "max_block_timestamp_utc"
+  ],
+  "dataset": "bigquery-public-data.crypto_near_mainnet_us",
+  "description": "First and last block_date present in the NEAR blocks table, with the latest block height and time. Run before every other job: no later query may request dates beyond max_block_date, and a last day whose final block is before 23:59 UTC is treated as partial. Ingestion is UNVERIFIED after NEAR Lake stopped on 2026-03-24 (docs.near.org/data-infrastructure/lake-framework/near-lake), so this is the only source of truth for the usable window. Other tables may lag blocks; this checks blocks only. Cost: three 8-byte columns per block over the scanned range, so the first full-window run is several GB and later incremental runs scan a few days.",
+  "fetched_at": "2026-11-12T00:41:09+00:00",
+  "file": "data/raw/bigquery/freshness.csv",
+  "grain": "one row for the whole window",
+  "jobs": [
+    {
+      "bytes_billed": 0,
+      "bytes_processed": 0,
+      "cache_hit": true,
+      "end_date": "2026-11-12",
+      "job_id": "00466668-9277-425c-a3ed-e2de40c27549",
+      "rows": 1,
+      "start_date": "2026-11-11"
+    }
+  ],
+  "last_complete_date": "2026-11-11",
+  "last_complete_rule": "max_block_date if its last block is at or after 23:59 UTC, else the day before; never later than yesterday UTC",
+  "location": "auto",
+  "params": {
+    "end_date": "2026-11-12",
+    "start_date": "2026-11-11"
+  },
+  "rows": 1,
+  "scan": "incremental",
+  "scan_rule": "full scan from window_start when no freshness.csv exists for the same window_start; otherwise from the cached max_block_date, keeping the cached min_block_date and days_present = cached + scanned - 1 (the shared day). Assumes blocks before the cached max_block_date do not change; delete freshness.csv to rescan the whole window",
+  "sql_file": "sql/freshness.sql",
+  "sql_sha256": "c09b7c6dc47d301d4d8dcf476f0d3aacbb2a6333a45d38838bc5724bde26ff67",
+  "window_start": "2020-07-21"
+}

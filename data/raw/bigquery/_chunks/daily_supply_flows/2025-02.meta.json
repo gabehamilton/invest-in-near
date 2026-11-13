@@ -1,0 +1,65 @@
+{
+  "columns": [
+    "block_date",
+    "eod_supply_near",
+    "minted_near",
+    "burnt_near",
+    "epoch_boundaries"
+  ],
+  "data_through": "2026-11-10",
+  "dates": [
+    "2025-02-01",
+    "2025-02-02",
+    "2025-02-03",
+    "2025-02-04",
+    "2025-02-05",
+    "2025-02-06",
+    "2025-02-07",
+    "2025-02-08",
+    "2025-02-09",
+    "2025-02-10",
+    "2025-02-11",
+    "2025-02-12",
+    "2025-02-13",
+    "2025-02-14",
+    "2025-02-15",
+    "2025-02-16",
+    "2025-02-17",
+    "2025-02-18",
+    "2025-02-19",
+    "2025-02-20",
+    "2025-02-21",
+    "2025-02-22",
+    "2025-02-23",
+    "2025-02-24",
+    "2025-02-25",
+    "2025-02-26",
+    "2025-02-27",
+    "2025-02-28"
+  ],
+  "description": "Month chunk 2025-02 of sql/daily_supply_flows.sql",
+  "fetched_at": "2026-11-11T23:08:39+00:00",
+  "file": "data/raw/bigquery/_chunks/daily_supply_flows/2025-02.csv",
+  "jobs": [
+    {
+      "bytes_billed": 54525952,
+      "bytes_processed": 53489376,
+      "cache_hit": false,
+      "end_date": "2025-02-28",
+      "job_id": "d6ece8b0-ca26-46fc-920a-33b8fdd3310c",
+      "rows": 28,
+      "start_date": "2025-02-01"
+    }
+  ],
+  "month": "2025-02",
+  "query": "daily_supply_flows",
+  "ranges": [
+    [
+      "2025-02-01",
+      "2025-02-28"
+    ]
+  ],
+  "rows": 28,
+  "sql_file": "sql/daily_supply_flows.sql",
+  "sql_fingerprint": "6428a47e32017c681c296868809241c019914997c36bc407baaa4229a46cd5c9"
+}

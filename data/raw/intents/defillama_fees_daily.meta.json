@@ -1,0 +1,52 @@
+{
+  "blank_rows": 0,
+  "columns": [
+    "date",
+    "fees_usd"
+  ],
+  "description": "NEAR Intents daily gross fees (protocol plus affiliate) in USD per UTC day, as published by DefiLlama",
+  "dropped_unfinished_dates": [],
+  "endpoint": "https://api.llama.fi/summary/fees/near-intents",
+  "fetch_day_utc": "2026-11-11",
+  "fetched_at": "2026-11-11T23:02:38+00:00",
+  "file": "data/raw/intents/defillama_fees_daily.csv",
+  "first_date": "2025-05-10",
+  "last_date": "2026-11-10",
+  "latest_day": {
+    "date": "2026-11-10",
+    "previous_date": "2026-11-09",
+    "previous_value": "263740",
+    "value": "298141"
+  },
+  "latest_day_provisional": true,
+  "methodology": {
+    "Fees": "Gross fees charged on NEAR Intents swaps - the protocol fee plus the affiliate (distribution) fee each frontend collects, summed across all integrators.",
+    "HoldersRevenue": "Since 2026-02-23, NEAR's captured Intents revenue is used to buy back $NEAR on the open market (not burned), returning value to holders.",
+    "ProtocolRevenue": "Captured revenue held by the treasury before the 2026-02-23 buyback program.",
+    "Revenue": "NEAR's net captured revenue, measured as NEAR/wNEAR swept into its revenue wallets (reconciles with revenue.near.org and the on-chain buyback). Split by destination wallet into front-end affiliate revenue and Other. Transfers between those wallets are excluded.",
+    "SupplySideRevenue": "Gross fees minus NEAR's captured revenue - the affiliate fees kept by solvers and third-party distribution channels (e.g. SwapKit)."
+  },
+  "methodology_url": "https://github.com/DefiLlama/dimension-adapters/blob/master/fees/near-intents",
+  "missing_dates": [],
+  "params": {
+    "dataType": "dailyFees",
+    "excludeTotalDataChartBreakdown": "true"
+  },
+  "protocol": {
+    "defillamaId": "6225",
+    "name": "NEAR Intents",
+    "slug": "near-intents"
+  },
+  "provisional_dates": [
+    "2026-11-08",
+    "2026-11-09",
+    "2026-11-10"
+  ],
+  "provisional_rule": "the 3 UTC days before fetch_day_utc may still be partial or restated upstream; values are kept as published (pipeline convention, matching the Explorer pull's open window; DefiLlama publishes no finality horizon)",
+  "refresh": "full series re-downloaded every run (DefiLlama restates history when adapters change)",
+  "reported_total_all_time_usd": "60254543.980000004",
+  "rows": 550,
+  "source_url": "https://api.llama.fi/summary/fees/near-intents?excludeTotalDataChartBreakdown=true&dataType=dailyFees",
+  "sum_of_rows_usd": "60254543.98",
+  "upstream": "DefiLlama fees/near-intents adapter; see methodology and methodology_url"
+}
