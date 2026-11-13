@@ -30,7 +30,7 @@ SITE_DATA_DIR = SITE_DIR / "data"
 load_dotenv(ROOT / ".env")
 
 REPO_URL = "https://github.com/gabehamilton/invest-in-near"
-# the published static site (GitHub Pages, .github/workflows/pages.yml deploys site/ on every push to main)
+# the published static site (GitHub Pages; .github/workflows/pages.yml deploys site/ after verify passes on main)
 SITE_URL = "https://gabehamilton.github.io/invest-in-near/"
 USER_AGENT = "invest-in-near-thesis/0.1 (+https://github.com/gabehamilton/invest-in-near)"
 

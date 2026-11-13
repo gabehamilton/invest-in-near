@@ -1,10 +1,14 @@
-# Publishes site/ to GitHub Pages as committed. It does not rebuild: run `make charts` and commit first,
-# so the pages, THESIS.md and site/data agree (make verify checks that they do).
-# One-time setup: repository Settings > Pages > Build and deployment > Source: GitHub Actions.
+# Publishes site/ to GitHub Pages (https://gabehamilton.github.io/invest-in-near/) as committed. It does not
+# rebuild: run `make charts` and commit first. It deploys only after the verify workflow passes on a push to main,
+# so a site that disagrees with data/raw, THESIS.md or the tests never goes live. Run it by hand (Actions > pages >
+# Run workflow, on main) to redeploy the current main without waiting for verify.
+# One-time setup (already done): repository Settings > Pages > Build and deployment > Source: GitHub Actions.
 name: pages
 
 on:
-  push:
+  workflow_run:
+    workflows: [verify]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -19,12 +23,19 @@ concurrency:
 
 jobs:
   deploy:
+    # `event == 'push'` keeps a fork's pull request from a branch that is also named main from deploying.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          # deploy exactly the commit verify checked, not whatever main points at by now
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
