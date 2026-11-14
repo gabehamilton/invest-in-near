@@ -1,0 +1,23 @@
+{
+  "columns": [
+    "time",
+    "funding_rate",
+    "funding_usd"
+  ],
+  "complete": true,
+  "description": "Kraken Derivatives PF_NEARUSD hourly funding: funding_rate is relativeFundingRate (fraction of price for the hour), funding_usd is fundingRate (USD per contract of 1 NEAR for the hour); positive: longs pay shorts",
+  "error": null,
+  "fetched_at": "2026-11-13T17:28:18+00:00",
+  "file": "data/raw/perps/near_funding_kraken_hourly.csv",
+  "first_time": "2025-11-11T23:00:00Z",
+  "last_time": "2026-11-13T17:00:00Z",
+  "pages": 1,
+  "params": {
+    "symbol": "PF_NEARUSD"
+  },
+  "refresh": "the venue serves a rolling window only, so the file accumulates: fresh rows replace cached rows with the same key and cached rows older than the window are kept (rows_from_previous_file)",
+  "response_sha256": "46279182e03e885ab6376a82ac7fd9b11d76e5fd0b1abe1fdf509b94fb4d8916",
+  "rows": 8798,
+  "rows_from_previous_file": 0,
+  "source_url": "https://futures.kraken.com/derivatives/api/v4/historicalfundingrates"
+}

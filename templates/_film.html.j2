@@ -17,9 +17,9 @@
     rate is below NEAR's staking yield), else data-norate; every element that belongs to one reading (labels,
     legend items, scale caption, leaders, bracket, gap label) carries data-when="money" or data-when="pay", and
     film.css shows one set at a time (the money set without JavaScript);
-  - the third beat (div.shot[data-orbit="rank"], both at once) resolves the orbit into a ranked ladder: each ranked
-    body and g.o-core carry data-rank-x / data-rank-y (its place on the ladder, in svg units), and the
-    ladder (g.o-ladder), its labels and legend items carry data-when="rank";
+  - the third beat (div.shot[data-orbit="rank"], the same rates ranked) resolves the orbit into a ladder of the
+    yearly rate holding pays: each ranked body and g.o-core carry data-rank-x / data-rank-y (its place on the
+    ladder, in svg units), and the ladder (g.o-ladder), its labels and legend items carry data-when="rank";
   - section.scene[data-short] names the scene in the transport when its full title does not fit.
   Durations are structure: each caption is written to at most seventeen characters a second of its shot.
 -#}
@@ -27,25 +27,25 @@
 {%- autoescape true -%}
 {%- set D = {
   't1': 3.2, 't2': 5.5, 't3': 8.0, 'tpay': 7.0, 'trank': 8.5, 't4': 5.7,
-  'w1': 3.5, 'w2': 6.5, 'w4': 6.0, 'w5': 4.5,
-  'm1': 6.5, 'm2': 6.0, 'm3': 6.0, 'm4': 7.0, 'm5': 5.0, 'm6': 3.5,
-  'y1': 7.0, 'y2': 5.5, 'y3': 6.5, 'y4': 5.0, 'y5': 7.0, 'y6': 4.0, 'y7': 3.5,
-  'c1': 6.0, 'c2': 6.5, 'c3': 6.0, 'c4': 7.0,
-  'l1': 6.5, 'l2': 6.5,
-  'd1': 5.6, 'd2': 6.0, 'd3': 6.5, 'd4': 7.0, 'd5': 2.0
+  's1': 5.5, 's2': 4.0,
+  'm1': 6.5, 'm2': 5.5, 'm3': 4.5, 'm4': 6.0, 'm5': 4.5, 'm6': 3.5,
+  'y1': 6.5, 'y2': 4.5, 'y3': 6.5, 'y4': 4.5, 'y5': 7.0, 'y6': 4.5, 'y7': 3.5,
+  'c2': 6.5, 'c3': 5.0, 'c4': 6.0,
+  'v1': 3.5, 'v2': 5.0, 'v3': 3.5, 'v4': 7.5, 'v5': 4.5,
+  'l1': 6.0, 'l2': 6.5,
+  'd1': 5.6, 'd2': 6.0, 'd3': 6.5, 'd4': 7.0, 'd5': 2.0,
+  'a1': 3.0
 } -%}
 {%- set orbit = film.orbit -%}
 {%- set pay_keys = ['y_lst_365', 'ffcomp_365', 'spread_adj_365', 'spread_adj_365_dir', 'pay_n_below', 'pay_n_with_rate'] -%}
 {%- set ns_pay = namespace(ok=orbit.pay is not none) -%}
 {%- for k in pay_keys %}{% if (numbers.get(k) or {}).get('value') is none %}{% set ns_pay.ok = false %}{% endif %}{% endfor -%}
 {%- set pay = orbit.pay if ns_pay.ok else none -%}
-{%- set rank_keys = ['hold_near_net', 'hold_near_rank', 'hold_n_ranked', 'y_lst_365', 'g_365'] -%}
+{%- set rank_keys = ['pay_near_rank', 'pay_n_ranked', 'y_lst_365', 'latest_rpc_date'] -%}
 {%- set ns_rank = namespace(ok=pay is not none and orbit.rank is not none) -%}
 {%- for k in rank_keys %}{% if (numbers.get(k) or {}).get('value') is none %}{% set ns_rank.ok = false %}{% endif %}{% endfor -%}
 {%- set rank = orbit.rank if ns_rank.ok else none -%}
 {%- set desk = film.desk -%}
-{%- set turn = verdicts.get('H1', {}).get('verdict') == 'Refuted' and verdicts.get('H1b', {}).get('verdict') == 'Supported' -%}
-{%- set survive = turn and verdicts.get('H3', {}).get('verdict') == 'Supported' -%}
 
 {%- macro shot_open(sid, cls='', orbit='') -%}
 <div class="shot{{ ' ' ~ cls if cls }}" id="{{ sid }}" data-shot="{{ sid }}" data-dur="{{ D[sid] }}"{% if orbit %} data-orbit="{{ orbit }}"{% endif %}>
@@ -56,11 +56,11 @@
 </div>
 {%- endmacro -%}
 
-{#- which months a set of figures is from, from the registry's month keys (earliest and latest): " Policy rates as
-    of <month> to <month>; money growth over each currency's latest year, ending <month> to <month>." -#}
+{#- which months a set of rates is from, from the registry's month keys (earliest and latest): " Policy rates as
+    of <month> to <month>." -#}
 {%- macro span(ks) -%}{{ num(ks[0]) }}{% if ks[1] != ks[0] %} {{ copy('film_asof_to') }} {{ num(ks[1]) }}{% endif %}{%- endmacro -%}
-{%- macro asof(rates, money=none) -%}
-{%- if rates %} {{ copy('film_asof_rates') }} {{ span(rates) }}{% if money %}; {{ copy('film_asof_money') }} {{ span(money) }}{% endif %}.{% endif -%}
+{%- macro asof(rates) -%}
+{%- if rates %} {{ copy('film_asof_rates') }} {{ span(rates) }}.{% endif -%}
 {%- endmacro -%}
 
 {%- macro fig(value, label, at, cls='') -%}
@@ -68,22 +68,29 @@
 {%- endmacro -%}
 
 {#- An exhibit: the claim, its test and its figures on the left (figures from the caller), its chart on the right.
-    stamped=true stamps the verdict on the same frame (the shorter shots of the cost scene). -#}
-{%- macro exhibit(sid, cid, chart, capt, focus='', stamped=false) -%}
+    stamped=true stamps the verdict on the same frame (the shorter shots of the volatility scenes), stamp_at seconds
+    into the shot. kicker: words before the claim's eyebrow; test: a short form of the test where the claim's own is
+    too long to read in the shot; the reading view and the evidence print the claim's own in full. -#}
+{%- macro exhibit(sid, cid, chart, capt, focus='', stamped=false, stamp_at='2.2', kicker='', test='') -%}
 {%- set figs = caller() -%}
 {{ shot_open(sid, 'is-exhibit' ~ (' is-stamped' if stamped else '')) }}
 <div class="split exhibit">
   <div class="words">
-    <p class="eyebrow">{{ m.claim_eyebrow(cid) }}</p>
+    <p class="eyebrow">{% if kicker %}{{ kicker }} · {% endif %}{{ m.claim_eyebrow(cid) }}</p>
     <blockquote class="quote">{{ m.as_stated(cid) }}</blockquote>
+    {%- if test %}
+    <p class="test test-short" data-at="0.4"><span class="k">The test</span> {{ test }}</p>
+    <p class="test test-full"><span class="k">The test</span> {{ rule(cid, 'test') }}</p>
+    {%- else %}
     <p class="test" data-at="0.4"><span class="k">The test</span> {{ rule(cid, 'test') }}</p>
+    {%- endif %}
     <div class="figs">{{ figs }}</div>
   </div>
   <div class="picture">{{ m.chart_shell(chart, 'f-' ~ sid, focus) }}</div>
 </div>
 {%- if stamped %}
 {%- set answer = copy('film_' ~ cid ~ '_answer') %}
-<div class="vframe overlay" data-at="2.2">
+<div class="vframe overlay" data-at="{{ stamp_at }}">
   <p class="eyebrow">Verdict · claim {{ ident(cid) }} · {{ rule(cid, 'title') }}</p>
   {{ m.stamp(cid, '0') }}
   <p class="sentence">{{ m.claim_sentence(cid) }}</p>
@@ -118,14 +125,14 @@
 
 {#- ---------------------------------------------------------------- scene: the thesis -#}
 {#- Three figures in order, each told in words and by the picture: the money figure (t3), the rate figure (tpay, the
-    same orbit read for what holding pays) and both at once (trank, the orbit resolving into a ranked ladder). -#}
+    same orbit read for what holding pays) and the same rates ranked (trank, the orbit resolving into a ladder). -#}
 {%- set t2_at = D.t1 -%}
 {%- set t3_at = D.t1 + D.t2 -%}
 {%- set tpay_at = D.t1 + D.t2 + D.t3 -%}
 {%- set trank_at = tpay_at + (D.tpay if pay else false|int) -%}
 {%- set t4_at = trank_at + (D.trank if rank else false|int) -%}
 {%- set fmt1 = '%.1f' -%}
-<section class="scene" id="scene-title" data-scene="title" data-claims="H1b{{ ' H3 H5' if pay }}" data-charts="c21" data-short="{{ copy('film_scene_title_short') }}" aria-labelledby="st-title">
+<section class="scene" id="scene-title" data-scene="title" data-claims="H1{{ ' H3 H5' if pay }}" data-charts="c21" data-short="{{ copy('film_scene_title_short') }}" aria-labelledby="st-title">
 <h2 class="scene-title" id="st-title">{{ copy('film_scene_title') }}</h2>
 <div class="layer split title-split">
   <div class="words">
@@ -136,7 +143,7 @@
     <div class="heroes">
       {%- set out = (' data-out="' ~ fmt1|format(tpay_at + 0.4) ~ '"')|safe if pay else '' %}
       <div class="hero" data-at="{{ fmt1|format(t2_at + 2.7) }}"{{ out }}><p class="fig-v">{{ num('gap_m2', absolute=true) }}</p><p class="fig-l">{{ copy('film_t_hero1_label') }}</p></div>
-      <div class="hero" data-at="{{ fmt1|format(t3_at + 0.3) }}"{{ out }}><p class="fig-v">{{ num('h1b_n_faster') }}<i> of </i>{{ num('n_fiat_money') }}</p><p class="fig-l">{{ copy('film_t_hero2_label') }}</p></div>
+      <div class="hero" data-at="{{ fmt1|format(t3_at + 0.3) }}"{{ out }}><p class="fig-v">{{ num('h1_n_faster') }}<i> of </i>{{ num('n_fiat_money') }}</p><p class="fig-l">{{ copy('film_t_hero2_label') }}</p></div>
       {%- if pay %}
       {%- set out = (' data-out="' ~ fmt1|format(trank_at + 0.4) ~ '"')|safe if rank else '' %}
       <div class="hero is-pay" data-at="{{ fmt1|format(tpay_at + 2.0) }}"{{ out }}><p class="fig-v">{{ num('spread_adj_365', absolute=true) }}</p><p class="fig-l">{{ copy('film_tp_hero1_label') }}</p></div>
@@ -144,13 +151,13 @@
       {%- endif %}
       {%- if rank %}
       {%- set out = (' data-out="' ~ fmt1|format(t4_at + 0.3) ~ '"')|safe %}
-      <div class="hero is-rank" data-at="{{ fmt1|format(trank_at + 2.4) }}"{{ out }}><p class="fig-v">{{ num('hold_near_rank') }}<i> of </i>{{ num('hold_n_ranked') }}</p><p class="fig-l">{{ copy('film_tr_hero1_label') }}</p></div>
-      <div class="hero is-rank" data-at="{{ fmt1|format(trank_at + 3.4) }}"{{ out }}><p class="fig-v">{{ num('hold_near_net') }}</p><p class="fig-l">{{ copy('film_tr_hero2_label') }}</p></div>
+      <div class="hero is-rank" data-at="{{ fmt1|format(trank_at + 2.4) }}"{{ out }}><p class="fig-v">{{ num('pay_near_rank') }}<i> of </i>{{ num('pay_n_ranked') }}</p><p class="fig-l">{{ copy('film_tr_hero1_label') }}</p></div>
+      <div class="hero is-rank" data-at="{{ fmt1|format(trank_at + 3.4) }}"{{ out }}><p class="fig-v">{{ num('y_lst_365') }}</p><p class="fig-l">{{ copy('film_tr_hero2_label') }}</p></div>
       {#- the three figures together before the claims are tested one by one -#}
       <div class="recap" data-at="{{ fmt1|format(t4_at + 0.3) }}" data-fx="slam">
-        <p><b>{{ num('h1b_n_faster') }}<i> of </i>{{ num('n_fiat_money') }}</b> {{ copy('film_t4_recap_money') }}</p>
+        <p><b>{{ num('h1_n_faster') }}<i> of </i>{{ num('n_fiat_money') }}</b> {{ copy('film_t4_recap_money') }}</p>
         <p><b>{{ num('pay_n_below') }}<i> of </i>{{ num('pay_n_with_rate') }}</b> {{ copy('film_t4_recap_pay') }}</p>
-        <p><b>{{ num('hold_near_rank') }}<i> of </i>{{ num('hold_n_ranked') }}</b> {{ copy('film_t4_recap_rank') }}</p>
+        <p><b>{{ num('pay_near_rank') }}<i> of </i>{{ num('pay_n_ranked') }}</b> {{ copy('film_t4_recap_rank') }}</p>
       </div>
       {%- endif %}
     </div>
@@ -158,11 +165,11 @@
     <div class="notes">
       <p class="note tp-note" data-at="{{ fmt1|format(tpay_at + 4.0) }}" data-fx="fade"{% if rank %} data-out="{{ fmt1|format(trank_at + 0.4) }}"{% endif %}>{{ copy('film_tp_note') }}{{ asof(pay.months) }}</p>
       {%- if rank %}
-      <p class="note tp-note" data-at="{{ fmt1|format(trank_at + 4.4) }}" data-fx="fade">{{ copy('film_tr_note') }}{{ asof(rank.months, rank.money_months) }}</p>
+      <p class="note tp-note" data-at="{{ fmt1|format(trank_at + 4.4) }}" data-fx="fade">{{ copy('film_tr_note') }}{{ asof(rank.months) }}</p>
       {%- endif %}
     </div>
     {%- endif %}
-    <p class="tested" data-at="{{ fmt1|format(t4_at + 0.3) }}"><span class="k">{{ copy('film_t_tested') }}</span> {{ m.vchip('H1b', link=true) }}{% if pay %} {{ m.vchip('H3', link=true) }} {{ m.vchip('H5', link=true) }}{% endif %}</p>
+    <p class="tested" data-at="{{ fmt1|format(t4_at + 0.3) }}"><span class="k">{{ copy('film_t_tested') }}</span> {{ m.vchip('H1', link=true) }}{% if pay %} {{ m.vchip('H3', link=true) }} {{ m.vchip('H5', link=true) }}{% endif %}</p>
   </div>
   <div class="picture">
     <figure class="orbit" id="orbit" aria-label="{{ copy('film_orbit_aria') }}{% if pay %} {{ copy('film_orbit_aria_pay') }}{% endif %}{% if rank %} {{ copy('film_orbit_aria_rank') }}{% endif %}" data-top="{{ orbit.top }}" data-step="{{ orbit.step }}">
@@ -205,7 +212,7 @@
         {%- for b in orbit.bodies %}
         <span class="o-lab" data-when="money" data-for="{{ b.code }}" data-entity="{{ b.entity }}" data-anchor="{{ b.label.anchor }}" data-valign="{{ b.label.valign }}"{% if b.inside %} data-inside{% endif %} style="{{ b.label.style }}">{{ b.code }}{% if b.valued and b.key %} {{ num(b.key) }}{% endif %}</span>
         {%- endfor %}
-        <span class="o-lab" data-when="money" data-for="near" data-entity="near" data-anchor="{{ orbit.near_label.anchor }}" data-valign="{{ orbit.near_label.valign }}" style="{{ orbit.near_label.style }}">{{ copy('film_orbit_near') }}{% if orbit.near_lines > true|int %}<br>{% else %} {% endif %}{{ num('g_365_at_m2') }}</span>
+        <span class="o-lab" data-when="money" data-for="near" data-entity="near" data-anchor="{{ orbit.near_label.anchor }}" data-valign="{{ orbit.near_label.valign }}" style="{{ orbit.near_label.style }}">{{ copy('film_orbit_near') }}{% if orbit.near_lines > true|int %}<br>{% else %} {% endif %}{{ num('g_365') }}</span>
         <span class="o-lab o-gaplab" data-when="money" data-for="gap" data-anchor="{{ orbit.bracket.label.anchor }}" data-valign="{{ orbit.bracket.label.valign }}" style="{{ orbit.bracket.label.style }}">{{ num('gap_m2', absolute=true) }} {{ num('gap_m2_dir') }}</span>
         {%- if pay %}
         {%- for b in pay.bodies %}
@@ -215,11 +222,9 @@
         {%- endif %}
         {%- if rank %}
         {%- for b in rank.bodies %}
-        <span class="o-lab" data-when="rank" data-for="{{ b.code }}" data-entity="{{ b.entity }}" data-anchor="start" data-valign="middle" style="{{ b.rank.label.style }}">{{ b.code }} {{ num(b.rank.key) }}</span>
+        <span class="o-lab" data-when="rank" data-for="{{ b.code }}" data-entity="{{ b.entity }}" data-anchor="start" data-valign="middle" style="{{ b.rank.label.style }}">{{ b.code }}{% if b.code == 'USD' %} {{ copy('film_tp_now') }}{% endif %} {{ num(b.rank.key) }}</span>
         {%- endfor %}
-        <span class="o-lab" data-when="rank" data-for="near" data-entity="near" data-anchor="start" data-valign="middle" style="{{ rank.near.label.style }}">{{ copy('film_orbit_near_rank') }} {{ num('hold_near_net') }}</span>
-        <span class="o-lab o-zl" data-when="rank" data-for="up" data-anchor="start" data-valign="above" style="{{ rank.up.style }}">{{ copy('film_tr_up') }}</span>
-        <span class="o-lab o-zl" data-when="rank" data-for="down" data-anchor="start" data-valign="below" style="{{ rank.down.style }}">{{ copy('film_tr_down') }}</span>
+        <span class="o-lab" data-when="rank" data-for="near" data-entity="near" data-anchor="start" data-valign="middle" style="{{ rank.near.label.style }}">{{ copy('film_orbit_near_rank') }} {{ num('y_lst_365') }}</span>
         {%- endif %}
       </div>
       <ul class="o-legend">
@@ -267,48 +272,47 @@
 {%- endif %}
 {%- if rank %}
 {%- set rank_markup -%}
- {{ copy('film_tr_list') }} {{ copy('film_orbit_near_rank') }} {{ num('hold_near_net') }}{% for b in rank.bodies %}; the {{ b.name }} {{ num(b.rank.key) }}{% endfor %}.
-{%- if rank.unranked %} {{ copy('film_tr_unranked') }} {% for b in rank.unranked %}the {{ b.name }}{{ ', ' if not loop.last else '.' }}{% endfor %}{% endif %} {{ copy('film_tr_note') }}{{ asof(rank.months, rank.money_months) }}
+ {{ copy('film_tr_list') }} {% for b in rank.bodies %}{% if loop.index0 == rank.near_i %}{{ copy('film_orbit_near_rank') }} {{ num('y_lst_365') }}; {% endif %}the {{ b.name }} {{ num(b.rank.key) }}{% if b.code == 'USD' %} ({{ copy('film_tp_fed') }}){% endif %}{{ '; ' if not loop.last }}{% endfor %}{% if rank.near_i >= rank.bodies|length %}; {{ copy('film_orbit_near_rank') }} {{ num('y_lst_365') }}{% endif %}.
+{%- if rank.unranked %} {{ copy('film_tr_unranked') }} {% for b in rank.unranked %}the {{ b.name }}{{ ', ' if not loop.last else '.' }}{% endfor %}{% endif %} {{ copy('film_tr_note') }}{{ asof(rank.months) }}
 {%- endset %}
 {{ shot_open('trank', 'is-rank', orbit='rank') }}
-<p class="vh">{{ copy('film_tr_cap') }}{{ rank_markup }}</p>
+<p class="vh">{{ copy('film_tr_cap') }} {{ rank_markup }}</p>
 {{ cap(copy('film_tr_cap')) }}
 {%- endif %}
 {{ shot_open('t4') }}
 {{ cap(copy('film_t4_cap_pay' if pay else 'film_t4_cap')) }}
 </section>
 
-{#- ---------------------------------------------------------------- scene: the word -#}
-<section class="scene" id="scene-word" data-scene="word" data-claims="H1 H10" data-charts="c02 c05" data-short="{{ copy('film_scene_word_short') }}" aria-labelledby="st-word">
-<h2 class="scene-title" id="st-word">{{ copy('film_scene_word') }}</h2>
-{{ shot_open('w1', 'is-word') }}
-<div class="full word-shot">
-  <p class="eyebrow">Claim {{ ident('H1') }} · {{ copy('film_w1_eyebrow') }}</p>
-  <p class="mega"><span class="mega-a">{{ copy('film_w1_mega_a') }}</span> <span class="mega-b" data-at="0.1" data-fx="narrow">{{ copy('film_w1_mega_b') }}</span></p>
+{#- ---------------------------------------------------------------- scene: how supply grows -#}
+<section class="scene" id="scene-supply" data-scene="supply" data-claims="" data-charts="c02 c05" data-short="{{ copy('film_scene_supply_short') }}" aria-labelledby="st-supply">
+<h2 class="scene-title" id="st-supply">{{ copy('film_scene_supply') }}</h2>
+{{ shot_open('s1', 'is-exhibit') }}
+<div class="split">
+  <div class="words">
+    <p class="eyebrow">{{ copy('film_s1_eyebrow') }}</p>
+    <div class="figs">
+      {{ fig(num('g_365'), copy('film_s1_g'), '0.6') }}
+      {{ fig(num('i_max_now'), copy('film_s1_ceiling'), '1.2') }}
+    </div>
+  </div>
+  <div class="picture">{{ m.chart_shell('c02', 'f-s1') }}</div>
 </div>
-{{ cap(copy('film_w1_cap')) }}
-{%- call exhibit('w2', 'H1', 'c02', copy('film_w2_cap')) %}
-{{ fig(num('g_365'), copy('film_w2_g'), '0.6') }}
-{%- if (numbers.get('g_365_neg_run_days') or {}).get('value') %}
-{{ fig(num('g_365_neg_run_days'), copy('film_w2_run'), '1.2') }}
-{%- endif %}
-{{ fig(num('burn_share_365'), copy('film_w2_burn'), '1.8') }}
-{%- endcall %}
-{%- set h10_line %}<p class="also" data-at="2.4">{{ m.vchip('H10', link=true) }} {{ copy('film_H10_sentence') }}</p>{% endset %}
-{{ verdict_shot('w4', 'H1', copy('film_w4_cap'), h10_line) }}
-{{ shot_open('w5', 'is-word') }}
-{%- set w5_lead = copy('film_w5_lead') %}
-<div class="full turn" data-variant="{{ 'turn' if turn else 'neutral' }}">
-  {%- if w5_lead|trim %}
-  <p class="turn-a lead" data-out="1.4">{{ w5_lead }}</p>
-  {%- endif %}
-  <p class="mega turn-b" data-at="{{ '1.4' if w5_lead|trim else '0.2' }}"><span class="mega-a">{{ copy('film_w5_mega_a') }}</span> <span class="mega-b" data-fx="widen" data-at="{{ '1.4' if w5_lead|trim else '0.2' }}">{{ copy('film_w5_mega_b') }}</span></p>
+{{ cap(copy('film_s1_cap')) }}
+{{ shot_open('s2', 'is-exhibit') }}
+<div class="split">
+  <div class="words">
+    <p class="eyebrow">{{ copy('film_s2_eyebrow') }}</p>
+    <div class="figs">
+      {{ fig(num('burn_share_365'), copy('film_s2_burn'), '0.6') }}
+    </div>
+  </div>
+  <div class="picture">{{ m.chart_shell('c05', 'f-s2') }}</div>
 </div>
-{{ cap(copy('film_w5_cap')) }}
+{{ cap(copy('film_s2_cap')) }}
 </section>
 
 {#- ---------------------------------------------------------------- scene: slower than what? -#}
-<section class="scene" id="scene-money" data-scene="money" data-claims="H1b H2" data-charts="c21 c11" data-short="{{ copy('film_scene_money_short') }}" aria-labelledby="st-money">
+<section class="scene" id="scene-money" data-scene="money" data-claims="H1 H2" data-charts="c21 c11 c23" data-short="{{ copy('film_scene_money_short') }}" aria-labelledby="st-money">
 <h2 class="scene-title" id="st-money">{{ copy('film_scene_money') }}</h2>
 {{ shot_open('m1', 'is-exhibit') }}
 <div class="split">
@@ -316,33 +320,33 @@
     <p class="eyebrow">{{ copy('film_m1_eyebrow') }}</p>
     <div class="figs">
       {{ fig(num('gap_m2', absolute=true), copy('film_m1_g1'), '0.6') }}
-      {{ fig(num('h1b_gap_med'), copy('film_m1_g2'), '1.4') }}
+      {{ fig(num('h1_gap_med'), copy('film_m1_g2'), '1.4') }}
     </div>
   </div>
   <div class="picture">{{ m.chart_shell('c21', 'f-m1') }}</div>
 </div>
 {{ cap(copy('film_m1_cap')) }}
-{%- call exhibit('m2', 'H1b', 'c11', copy('film_m2_cap'), focus='m2') %}
-<p class="fig" data-at="0.6"><span class="fig-v">{{ num('h1b_months_below') }}<i> of </i>{{ num('h1b_months_with_data') }}</span><span class="fig-l">{{ copy('film_m2_months') }}</span></p>
+{%- call exhibit('m2', 'H1', 'c11', copy('film_m2_cap'), focus='m2') %}
+<p class="fig" data-at="0.6"><span class="fig-v">{{ num('h1_months_below') }}<i> of </i>{{ num('h1_months_with_data') }}</span><span class="fig-l">{{ copy('film_m2_months') }}</span></p>
 <p class="fig-sub" data-at="1.2">{{ copy('film_m2_when') }}</p>
 {%- endcall %}
-{{ verdict_shot('m3', 'H1b', copy('film_m3_cap')) }}
-{%- call exhibit('m4', 'H2', 'c11', copy('film_m4_cap'), focus='cpi pce core') %}
-{{ fig(num('gap_cpi', absolute=true), copy('film_m4_g1'), '0.6') }}
-<p class="fig" data-at="1.2"><span class="fig-v">{{ num('h2_months_in_band_12') }}<i> of </i>{{ num('h2_months_with_data_12') }}</span><span class="fig-l">{{ copy('film_m4_g2') }}</span></p>
+{{ verdict_shot('m3', 'H1', copy('film_m3_cap')) }}
+{%- call exhibit('m4', 'H2', 'c23', copy('film_m4_cap')) %}
+{{ fig(num('h2_gap', absolute=true), copy('film_m4_g1'), '0.6') }}
+{{ fig(num('h2_gap_alt'), copy('film_m4_g2'), '1.2') }}
 {%- endcall %}
 {{ verdict_shot('m5', 'H2', copy('film_m5_cap')) }}
 {{ shot_open('m6', 'is-card') }}
 <div class="full card-shot">
   <p class="eyebrow">{{ copy('film_m6_eyebrow') }}</p>
   <p class="lead-big">{{ copy('film_m6_lead') }}</p>
-  <p class="chips" data-at="0.6">{{ m.vchip('H1b', link=true) }} {{ m.vchip('H2', link=true) }}</p>
+  <p class="chips" data-at="0.6">{{ m.vchip('H1', link=true) }} {{ m.vchip('H2', link=true) }}</p>
 </div>
 {{ cap(copy('film_m6_cap')) }}
 </section>
 
 {#- ---------------------------------------------------------------- scene: paid to wait? -#}
-<section class="scene" id="scene-yield" data-scene="yield" data-claims="H3 H5 H4" data-charts="c01 c13 c12" data-short="{{ copy('film_scene_yield_short') }}" aria-labelledby="st-yield">
+<section class="scene" id="scene-yield" data-scene="yield" data-claims="H3 H5 H4" data-charts="c01 c13 c24" data-short="{{ copy('film_scene_yield_short') }}" aria-labelledby="st-yield">
 <h2 class="scene-title" id="st-yield">{{ copy('film_scene_yield') }}</h2>
 {%- call exhibit('y1', 'H3', 'c01', copy('film_y1_cap')) %}
 {{ fig(num('y_lst_365'), copy('film_y1_lst'), '0.6', 'is-near') }}
@@ -355,8 +359,10 @@
 {{ fig(num('near_reading_b'), copy('film_y3_b'), '1.2') }}
 {%- endcall %}
 {{ verdict_shot('y4', 'H5', copy('film_y4_cap')) }}
-{%- call exhibit('y5', 'H4', 'c12', copy('film_y5_cap')) %}
-{{ fig(num('n_q_rule'), copy('film_y5_q'), '0.6') }}
+{%- call exhibit('y5', 'H4', 'c24', copy('film_y5_cap')) %}
+<p class="fig" data-at="0.6"><span class="fig-v">{{ num('adv_months_le0') }}<i> of </i>{{ num('adv_months') }}</span><span class="fig-l">{{ copy('film_y5_le0') }}</span></p>
+{{ fig(num('adv_mean_before'), copy('film_y5_before'), '1.2') }}
+{{ fig(num('adv_mean_after'), copy('film_y5_after'), '1.8', 'is-near') }}
 {%- endcall %}
 {{ verdict_shot('y6', 'H4', copy('film_y6_cap')) }}
 {{ shot_open('y7', 'is-card') }}
@@ -368,13 +374,9 @@
 {{ cap(copy('film_y7_cap')) }}
 </section>
 
-{#- ---------------------------------------------------------------- scene: what it costs -#}
-<section class="scene" id="scene-cost" data-scene="cost" data-claims="H12 H6 H6_near H9 H7" data-charts="c03 c14 c07 c09" data-short="{{ copy('film_scene_cost_short') }}" aria-labelledby="st-cost">
-<h2 class="scene-title" id="st-cost">{{ copy('film_scene_cost') }}</h2>
-{%- call exhibit('c1', 'H12', 'c03', copy('film_c1_cap'), stamped=true) %}
-{{ fig(num('staker_share_365'), copy('film_c1_staker'), '0.5', 'is-near') }}
-{{ fig(num('nonstaker_365'), copy('film_c1_non'), '1.0') }}
-{%- endcall %}
+{#- ---------------------------------------------------------------- scene: volatility -#}
+<section class="scene" id="scene-vol" data-scene="vol" data-claims="H6 H6_near H9 H7" data-charts="c14 c07 c09" data-short="{{ copy('film_scene_vol_short') }}" aria-labelledby="st-vol">
+<h2 class="scene-title" id="st-vol">{{ copy('film_scene_vol') }}</h2>
 {%- call exhibit('c2', 'H6', 'c14', copy('film_c2_cap'), stamped=true) %}
 <p class="fig" data-at="0.5"><span class="fig-v">{{ num('h6_rows_passed') }}<i> of </i>{{ num('h6_rows_total') }}</span><span class="fig-l">{{ copy('film_c2_fig') }}</span></p>
 <p class="apart" data-at="3.4" style="flex-wrap:wrap"><span class="k">{{ copy('film_c2_apart') }}</span> {{ m.vchip('H6_near', link=true) }} {{ copy('film_H6_near_sentence') }}</p>
@@ -388,6 +390,50 @@
 {{ fig(num('x_eur'), copy('film_c4_eur'), '1.3') }}
 {{ fig(num('mdd_365'), copy('film_c4_mdd'), '1.7') }}
 {%- endcall %}
+</section>
+
+{#- ---------------------------------------------------------------- scene: selling volatility -#}
+{#- Its title keeps its case (data-keepcase): uppercasing would turn the sigma into a capital, a different symbol.
+    The value of volatility as a model price, then one shot per strategy (the third carries H8's verdict on the
+    same frame), then H10's verdict over the three. -#}
+<section class="scene" id="scene-sell" data-scene="sell" data-claims="H8 H10" data-charts="c26 c25 c15" data-short="{{ copy('film_scene_sell_short') }}" data-keepcase aria-labelledby="st-sell">
+<h2 class="scene-title" id="st-sell">{{ copy('film_scene_sell') }}</h2>
+{{ shot_open('v1', 'is-card') }}
+<div class="full card-shot">
+  <p class="eyebrow">{{ copy('film_v1_eyebrow') }}</p>
+  <p class="lead-big">{{ copy('film_v1_lead') }}</p>
+  <p class="chips" data-at="0.6">{{ m.vchip('H7', link=true) }}</p>
+</div>
+{{ cap(copy('film_v1_cap')) }}
+{{ shot_open('v2', 'is-exhibit') }}
+<div class="split">
+  <div class="words">
+    <p class="eyebrow">{{ copy('film_v2_eyebrow') }}</p>
+    <div class="figs">
+      {{ fig(num('vol_rally_rank'), copy('film_v2_rank'), '0.6', 'is-near') }}
+      {{ fig(num('vol_rally_sold'), copy('film_v2_sold'), '1.2') }}
+    </div>
+  </div>
+  <div class="picture">{{ m.chart_shell('c25', 'f-v2', caption=copy('film_v2_fig'), rows='Selling into rallies') }}</div>
+</div>
+{{ cap(copy('film_v2_cap')) }}
+{{ shot_open('v3', 'is-exhibit') }}
+<div class="split">
+  <div class="words">
+    <p class="eyebrow">{{ copy('film_v3_eyebrow') }}</p>
+    <div class="figs">
+      {{ fig(num('vol_rebal_rank'), copy('film_v3_rank'), '0.6', 'is-near') }}
+    </div>
+  </div>
+  <div class="picture">{{ m.chart_shell('c25', 'f-v3', caption=copy('film_v3_fig'), rows='Rebalancing') }}</div>
+</div>
+{{ cap(copy('film_v3_cap')) }}
+{%- call exhibit('v4', 'H8', 'c26', copy('film_v4_cap'), stamped=true, stamp_at='3.4', kicker=copy('film_v4_eyebrow'), test=copy('film_v4_test')) %}
+{{ fig(num('vol_perp_hl_swing'), copy('film_v4_hl'), '0.5', 'is-near') }}
+{{ fig(num('vol_perp_bn_swing'), copy('film_v4_bn'), '1.0') }}
+{{ fig(num('vol_perp_hl_funding_year'), copy('film_v4_rate'), '1.5') }}
+{%- endcall %}
+{{ verdict_shot('v5', 'H10', copy('film_v5_cap')) }}
 </section>
 
 {#- ---------------------------------------------------------------- scene: what survives -#}
@@ -417,14 +463,15 @@
 </div>
 {{ cap(copy('film_l1_cap')) }}
 {{ shot_open('l2', 'is-orbit') }}
-{%- set one, two = copy('film_l2_one'), copy('film_l2_two') %}
-<div class="split" data-variant="{{ 'turn' if survive else 'neutral' }}">
+{%- set one, two, three = copy('film_l2_one'), copy('film_l2_two'), copy('film_l2_three') %}
+<div class="split">
   <div class="words">
-    <p class="thesis small">{{ rules.get('meta', {}).get('thesis') or '' }} <span class="tag" data-at="2.0">{{ m.vchip('H1', link=true) }}</span></p>
-    {%- if one|trim or two|trim %}
+    <p class="thesis small">{{ rules.get('meta', {}).get('thesis') or '' }}</p>
+    {%- if one|trim or two|trim or three|trim %}
     <ol class="survives">
-      {%- if one|trim %}<li class="survive" data-at="0.4">{{ one }} {{ m.vchip('H1b', link=true) }} {{ m.vchip('H2', link=true) }}</li>{% endif %}
+      {%- if one|trim %}<li class="survive" data-at="0.4">{{ one }} {{ m.vchip('H1', link=true) }} {{ m.vchip('H2', link=true) }}</li>{% endif %}
       {%- if two|trim %}<li class="survive" data-at="1.2">{{ two }} {{ m.vchip('H3', link=true) }} {{ m.vchip('H5', link=true) }} {{ m.vchip('H4', link=true) }}</li>{% endif %}
+      {%- if three|trim %}<li class="survive" data-at="2.0">{{ three }} {{ m.vchip('H8', link=true) }} {{ m.vchip('H10', link=true) }}</li>{% endif %}
     </ol>
     {%- endif %}
   </div>
@@ -455,8 +502,19 @@
       {{ fig(num('sim_horizon_days'), copy('film_d1_days'), '1.4') }}
     </div>
   </div>
-  {#- the outline of the bar d2 fills, in the same place -#}
-  <div class="picture"><svg class="desk-bar is-ghost" data-at="2.2" data-fx="fade" viewBox="0 0 100 12" width="100%" aria-hidden="true" focusable="false"><rect x="0" y="0" width="100" height="12" fill="none" stroke="#3b404c" vector-effect="non-scaling-stroke"/></svg></div>
+  {#- the idle cash in its two currencies, in the place where d2 moves a part of it into NEAR -#}
+  {%- set cash_u, cash_e = desk.bar.usd|float, desk.bar.eur|float %}
+  {%- set cash_x = '%.2f'|format(100 * cash_u / (cash_u + cash_e)) %}
+  <div class="picture">
+    <svg class="desk-bar" data-at="2.2" data-fx="fade" viewBox="0 0 100 12" width="100%" aria-hidden="true" focusable="false">
+      <rect class="seg" data-entity="usd" x="0" y="0" width="{{ cash_x }}" height="12" fill="#d95926"/>
+      <rect class="seg" data-entity="eur" x="{{ cash_x }}" y="0" width="{{ '%.2f'|format(100 - cash_x|float) }}" height="12" fill="#199e70"/>
+    </svg>
+    <ul class="o-legend desk-key" data-at="2.2" data-fx="fade">
+      <li data-entity="usd"><i class="k"></i>{{ copy('film_d2_key_usd') }}</li>
+      <li data-entity="eur"><i class="k"></i>{{ copy('film_d2_key_eur') }}</li>
+    </ul>
+  </div>
 </div>
 {{ cap(copy('film_d1_cap')) }}
 {{ shot_open('d2', 'is-desk') }}
@@ -502,7 +560,9 @@
 {{ cap(copy('film_d3_cap' if swing else 'film_d3_cap_es')) }}
 {{ shot_open('d4', 'is-desk') }}
 {{ cap(copy('film_d4_cap')) }}
-{{ shot_open('d5', 'is-desk is-hold') }}
+{#- d5 opens the frame. Played through, the film goes on to the closing scene after d5's duration; it holds here (is-hold)
+    when the reader takes the desk, when a skip link or #desk lands here, and its caption never shows in the band. -#}
+{{ shot_open('d5', 'is-desk is-hold is-open') }}
 {{ cap(copy('film_d5_cap')) }}
 {#- The chapter itself: its plot from d4, the rest once the frame opens at d5. This is the page without the
     simulation's script: the plot is c30's own geometry (figure.sim-fig, which sim.js redraws in place), the tiles
@@ -534,32 +594,68 @@
     </div>
   </figure>
   <div class="sim-rest">
-    <noscript><p class="lead sim-headline">{{ copy('sim_headline') }}</p></noscript>
+    <noscript><p class="lead sim-headline">{{ copy('sim_headline') }}</p>
+    {%- set mode = copy('sim_mode_line') %}{% if mode|trim %}
+    <p class="sim-mode">{{ mode }}</p>
+    {%- endif %}</noscript>
     <ul class="sim-tiles">
       {%- for key, label in [('sim_mean_usd', 'mean'), ('sim_median_usd', 'median'), ('sim_p_beat_r', 'beat'), ('sim_es95_usd', 'bad'), ('sim_exit_days', 'exit')] %}
       <li class="sim-tile" data-key="{{ key }}"><p class="sim-tile-l">{{ copy('film_tile_' ~ label) }}</p><p class="sim-tile-v">{% if label == 'beat' %}{{ copy('film_tile_about') }} {% endif %}{{ num(key) }}{% if label == 'beat' %} {{ copy('film_tile_of') }} {{ num('sim_dots') }}{% endif %}</p></li>
       {%- endfor %}
     </ul>
+    {#- why the desk resets: H10's comparison of the three strategies on the windows they share (static) -#}
+    {%- set why_reset = copy('desk_why') if (numbers.get('vol_cmp_winner') or {}).get('value') is not none else '' %}
+    {%- if why_reset|trim %}
+    <p class="note sim-strategy">{{ why_reset }} <a class="tag" href="#claim-H10" data-claim="H10">{{ copy('film_d3_from') }} {{ ident('H10') }}</a></p>
+    {%- endif %}
     <noscript>
+    {%- set other = copy('sim_compare') %}
+    {%- if other|trim %}
+    <p class="sim-compare">{{ other }}</p>
+    {%- endif %}
     {%- set why = copy('sim_why_typical') %}
     {%- if why|trim %}
     <p class="sim-why">{{ why }}</p>
     {%- endif %}
     <p class="sim-hurdle">{{ copy('sim_hurdle') }} {{ copy('sim_hurdle_cost') }}</p>
     <p class="note sim-assume">{{ copy('film_desk_assumption') }}</p>
+    {%- set rebal = copy('sim_rebal_note') %}
+    {%- if rebal|trim %}
+    <p class="note">{{ rebal }}</p>
+    {%- endif %}
     <h3 class="sub sim-left-h">{{ copy('sim_left_h') }}</h3>
     <ul class="sim-left">
-      {%- for k in ['failure', 'lst', 'rates', 'costs', 'accounting', 'wrongway'] %}
-      <li>{{ copy('sim_left_' ~ k) }}</li>
+      {%- for k in ['failure', 'lst', 'rates', 'costs', 'accounting', 'wrongway', 'resets'] %}
+      {%- set item = copy('sim_left_' ~ k) %}
+      {%- if item|trim %}
+      <li>{{ item }}</li>
+      {%- endif %}
       {%- endfor %}
     </ul>
     <p class="note">{{ copy('sim_noscript') }}</p>
     </noscript>
     <p class="note sim-note">{{ copy('film_desk_note') }}</p>
+    <p class="sim-next"><a href="#scene-agent" data-skip="agent">{{ copy('film_desk_next') }}</a></p>
   </div>
 </div>
 </section>
 {%- endif %}
+
+{#- ---------------------------------------------------------------- scene: test your own thesis (the film's last) -#}
+{#- The closing frame, open and held: the agent module's intro and its three cards (the shared macro, without ids),
+    and a link to the module itself, which keeps the prompt and the command-line check. It names every claim, so the
+    evidence button never opens an empty dialog. -#}
+<section class="scene" id="scene-agent" data-scene="agent" data-claims="{{ all_claims|join(' ') }}" data-charts="" data-short="{{ copy('film_scene_agent_short') }}" aria-labelledby="st-agent">
+<h2 class="scene-title" id="st-agent">{{ copy('agent_heading') }}</h2>
+{{ shot_open('a1', 'is-agent is-open') }}
+<div class="agent-frame">
+  <p class="lead" data-at="0.3">{{ copy('agent_intro') }}</p>
+  <p class="note" data-at="0.8">{{ copy('agent_privacy') }}</p>
+  <div data-at="1.2" data-fx="fade">{{ m.agent_cards(ids=false) }}</div>
+  <p class="see" data-at="2.2" data-fx="fade"><a href="#agent">{{ copy('film_agent_more') }}</a>{% if desk %} · <a href="#desk" data-skip="desk">{{ copy('film_agent_back') }}</a>{% endif %}</p>
+</div>
+{{ cap(copy('film_a1_cap')) }}
+</section>
 </div>
 </div>
 {%- endautoescape %}

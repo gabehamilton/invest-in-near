@@ -1,13 +1,13 @@
 # NEAR, tested
 
-> Relative to the dollar and the major currencies, NEAR's supply grows more slowly. It is not deflationary in absolute terms, and it is not cash.
+> Relative to the dollar and the major currencies, NEAR's supply grows more slowly, and its supply-and-staking edge over the dollar has held as rates moved. It is not cash.
 
-A NEAR investment hypothesis, tested claim by claim against public on-chain and macro data, as of 2026-11-12 21:28 UTC. Every figure on the site carries a registry key, a formula and its source files.
+A NEAR investment hypothesis, tested claim by claim against public on-chain and macro data, as of 2026-11-14 03:26 UTC. Every figure on the site carries a registry key, a formula and its source files.
 
 ## Tally
 
-- Tally: 3 supported · 2 partly · 5 refuted · 2 not testable · 0 not computed, across the stated claims and the hidden assumptions.
-- Title figures: 9 of the 10 most-traded currencies grew their money faster than NEAR's supply; 7 of 9 policy rates pay less than staking NEAR paid over the last year; staked NEAR ranks 1 of 10 by a year's change in a holder's share of the total. THESIS.md gives each with its caveats.
+- Tally: 5 supported · 3 partly · 2 refuted · 0 not computed, across the stated claims and the hidden assumption.
+- Title figures: 9 of the 10 most-traded currencies grew their money faster than NEAR's supply, NEAR over the year to 2026-11-10 and each currency over its latest year; 7 of 9 policy rates pay less than staking NEAR paid over the last year; staked NEAR ranks 3 of 10 by the yearly rate holding pays, its staking yield against each policy rate. THESIS.md gives each with its caveats.
 
 ## Read these first
 
@@ -30,4 +30,4 @@ A NEAR investment hypothesis, tested claim by claim against public on-chain and 
 - Quote a figure only together with its registry key from numbers.json. A figure without a key is not the site's.
 - Verdicts are one of supported, partly supported, refuted, not testable or not computed. Read the rule before you argue with the verdict.
 - Scope: the current macro environment and NEAR's current utility. Past price is an indicator, not a target; governance is left out.
-- Nothing here is investment advice.
+- Research only, not investment advice.

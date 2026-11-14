@@ -19,7 +19,7 @@
   if (!film || film.dataset.live) return;
   film.dataset.live = 'on';
 
-  /* ------------------------------------------------------------------ helpers */
+  /* -- helpers */
 
   const $ = (s, r) => (r || d).querySelector(s);
   const $$ = (s, r) => Array.from((r || d).querySelectorAll(s));
@@ -69,12 +69,12 @@
   const mmss = (t) => { const s = Math.max(0, Math.floor(t + 1e-6)); const m = Math.floor(s / 60); const r = s % 60; return m + ':' + (r < 10 ? '0' : '') + r; };
   const text = (n) => (n ? n.textContent.replace(/\s+/g, ' ').trim() : '');
 
-  /* ------------------------------------------------------------------ the film, read from the page */
+  /* -- the film, read from the page */
 
   const KIND = {
     // arrival kinds: duration in seconds and curve; the stylesheet draws each from --p
     ghost: [0.16, E.lin], slam: [0.18, E.slam], stamp: [0.18, E.slam], reveal: [2.4, E.out], grow: [1.1, E.out],
-    wipe: [0.48, E.wipe], narrow: [1.6, E.out], widen: [1.6, E.out], fade: [0.3, E.out], drop: [0.6, E.out],
+    wipe: [0.48, E.wipe], fade: [0.3, E.out], drop: [0.6, E.out],
     cut: [0.001, E.lin], line: [0.6, E.wipe],
   };
   function kindOf(n) {
@@ -83,7 +83,7 @@
     if (n.classList.contains('stamp')) return 'stamp';
     if (n.classList.contains('rel')) return 'line';
     if (n.matches('figure[data-chart], .film-chart')) return 'reveal';
-    if (n.matches('.fig, .hero, .chip, .chips, .lcol, .mega, .tested, .tag, .stamp-word')) return 'slam';
+    if (n.matches('.fig, .hero, .chip, .chips, .lcol, .tested, .tag, .stamp-word')) return 'slam';
     if (n.matches('.seg, .edge-bar')) return 'grow';
     // inside an svg, or sharing its place with figures that hand over (the title's two readings): no ghost
     if (n.closest('svg, .heroes')) return 'fade';
@@ -101,6 +101,7 @@
     const h = $('.scene-title', node) || $('h2, h3', node);
     sc.title = text(h);
     sc.short = node.dataset.short || sc.title;
+    sc.keep = node.hasAttribute('data-keepcase');   // a title that keeps its case: uppercasing would change a symbol
     for (const sn of $$('.shot', node)) {
       const dur = Math.max(0.5, num(sn.dataset.dur, 4));
       const stamp = $('.stamp', sn);
@@ -152,7 +153,7 @@
     for (const t of sh.timed) if (t.out === Infinity && t.at > 0) k = Math.min(k, Math.max(0, room - t.dur - (t.kind === 'stamp' ? 0.55 : 0)) / t.at);
     if (k < 1) for (const t of sh.timed) if (t.out === Infinity) t.at *= k;
   }
-  /* ------------------------------------------------------------------ chrome: caption band, transport, slate */
+  /* -- chrome: caption band, transport, slate */
 
   const parentOfScenes = sceneNodes[0].parentElement;
   if (parentOfScenes !== film) parentOfScenes.classList.add('film-frame');
@@ -189,7 +190,7 @@
   const bMotion = button('motion', 'tp-pill tp-motion', 'M', false);
   const bEv = button('evidence', 'tp-pill tp-ev', 'E', false);
   bEv.setAttribute('aria-haspopup', 'dialog');
-  const playWords = { play: bPlay.getAttribute('aria-label') || text(bPlay), pause: bPlay.dataset.labelPause || '', replay: bPlay.dataset.labelReplay || '' };
+  const playWords = { play: bPlay.getAttribute('aria-label') || text(bPlay), pause: bPlay.dataset.labelPause || '', replay: bPlay.dataset.labelReplay || '', next: bPlay.dataset.labelNext || '' };
   const time = $('.t-time', tp) || el('p', null, tp);
   time.classList.add('tp-time');
   time.textContent = '';
@@ -234,11 +235,12 @@
     // a pointer shortcut only: the scrubber and the digit keys reach every scene for everyone else
     const b = el('span', 'tp-scene', labels, sc.title);
     b.dataset.scene = sc.id;
+    b.classList.toggle('keep', sc.keep);
     b.addEventListener('click', () => { userPause(); seek(sc.start); });
     return b;
   });
 
-  /* ------------------------------------------------------------------ state */
+  /* -- state */
 
   const mqReduce = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
   let stored = null;
@@ -261,7 +263,7 @@
   const shotAt = (T) => { for (let i = shots.length - 1; i >= 0; i--) if (T >= shots[i].start - 1e-6) return shots[i]; return shots[0]; };
   const endT = () => total - 0.001;
 
-  /* ------------------------------------------------------------------ timed elements */
+  /* -- timed elements */
 
   // the time a shot is drawn at: its own time, or its settled last frame when motion is off
   function shotTime(sh, T) { return S.rm ? sh.dur : clamp(T - sh.start, 0, sh.dur); }
@@ -298,7 +300,7 @@
     }
   }
 
-  /* ------------------------------------------------------------------ the orbit (title, and its two returns) */
+  /* -- the orbit (title, and its two returns) */
 
   const Orbit = (() => {
     const fig = $('.orbit', film);
@@ -328,8 +330,8 @@
       const grid = $('.o-grid', svg);
       if (grid) grid.after(g); else svg.prepend(g);
     }
-    // the ladder's ticks, the same way, centred on their own ticks at any type size; zero's figure hangs just under
-    // the zero line, which runs through its place, beside the shorter of the line's two words
+    // the ladder's ticks (rates), the same way, centred on their own ticks at any type size; zero's figure hangs just
+    // under the zero line
     for (const l of $$('.o-rt', svg)) {
       const v = num(l.dataset.tick, 0);
       if (l.nextSibling && l.nextSibling.nodeName === 'text') continue;
@@ -338,7 +340,7 @@
       t.setAttribute('y', String(num(l.getAttribute('y1'), 0) + (v ? 0 : 4)));
       t.setAttribute('dominant-baseline', v ? 'central' : 'hanging');
       t.setAttribute('text-anchor', 'end');
-      t.textContent = (v > 0 ? '+' : v ? '\u2212' : '') + Math.abs(v) + '%';
+      t.textContent = (v < 0 ? '\u2212' : '') + Math.abs(v) + '%';
       l.after(t);
     }
     const ring = (ent) => { const c = $('.o-ring[data-entity="' + ent + '"]', svg); return c ? { n: c, r: num(c.getAttribute('r'), 0) } : null; };
@@ -374,7 +376,7 @@
     const nP = num(ds('ringPay'), NaN);
     const uM = rU ? rU.r : 0;
     const uP = num(ds('usdPay'), usdBody && usdBody.rP != null ? usdBody.rP : NaN);
-    // three readings on one picture: money (0), what holding pays (1), both at once as a ladder (2). The state is
+    // three readings on one picture: money (0), what holding pays (1), those rates as a ladder (2). The state is
     // one number that eases from reading to reading; the ladder's move is the longer one
     const SETS = { pay: 1, rank: 2 };
     const MORPH = [1.5, 1.5, 1.8];
@@ -476,7 +478,7 @@
         setVar(b.g, '--o', vis);
         // the fill eases from one reading to the other with the move, so only the bodies whose answer changes
         // change, none of them flickers, and every one has the new reading's fill when the labels land; on the
-        // ladder every mark is solid (the zero line, not the fill, says which way a share went)
+        // ladder every mark is solid (its place, not the fill, gives its rank)
         setVar(b.g, '--h', (b.rP == null ? b.hM : b.hM + (b.hP - b.hM) * m) * (1 - m2));
       }
       for (const n of leaders) setVar(n, '--o', ph[setOf(n)]);
@@ -591,7 +593,7 @@
     return { fig, title, settled, draw, place, layout, relayout: () => { laid = false; } };
   })();
 
-  /* ------------------------------------------------------------------ charts inside the film */
+  /* -- charts inside the film */
 
   const mounted = new WeakSet();
   function mountCharts(sc) {
@@ -603,7 +605,7 @@
     }
   }
 
-  /* ------------------------------------------------------------------ the desk hand-off */
+  /* -- the desk hand-off */
 
   const deskScene = scenes.find((s) => s.id === 'desk');
   const sim = $('#sim', film);
@@ -619,7 +621,7 @@
     d.head.appendChild(s);
   }
 
-  /* ------------------------------------------------------------------ fit: a frame is never cut */
+  /* -- fit: a frame is never cut */
 
   // a shot that holds more than the stage is scaled to fit it, measured from layout (not from anything in motion),
   // once per shot, stage size and font load. What a box clips (the checklist's cut-off rows) is not measured: shrinking
@@ -650,7 +652,7 @@
     n.style.translate = '0 ' + ty + 'px';
   }
 
-  /* ------------------------------------------------------------------ render(S) */
+  /* -- render(S) */
 
   function render() {
     const sh = S.article ? null : shotAt(S.T);
@@ -669,7 +671,8 @@
         s.node.classList.toggle('on', on);
       }
       curScene = sc;
-      if (slateScene) slateScene.textContent = sc.title;
+      if (slateScene) { slateScene.textContent = sc.title; slateScene.classList.toggle('keep', sc.keep); }
+      bandK.classList.toggle('keep', sc.keep);
       labelEls.forEach((b, i) => b.classList.toggle('cur', scenes[i] === sc));
       mountCharts(sc);
       mountCharts(scenes[sc.idx + 1]);
@@ -698,9 +701,9 @@
         const slot = $('[data-orbit-slot]', sh.node);
         if (slot) Orbit.place(slot); else if (sc === Orbit.title) Orbit.place(null);
       }
-      const open = !!(deskScene && sh.scene === deskScene && sh === deskScene.shots[deskScene.shots.length - 1]);
-      setOpen(open);
-      if (prev && prev.scene !== sc) film.scrollTop = 0;
+      const wasOpen = isOpen;
+      setOpen(sh.node.classList.contains('is-open'), sc === deskScene);
+      if (prev && prev.scene !== sc) { film.scrollTop = 0; if (wasOpen) film.scrollIntoView({ block: 'start' }); }
       refit = true;
     }
     if (refit) {
@@ -729,10 +732,10 @@
     });
     // the position in words already on the page: time, scene, shot, and the verdict word if one is stamped
     setAttr(scrub, 'aria-valuetext', mmss(T) + ', ' + sc.title + ' ' + sh.n + '/' + sc.shots.length + (sh.stamp ? ', ' + (sh.stamp.dataset.claim || '') + ' ' + (sh.stamp.dataset.verdict || '') : ''));
-    const atEnd = S.held || (!S.playing && T >= endT() - 0.01);
+    const atEnd = (S.held && sh === shots[shots.length - 1]) || (!S.playing && T >= endT() - 0.01);
     tp.classList.toggle('held', atEnd);
     bPlay.dataset.state = S.playing ? 'pause' : atEnd ? 'replay' : 'play';
-    setAttr(bPlay, 'aria-label', (S.playing ? playWords.pause : atEnd ? playWords.replay : '') || playWords.play);
+    setAttr(bPlay, 'aria-label', (S.playing ? playWords.pause : atEnd ? playWords.replay : S.held ? playWords.next : '') || playWords.play);
     setAttr(bMotion, 'aria-pressed', S.rm ? 'false' : 'true');
   }
 
@@ -765,18 +768,18 @@
     cur = null;
   }
 
-  /* ------------------------------------------------------------------ the frame opens (the desk's last shot) */
+  /* -- the frame opens (d5 and a1, .is-open) */
 
   let isOpen = false;
-  function setOpen(on) {
+  function setOpen(on, desk) {
+    if (sim) sim.dataset.film = on && desk ? 'open' : 'stage';
     if (on === isOpen) return;
     isOpen = on;
     film.classList.toggle('open', on);
-    if (sim) sim.dataset.film = on ? 'open' : 'stage';
     if (on) loadSim();
   }
 
-  /* ------------------------------------------------------------------ the clock */
+  /* -- the clock */
 
   function frame(ts) {
     raf = 0;
@@ -786,7 +789,7 @@
       const before = shotAt(S.T);
       let T = S.T + dt;
       const holdAt = before.start + before.dur - 0.001;
-      if ((before.hold || before === shots[shots.length - 1]) && T >= holdAt) {
+      if (before === shots[shots.length - 1] && T >= holdAt) {
         S.T = holdAt;
         S.playing = false;
         S.held = true;
@@ -803,7 +806,9 @@
 
   function play() {
     if (S.article) exitArticle();
-    if (S.held || S.T >= endT() - 0.01) { S.T = 0; S.held = false; if (isOpen) film.scrollIntoView(); }
+    const at = shotAt(S.T), next = shots[shots.indexOf(at) + 1];
+    if (S.held && next && S.T < endT() - 0.01) { S.T = next.start; S.held = false; }
+    else if (S.held || S.T >= endT() - 0.01) { S.T = 0; S.held = false; if (isOpen) film.scrollIntoView(); }
     S.playing = true;
     autoPaused = false;
     lastTs = 0;
@@ -837,7 +842,7 @@
   }
   function lastFrame(sh) { return sh.start + sh.dur - 0.001; }
 
-  /* ------------------------------------------------------------------ motion and the article */
+  /* -- motion and the article */
 
   const rmNote = $('.rm-note', film);
   function setMotion(off) {
@@ -860,7 +865,7 @@
     cur = null;
   }
 
-  /* ------------------------------------------------------------------ the evidence dialog */
+  /* -- the evidence dialog */
 
   // the page's dialog: a heading, a close button, an empty body, and one link into the full evidence
   const dlg = $('dialog.ev-dialog') || $('dialog.ev');
@@ -948,8 +953,13 @@
   }
   const words = (s) => (s || '').split(/\s+/).filter(Boolean);
   function evidenceForScene() {
-    const sc = shotAt(S.T).scene;
+    const sh = shotAt(S.T), sc = sh.scene;
     openEvidence(words(sc.node.dataset.claims), words(sc.node.dataset.charts), sc.title, d.getElementById('ev-' + sc.id) ? 'ev-' + sc.id : '');
+    // the dialog lists the whole scene; it opens on the claim the shot is about, else on the chart it shows
+    const cid = sh.stamp ? sh.stamp.dataset.claim : text($('.eyebrow .id', sh.node));
+    const tw = $('.twin-link a[href^="#"]', sh.node);
+    const n = dlg && ((cid && d.getElementById('claim-' + cid)) || (tw && d.getElementById(tw.getAttribute('href').slice(1))));
+    if (n && dlg.contains(n)) n.scrollIntoView({ block: 'start' });
   }
   // a claim's own charts: the chart links in its evidence block
   function chartsOf(cid) {
@@ -957,7 +967,7 @@
     return b ? $$('a[href^="#"]', b).map((a) => a.getAttribute('href').slice(1)).filter((id) => { const n = d.getElementById(id); return n && n.matches('figure'); }) : [];
   }
 
-  /* ------------------------------------------------------------------ wiring */
+  /* -- wiring */
 
   tp.addEventListener('click', (e) => {
     const b = e.target.closest('[data-act]');
@@ -990,7 +1000,7 @@
   // a click on the frame's empty area plays or pauses
   (parentOfScenes === film ? film : parentOfScenes).addEventListener('click', (e) => {
     const t = e.target;
-    if (S.article || !t.closest || t.closest('a, button, input, select, textarea, summary, label, [tabindex], .num, .plot, #sim, dialog')) return;
+    if (S.article || isOpen || !t.closest || t.closest('a, button, input, select, textarea, summary, label, [tabindex], .num, .plot, #sim, dialog')) return;
     const sel = window.getSelection && window.getSelection();
     if (sel && String(sel).length) return;
     toggle();
@@ -1005,36 +1015,47 @@
     openEvidence([cid], chartsOf(cid), text($('.chip-id', c)) || cid, 'claim-' + cid);
   });
 
-  // skip links: the desk jumps to its settled, opened state; the evidence is plain document scroll
+  // skip links: the desk jumps to its settled, opened state; another scene plays from its start (its last frame,
+  // held, without motion); the evidence is plain document scroll. In the reader view each is a plain anchor
+  const holdAt = (sh) => { userPause(); seek(lastFrame(sh)); S.held = true; render(); };
   for (const a of $$('a[data-skip], .skip-link', d)) {
     a.addEventListener('click', (e) => {
       const to = a.dataset.skip || (a.getAttribute('href') || '').replace('#', '');
+      const sc = !S.article && scenes.find((x) => x.id === to);
       if (to === 'desk' && deskScene) {
         e.preventDefault();
-        userPause();
-        S.held = true;
-        seek(lastFrame(deskScene.shots[deskScene.shots.length - 1]));
-        S.held = true;
-        render();
+        holdAt(deskScene.shots[deskScene.shots.length - 1]);
         loadSim();
         (sim || deskScene.node).scrollIntoView({ block: 'start' });
+      } else if (sc) {
+        e.preventDefault();
+        if (S.rm) holdAt(sc.shots[sc.shots.length - 1]);
+        else { userPause(); seek(sc.start); play(); }
+        film.scrollIntoView({ block: 'start' });
       } else userPause();
     });
   }
   for (const a of $$('[data-article]', film)) a.addEventListener('click', (e) => { e.preventDefault(); enterArticle(); });
 
-  // the desk: touching a control pauses, and the film jumps to the open frame
-  if (sim) {
+  // the desk: a reader who touches it keeps it. Touching a control before d5 jumps to the open frame; any touch at
+  // d5 (a pointer, focus, or a control's input) stops the film there, held, instead of going on to the last scene
+  if (sim && deskScene) {
+    const d5 = deskScene.shots[deskScene.shots.length - 1];
     const take = (e) => {
-      if (!deskScene || isOpen) return;
-      if (!(e.target.closest && e.target.closest('input, select, button, textarea, [role="slider"], [role="radio"]'))) return;
-      userPause();
-      seek(lastFrame(deskScene.shots[deskScene.shots.length - 1]));
-      S.held = true;
+      if (S.article) return;
+      const at = shotAt(S.T);
+      if (at === d5 ? S.held && !S.playing : !(e.target.closest && e.target.closest('input, select, button, textarea, [role="slider"], [role="radio"]'))) return;
+      holdAt(d5);
     };
     sim.addEventListener('pointerdown', take);
     sim.addEventListener('focusin', take);
-    sim.addEventListener('sim:input', () => userPause());
+    sim.addEventListener('sim:input', take);
+    sim.addEventListener('change', take);
+    // so does reading on down the open frame at d5: a wheel, a swipe, or a key that scrolls the page
+    const keep = (e) => {
+      if (S.playing && isOpen && shotAt(S.T) === d5 && (!e.key || (/^(Page|Arrow[UD]| |End|Home)/.test(e.key) && !e.target.closest('a, button, input, select, textarea, summary')))) holdAt(d5);
+    };
+    for (const t of ['wheel', 'touchmove', 'keydown']) addEventListener(t, keep, { passive: true });
   }
 
   d.addEventListener('keydown', (e) => {
@@ -1068,35 +1089,37 @@
   }
   if (mqReduce.addEventListener) mqReduce.addEventListener('change', (e) => { if (!stored) setMotion(e.matches); });
 
-  /* ------------------------------------------------------------------ layout: scene labels that never collide */
+  /* -- layout: scene labels that never collide */
 
-  // every scene's name above its segment, none hidden and none touching: a name too long for the room it has
-  // takes the scene's short name, the longest first, then letters and gap tighten. On a phone,
-  // and on a track too narrow for all of them, only the current scene is named
+  // every scene's name above its segment, none touching: a name too long for the room it has takes the scene's
+  // short name, the longest first, then letters and gap tighten; the closing scene's sliver goes unnamed before the
+  // rest give way. On a phone, and on a track too narrow for them, only the current scene is named
   function layoutLabels() {
     const tw = segs.clientWidth;
     if (!tw) return;
     const n = labelEls.length, cur = curScene ? curScene.idx : 0;
-    let gap = 24;
     const geo = segEls.map((s) => [s.offsetLeft, s.offsetWidth]);
-    const short = scenes.map(() => false);
+    let gap, short, m;
     const place = () => {
-      labelEls.forEach((b, i) => { b.hidden = false; b.textContent = short[i] ? scenes[i].short : scenes[i].title; });
+      labelEls.forEach((b, i) => { b.hidden = i >= m; b.textContent = short[i] ? scenes[i].short : scenes[i].title; });
       const w = labelEls.map((b) => b.offsetWidth), x = [];
-      for (let i = 0; i < n; i++) x[i] = Math.max(geo[i][0], i ? x[i - 1] + w[i - 1] + gap : 0);
-      for (let i = n - 1, lim = tw; i >= 0; lim = x[i] - gap, i--) x[i] = Math.min(x[i], lim - w[i]);
-      // a name starts within its own segment (a hair before it at most), so it reads as that segment's name
-      const miss = x.map((v, i) => Math.max(geo[i][0] - 4 - v, v - geo[i][0] - geo[i][1] / 2, (i ? x[i - 1] + w[i - 1] + gap - v : -v)));
+      for (let i = 0; i < m; i++) x[i] = Math.max(geo[i][0], i ? x[i - 1] + w[i - 1] + gap : 0);
+      for (let i = m - 1, lim = tw; i >= 0; lim = x[i] - gap, i--) x[i] = Math.min(x[i], lim - w[i]);
+      // a name starts within its own segment (a hair before it at most), so it reads as that segment's name; the last
+      // may end at the track's end instead, so a short closing scene keeps its name
+      const miss = x.map((v, i) => Math.max(i < n - 1 ? geo[i][0] - 4 - v : -1, v - geo[i][0] - geo[i][1] / 2, (i ? x[i - 1] + w[i - 1] + gap - v : -v)));
       return { w, x, miss };
     };
-    labels.style.cssText = '';
     let r = null;
-    if (film.clientWidth > PHONE) {
+    // every name, else every name but the closing scene's (a sliver of the track, with no room for one)
+    for (const mm of film.clientWidth > PHONE ? [n, n - 1] : []) {
+      if (r) break;
+      m = mm; gap = 24; short = scenes.map(() => false); labels.style.cssText = '';
       for (let k = 0; k <= 2 * n + 1; k++) {
         r = place();
         if (r.miss.every((v) => v <= 0.5)) break;
         // shorten the longest full name in trouble (or beside it), else tighten, else give up
-        const cands = labelEls.map((_, i) => i).filter((i) => !short[i] && scenes[i].short !== scenes[i].title
+        const cands = r.x.map((_, i) => i).filter((i) => !short[i] && scenes[i].short !== scenes[i].title
           && Math.max(r.miss[i], r.miss[i + 1] || 0, r.miss[i - 1] || 0) > 0.5);
         if (cands.length) short[cands.sort((a, b) => r.w[b] - r.w[a])[0]] = true;
         else if (!labels.style.cssText) labels.style.cssText = '--ls:0.04em';
@@ -1105,8 +1128,9 @@
         if (k === 2 * n + 1) r = null;
       }
     }
+    if (!r) labels.style.cssText = '';
     labelEls.forEach((b, i) => {
-      if (r) { b.style.left = r.x[i] + 'px'; return; }
+      if (r) { if (i < m) b.style.left = r.x[i] + 'px'; return; }
       b.textContent = scenes[i].title;
       b.hidden = i !== cur;
       if (i === cur) b.style.left = clamp(geo[i][0], 0, Math.max(0, tw - b.offsetWidth)) + 'px';
@@ -1120,7 +1144,7 @@
   }
   window.addEventListener('resize', relayout);
 
-  /* ------------------------------------------------------------------ boot: deep links, autoplay */
+  /* -- boot: deep links, autoplay */
 
   const hash = decodeURIComponent(location.hash.replace('#', ''));
   const named = shotById.get(params.get('shot') || '') || (hash && shotById.get(hash));
@@ -1130,7 +1154,8 @@
   else if (S.rm) start = lastFrame(scenes[0].shots[scenes[0].shots.length - 1]);
   S.T = clamp(start, 0, endT());
   if (rmNote) rmNote.hidden = !S.rm;
-  if (hash === 'desk' && deskScene) { S.T = lastFrame(deskScene.shots[deskScene.shots.length - 1]); S.held = true; }
+  const landing = hash && scenes.find((x) => x.node.id === hash && (x.shots[x.shots.length - 1].hold || x === scenes[scenes.length - 1]));
+  if (landing) { S.T = lastFrame(landing.shots[landing.shots.length - 1]); S.held = true; }
   root.classList.add('film-on');
   render();
   layoutLabels();

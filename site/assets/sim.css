@@ -38,6 +38,7 @@
 #sim .sim-rest > * { margin: 0; }
 #sim .sim-rest > noscript { display: grid; gap: var(--g); }
 #sim .sim-headline { max-width: 62ch; }
+#sim .sim-compare { max-width: 72ch; }
 #sim .sim-tiles { list-style: none; padding: 0; display: grid; gap: var(--g); grid-template-columns: repeat(5, minmax(0, 1fr)); }
 #sim .sim-tile { margin: 0; padding: 12px 14px; background: var(--sky-2, var(--surface)); border-top: 2px solid var(--near, var(--c-near)); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 #sim .sim-tile > p { margin: 0; }
@@ -86,7 +87,6 @@
 .film .desk-row { margin: 34px 0 10px; color: var(--ink-2); }
 .film .desk-row:first-child { margin-top: 0; }
 .film .desk-bar { display: block; overflow: visible; }
-html:not(.js) .desk-bar.is-ghost, .film.article .desk-bar.is-ghost { display: none; }
 .film .desk-key { justify-content: flex-start; margin-top: 14px; }
 .film :is(.seg, .edge-bar) { transform-box: fill-box; }
 /* d3: each bar under its own label, the year's gain against one day's move on one dollar axis */

@@ -19,6 +19,7 @@ Checks:
 from __future__ import annotations
 
 import html
+import json
 import math
 import re
 import shutil
@@ -105,10 +106,13 @@ def chart_specs() -> dict[str, dict]:
         "c11": {"form": "small-multiples", "status": "error",
                 "panels": [{"id": p, "label": f"Panel {p}", "series_ids": [f"n{p}", f"u{p}"]} for p in ("m", "c")],
                 "series": [line(f"{e}{p}", ent, panel=p) for p in ("m", "c") for e, ent in (("n", "near"), ("u", "usd"))]},
-        "c12": {"form": "diverging-bar", "series": [cats("sq", "near", [9.7, -0.2], role="diverging"),
-                                                    cats("qtd", "context", [0.3], role="context")],
-                "bands": [{"axis": "y", "from": -0.5, "to": 0.5, "label": "in balance"}],
-                "annotations": [{"x": "Cat 0", "label": "LST data begins", "kind": "data_boundary"}]},
+        "c23": {"form": "diverging-bar", "series": [cats("gap", "near", [9.7, -0.2, None], role="diverging")],
+                "y": {"unit": "pp", "diverging_center": 0},
+                "annotations": [{"x": "Cat 0", "label": "first month with a published base", "kind": "data_boundary"}]},
+        "c24": {"form": "line", "series": [line("adv", "near"), line("infl", "usd"),
+                                           line("stake", "context", role="context", dashed=True)],
+                "y": {"unit": "pp"}, "reference_lines": [{"y": 0, "label": "zero"}],
+                "annotations": [{"x": t(6), "label": "issuance ceiling cut", "kind": "ceiling_change"}]},
         "c13": {"form": "dot-range", "x": {"type": "linear", "domain": [-12, 12], "clamp": True},
                 "panels": [{"id": "own", "label": "Own", "series_ids": ["d1"]}, {"id": "usd", "label": "Dollar", "series_ids": ["d2"]}],
                 "series": [{"id": "d1", "label": "Own", "entity": "near", "unit": "pp", "panel": "own", "role": "emphasis",
@@ -137,6 +141,30 @@ def chart_specs() -> dict[str, dict]:
                             "role": "emphasis", "dashed": False,
                             "points": [["US", 4.5, None, None], ["Euro area", 3.1, None, None]]}],
                 "reference_lines": [{"x": 2.4, "label": "NEAR supply growth"}]},
+        "c25": {"form": "dot-range", "x": {"type": "linear", "unit": "pp", "legend": "series"}, "y": {"type": "category", "unit": "pp"},
+                "series": [{"id": "shuffled", "label": "Shuffled histories: average and middle band", "entity": "context",
+                            "unit": "pp", "panel": None, "role": "context", "dashed": False,
+                            "points": [["Selling into rallies", -37.3, -222.3, 32.7], ["Rebalancing", 2.1, -157.1, 53.6],
+                                       ["Ladder · Hyperliquid", -4.1, -30.8, 20.2], ["Ladder · Binance", 1.3, -12.4, 14.9]]},
+                           {"id": "real", "label": "NEAR's real history", "entity": "near", "unit": "pp", "panel": None,
+                            "role": "emphasis", "dashed": False,
+                            "points": [["Selling into rallies", -42.1], ["Rebalancing", 0.9],
+                                       ["Ladder · Hyperliquid", 6.2], ["Ladder · Binance", None]]}],
+                "reference_lines": [{"x": 0, "label": "no gain"}]},
+        "c26": {"form": "dot-range", "x": {"type": "linear", "unit": "pp", "legend": "series"}, "y": {"type": "category", "unit": "pp"},
+                "series": [{"id": "redrawn", "label": "Redrawn histories, centred: middle band", "entity": "context",
+                            "unit": "pp", "panel": None, "role": "context", "dashed": False,
+                            "points": [["Hyperliquid", 5.4, -8.1, 19.0], ["Binance", -1.2, -9.9, 7.5]]},
+                           {"id": "real", "label": "NEAR's real history", "entity": "near", "unit": "pp", "panel": None,
+                            "role": "emphasis", "dashed": False, "points": [["Hyperliquid", 5.4], ["Binance", -1.2]]}],
+                "reference_lines": [{"x": 0, "label": "no lead over a short that never trades"}],
+                "table": {"columns": PERP_COLUMNS, "rows": [
+                    ["Hyperliquid", "default", 210, "2024-05-01", "2026-10-30", 5.4, -8.1, 19.0, 71.0, -20.3, -9.8, 60.5,
+                     3.2, -2.2, 9.1, 7.4, 1.1, 2.0, 0.0, 6.0, 5.2, -2.8, 0, 12.5, 41.0, 1.35],
+                    ["Binance", "default", 1400, "2021-01-02", "2026-10-30", -1.2, -9.9, 7.5, 40.0, -4.4, -22.0, 45.1,
+                     -0.5, 0.7, 6.2, 5.0, 1.3, 2.1, 0.0, 2.8, 2.5, -3.3, 0, 13.0, 39.5, 2.10],
+                    ["Binance", "thinner collateral", 1400, None, None, -1.0, None, None, None, None, -21.0, 44.0,
+                     -0.4, 0.6, 6.2, 5.0, 1.3, 1.5, 0.3, 3.1, 2.6, -3.5, 2, 13.0, 30.0, None]]}},
     }
     out = {}
     for cid, sp in specs.items():
@@ -156,13 +184,22 @@ def chart_specs() -> dict[str, dict]:
     return out
 
 
+# c26's table columns (spec 4.2) and the per-venue keys the data page's two-row venue table reads
+PERP_COLUMNS = ["venue", "case", "windows", "first_start", "last_end", "swing_pp", "swing_low_pp", "swing_high_pp",
+                "swing_share_pct", "swing_raw_mean_pp", "swing_worst_pp", "swing_windows_pct", "advantage_pp",
+                "static_advantage_pp", "funding_pp", "static_funding_pp", "costs_pp", "interest_pp", "liquidation_pp",
+                "kept_pp", "static_kept_pp", "price_pp", "liquidated_windows", "mean_short_pct", "peak_dollars_pct",
+                "min_margin_x"]
+PERP_TABLE_KEYS = ("windows", "swing", "swing_lo", "swing_hi", "swing_share", "static_adv", "mean", "funding",
+                   "static_funding", "kept", "rank", "swing_worst", "liq_windows", "peak_dollars", "min_margin")
+
 STATE_SETS = {
-    "mixed": {"H1": "Refuted", "H1b": "Supported", "H2": "Partly", "H3": "Supported", "H4": "Not testable",
-              "H5": "Refuted", "H6": "Refuted", "H6_near": "Supported", "H7": "Supported", "H8": "Not testable",
-              "H9": "Refuted", "H10": "Refuted", "H12": "Refuted"},
+    "mixed": {"H1": "Supported", "H2": "Supported", "H3": "Supported", "H4": "Supported", "H5": "Partly",
+              "H6": "Refuted", "H6_near": "Supported", "H7": "Supported", "H8": "Partly", "H9": "Refuted",
+              "H10": "Partly"},
     "all_supported": {},
     "all_refuted": {},
-    "degraded": {"H8": "Not testable"},
+    "degraded": {"H9": "Not testable"},
 }
 DEFAULT_STATE = {"mixed": "Partly", "all_supported": "Supported", "all_refuted": "Refuted", "degraded": "Not computed"}
 
@@ -209,7 +246,15 @@ def make_data(scenario: str) -> dict:
     # their value as the condition's state, so the stub registers them as text
     subjects = {COND_RE.match(c).group(1) for e in COPY.values() for v in e.get("variants", []) for c in v.get("when", [])}
     text_keys = subjects - set(CLAIMS) - set(TRIPS) - set(XCHKS) - set(charts)
+    # months, dates and lists the copy and chart text print but no condition names: text too, never a percent
+    text_keys |= {"adv_months_blank", "adv_clean_from", "adv_first_month", "adv_last_month", "h2_base", "h2_alt_base",
+                  "h2_from", "h2_to", "h2_months_blank", "vol_first_start", "vol_last_start", "vol_last_end",
+                  "vol_perp_year_first", "vol_perp_year_last", "vol_perp_cb_listed", "vol_perp_cb_access_read"}
+    text_keys |= {f"vol_perp_{v}_{k}" for v in ("hl", "bn")
+                  for k in ("first_start", "last_start", "last_end", "worst_start", "swing_worst_start")}
     keys |= text_keys
+    # the data page's venue table builds its keys from the venue code (num('vol_perp_' ~ v ~ '_swing'))
+    keys |= {f"vol_perp_{v}_{k}" for v in ("hl", "bn") for k in PERP_TABLE_KEYS}
 
     numbers = {}
     for i, k in enumerate(sorted(keys)):
@@ -232,7 +277,7 @@ def make_data(scenario: str) -> dict:
             "margin": None if nc else "+0.5 pp", "margin_detail": None,
             "margin_key": f"margin_{cid}", "chart_ids": r.get("charts") or [r.get("chart")] if r.get("chart") else [],
             "null_reason": "input 3 is null" if nc else None,
-            "reason": "no venue lists options" if state == "Not testable" else None,
+            "reason": "the input lists nothing to test" if state == "Not testable" else None,
             "trigger": r.get("trigger"), "unregistered": [],
         }
     counted = [c for c, r in CLAIMS.items() if r["kind"] in ("stated", "hidden")]
@@ -650,6 +695,58 @@ def test_agent_module_closes_the_page_with_the_recommended_agent_first(scenario)
     assert module.count("<button") == 3 and module.count(" hidden") == 3, "copy buttons need JS, so they start hidden"
 
 
+DISCLAIMER = "Research only, not investment advice."
+
+
+def page_ids(page: str) -> list[str]:
+    """Every id attribute an HTML page carries (scripts and comments aside)."""
+    for p in _BLOCKS[:3]:
+        page = p.sub("", page)
+    return re.findall(r'\sid="([^"]+)"', page)
+
+
+@pytest.mark.parametrize("scenario", SCENARIOS)
+def test_footers_carry_the_disclaimer_and_ids_are_unique(scenario):
+    pages = render(scenario)
+    index, data, thesis = (pages[n][0] for n, _ in PAGES)
+    for page in (index, data):
+        foot = page[page.index('<footer class="site-foot"'):]
+        assert f'<p class="disclaimer">{DISCLAIMER}</p>' in foot, "the disclaimer sits in the footer"
+        assert foot.index('class="disclaimer"') < foot.index('class="disclosure"')
+        ids = page_ids(page)
+        assert len(ids) == len(set(ids)), sorted({i for i in ids if ids.count(i) > 1})
+    assert thesis.count(DISCLAIMER) == 1
+    assert thesis.index(DISCLAIMER) > thesis.rindex("\n---\n"), "after the closing rule, before the disclosure"
+
+
+def test_built_pages_hand_off_to_the_agent_cards_once():
+    """On the built site: no id twice on either page; the film's closing scene shows the agent cards without ids and
+    #agent keeps its own; the footers, THESIS.md and llms.txt say the disclaimer once each."""
+    site = ROOT / "site"
+    if not (site / "index.html").exists() or not (site / "data.html").exists():
+        pytest.skip("site/ is not built (run make charts)")
+    index = (site / "index.html").read_text(encoding="utf-8")
+    data = (site / "data.html").read_text(encoding="utf-8")
+    for page in (index, data):
+        ids = page_ids(page)
+        assert len(ids) == len(set(ids)), sorted({i for i in ids if ids.count(i) > 1})
+        foot = page[page.index('<footer class="site-foot"'):]
+        assert f'<p class="disclaimer">{DISCLAIMER}</p>' in foot
+    module = index[index.index('<section id="agent"'):]
+    for a in ("nearai", "chatgpt", "claude"):
+        assert f'<li class="agent" id="agent-{a}" data-agent="{a}">' in module, a
+    if 'id="scene-agent"' in index:
+        scene = index[index.index('id="scene-agent"'):index.index('<section id="evidence"')]
+        cards = re.findall(r'<li class="agent"([^>]*)>', scene)
+        assert len(cards) == 3 and not any(" id=" in c for c in cards), cards
+    for name in ("THESIS.md", "llms.txt"):
+        path = site / name
+        if path.exists():
+            text = path.read_text(encoding="utf-8")
+            assert text.count(DISCLAIMER) == 1, name
+            assert "Nothing here is investment advice" not in text, name
+
+
 def test_degraded_build_shows_reasons_not_numbers():
     index = render("degraded")["index.html.j2"][0]
     assert 'class="num null"' in index
@@ -724,6 +821,73 @@ def test_charts_js_parses():
         pytest.skip("node is not installed")
     r = subprocess.run([node, "--check", str(ASSETS / "charts.js")], capture_output=True, text=True, timeout=60)
     assert r.returncode == 0, r.stderr
+
+
+def _js_function(src: str, name: str) -> str:
+    """The source of `function name(...) {...}` in charts.js, matched brace for brace."""
+    start = src.index(f"function {name}(")
+    depth, i = 0, src.index("{", start)
+    while True:
+        if src[i] == "{":
+            depth += 1
+        elif src[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return src[start:i + 1]
+        i += 1
+
+
+def _js_const(src: str, name: str) -> str:
+    """A one-line `const name = ...;` at the top level of charts.js's closure (indented once)."""
+    m = re.search(rf"^  const {name} = .*?;$", src, re.M)
+    assert m, name
+    return m.group(0).strip()
+
+
+def test_dot_range_series_legend():
+    """c25 and c26 (x.legend = "series") key each of their series once by its own label; a dot-range chart without the flag
+    keeps the fixed "Latest reading" / "Range over the window" key. charts.js's own normSeries and buildLegend run
+    under node on the synthetic specs, with the DOM step stubbed."""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    src = (ASSETS / "charts.js").read_text(encoding="utf-8")
+    harness = "\n".join([
+        "'use strict';",
+        *(_js_const(src, n) for n in ("ENTITIES", "isNum", "val", "cvar", "DAY", "first", "HEAT_MAX")),
+        _js_function(src, "uniq"), _js_function(src, "toTime"), _js_function(src, "normSeries"),
+        _js_function(src, "buildLegend"),
+        "function heatTint() { return ''; }",
+        "let got = null;",
+        "function renderLegend(_box, items) { got = items; }",
+        "const out = {};",
+        "for (const [cid, chart] of Object.entries(JSON.parse(process.argv[process.argv.length - 1]))) {",
+        "  const all = chart.series.map((s, i) => normSeries(s, i, 'rows', (chart.x || {}).unit));",
+        "  const P = { form: chart.form, kind: 'rows', x: chart.x || {}, all, groups: [{ series: all }], bands: [],",
+        "              refs: [], yBand: () => false };",
+        "  buildLegend({ querySelector: () => null }, P);",
+        "  out[cid] = got.map((it) => [it.shape, it.label, it.color]);",
+        "}",
+        "process.stdout.write(JSON.stringify(out));",
+    ])
+    specs = chart_specs()
+    charts = {cid: specs[cid] for cid in ("c25", "c26", "c13", "c21")}
+    c31 = ROOT / "site" / "data" / "charts" / "c31.json"
+    if c31.exists():
+        charts["c31"] = json.loads(c31.read_text(encoding="utf-8"))
+    r = subprocess.run([node, "-e", harness, json.dumps(charts)], capture_output=True, text=True, timeout=60)
+    assert r.returncode == 0, r.stderr
+    got = json.loads(r.stdout)
+    assert got["c25"] == [["range", "Shuffled histories: average and middle band", "var(--c-context)"],
+                          ["dot", "NEAR's real history", "var(--c-near)"]], got["c25"]
+    assert got["c26"] == [["range", "Redrawn histories, centred: middle band", "var(--c-context)"],
+                          ["dot", "NEAR's real history", "var(--c-near)"]], got["c26"]
+    fixed = ["Latest reading", "Range over the window"]
+    assert not {lab for _s, lab, _c in got["c25"]} & set(fixed)
+    assert [lab for _s, lab, _c in got["c13"]] == fixed
+    assert [lab for _s, lab, _c in got["c21"]] == fixed[:1]
+    if "c31" in got:
+        assert [lab for _s, lab, _c in got["c31"]] == fixed
 
 
 def test_assets_load_nothing_from_the_network():
@@ -828,7 +992,7 @@ def test_clipped_bars_get_a_break_mark_and_keep_their_value():
     start = body.index("if (form === 'bar') {")
     bar = body[start:body.index("} else {", start)]
     assert "P.clamped" in bar and "break-mark" in bar and "titled(bar" in bar
-    assert "const t = fmt(v, se.unit);" in bar, "the label prints the unclipped value"
+    assert "const t = fmt(v, se.unit, dp);" in bar, "the label prints the unclipped value"
     css = (ASSETS / "style.css").read_text(encoding="utf-8")
     assert ".break-mark line" in css
 
@@ -849,6 +1013,36 @@ def test_no_attribute_value_holds_markup(scenario):
         assert not bad, (name, bad[:3])
 
 
+def test_us_access_names_coinbases_perpetual_by_its_keys():
+    """Hyperliquid and Binance are reported to exclude US persons; Coinbase Derivatives' US-regulated NEAR perpetual is
+    open to US holders Coinbase approves but too new to test. H8's answer (film and claim block), the open item on US
+    access and the data page's F-perp-coinbase article say so through the registry keys; the open item and the article
+    give Coinbase's own conditions (an approved application, an eligible address, not every jurisdiction) with the day
+    its pages were read, and the article says the ladder's collateral rule covers Coinbase's short margin with the keys
+    that show it."""
+    for v in COPY["film_H8_answer"]["variants"]:
+        assert "Coinbase" in v["text"] and "US persons" in v["text"], v["when"]
+        assert "approved US holder" in v["text"], v["when"]
+        assert "vol_perp_cb_listed" in placeholders(v["text"]), v["when"]
+    item = next(it for it in OPEN_ITEMS["items"] if it["id"] == "perp-venues-us")
+    assert {"vol_perp_cb_listed", "vol_perp_cb_days", "vol_perp_cb_access_read"} <= placeholders(item["text"])
+    assert "Coinbase" in item["title"] + item["text"] and "Hyperliquid and Binance" in item["text"]
+    assert "eligible address" in item["text"] and "no US state" in item["text"]
+    pages = render("mixed")
+    index, data = pages["index.html.j2"][0], pages["data.html.j2"][0]
+    art = data[data.index('<article class="formula" id="F-perp-coinbase">'):]
+    art = art[:art.index("</article>")]
+    for key in ("vol_perp_cb_listed", "vol_perp_cb_days", "vol_perp_cb_contract", "vol_perp_cb_oi_usd",
+                "vol_perp_cb_funding_interval", "vol_perp_collateral", "vol_perp_cb_short_margin_overnight",
+                "vol_perp_cb_short_margin_intraday", "vol_perp_cb_margin_rise", "vol_perp_cb_access_read"):
+        assert f'data-key="{key}"' in art, key
+    assert "collateral rule covers Coinbase's margin" in art
+    assert "eligible address" in art and "no US state" in art and 'href="#K-cb_us_derivatives_access"' in art
+    for where in ('<article class="claim-block" id="claim-H8"', 'id="gap-perp-venues-us"'):
+        block = index[index.index(where):]
+        assert 'data-key="vol_perp_cb_listed"' in block[:block.index("</article>" if "claim" in where else "</li>")]
+
+
 def test_evidence_follows_the_film_order_with_claim_blocks_and_a_ledger():
     """#evidence groups the claims and charts in the film's scene order. Each claim is an article (#claim-<id>) the
     evidence dialog can move, with its verdict chip, its plain test and no rule disclosure; the ledger rows carry
@@ -857,17 +1051,20 @@ def test_evidence_follows_the_film_order_with_claim_blocks_and_a_ledger():
     index, thesis = pages["index.html.j2"][0], pages["THESIS.md.j2"][0]
     evidence = index[index.index('<section id="evidence"'):index.index('<section id="mind"')]
     groups = re.findall(r'<section class="ev-group" id="ev-([a-z]+)"', evidence)
-    assert groups == ["title", "word", "money", "yield", "cost", "ledger"], groups
-    placed = {"title": (["H1b"], ["c21"]), "word": (["H1", "H10"], ["c02", "c05", "c06"]),
-              "money": (["H2"], ["c11"]), "yield": (["H3", "H5", "H4"], ["c01", "c13", "c12"]),
-              "cost": (["H12", "H6", "H6_near", "H9", "H7"], ["c03", "c14", "c07", "c09", "c08"]),
-              "ledger": (["H8"], ["c15"])}
+    assert groups == ["title", "supply", "money", "yield", "vol", "sell", "ledger"], groups
+    placed = {"title": (["H1"], ["c21"]),
+              "supply": ([], ["c02", "c03", "c05", "c06"]),
+              "money": (["H2"], ["c11", "c23"]),
+              "yield": (["H3", "H5", "H4"], ["c01", "c13", "c24"]),
+              "vol": (["H6", "H6_near", "H9", "H7"], ["c14", "c07", "c09", "c08"]),
+              "sell": (["H8", "H10"], ["c26", "c15", "c25"]),
+              "ledger": ([], [])}
     for gid, (claims, charts) in placed.items():
         group = evidence[evidence.index(f'id="ev-{gid}"'):]
         group = group[:group.index("</section>\n  <section class=\"ev-group\"") if gid != "ledger" else None]
         assert re.findall(r'<article class="claim-block" id="claim-([A-Za-z0-9_]+)"', group) == claims, gid
         assert re.findall(r'<figure class="card" id="(c[0-9]+)"', group) == charts, gid
-    for cid in ("H1", "H1b", "H2", "H3", "H4", "H5", "H6", "H6_near", "H7", "H8", "H9", "H10", "H12"):
+    for cid in ("H1", "H2", "H3", "H4", "H5", "H6", "H6_near", "H7", "H8", "H9", "H10"):
         block = index[index.index(f'<article class="claim-block" id="claim-{cid}"'):]
         block = block[:block.index("</article>")]
         assert 'class="chip vchip"' in block and "<dt>The test</dt>" in block, cid

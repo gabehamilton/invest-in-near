@@ -1,4 +1,4 @@
-"""Who pays NEAR's inflation: a staker's and a non-staker's share of all NEAR, by window (claim H12; chart c03).
+"""Who pays NEAR's inflation: a staker's and a non-staker's share of all NEAR, by window (chart c03, tripwire T2).
 
 - F-share: staker share-yield = (1 + y_lst) / (1 + g) - 1; non-staker = 1 / (1 + g) - 1, both annualized over the
   same two samples (y_lst from the LST prices, g from total supply at those samples).
@@ -150,12 +150,12 @@ def _coverage(windows: list[ShareWindow]) -> dict:
 def share_yield(reg: Registry, m: HoldersModel) -> Chart:
     """c03: staker vs non-staker change in share of all NEAR, per fixed window, annualized."""
     chart = Chart(
-        id="c03", section="O2", priority="lead", claims=["H12"], title="", sentence="", form="diverging-bar",
+        id="c03", section="O2", priority="lead", claims=[], title="", sentence="", form="diverging-bar",
         sources=[RPC_SOURCE + ": block header total_supply, meta-pool.near get_st_near_price, "
                  "linear-protocol.near ft_price"],
         queries=lst_queries(m.smp) + block_queries(m.smp)[:1], table={"columns": [], "rows": []},
         code_ref="pipeline/models/holders.py::share_yield", formula_ids=["F-share", "F-lst", "F-growth"],
-        eyebrow="O2 · tests H12", x={"type": "category"}, y={"unit": "%"}, verdicts=["H12"],
+        eyebrow="O2 · stakers against unstaked holders", x={"type": "category"}, y={"unit": "%"}, verdicts=[],
         as_of=as_of(m.files))
     staker, non = val(reg, "staker_share_365"), val(reg, "nonstaker_365")
     # signs become verbs; the figures print unsigned

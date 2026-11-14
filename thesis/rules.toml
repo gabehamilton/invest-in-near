@@ -7,7 +7,7 @@
 #   kind           stated | hidden (assumption hiding in the hypothesis) | reframe
 #   title          short label
 #   claimed        verbatim fragment of [meta].hypothesis or [meta].thesis (the sentence a hidden assumption hides in)
-#   assumption     hidden assumptions only: the assumption in one line
+#   assumption     kind = "hidden" only: the assumption in one line
 #   test           the test in one line
 #   metrics        registry keys shown with the verdict
 #   requires       keys that must be non-null, else Not computed (default: metrics)
@@ -25,7 +25,7 @@
 
 [meta]
 hypothesis = "NEAR is deflationary compared to other currencies. Compared to the US dollar, NEAR's inflation rate of 2.5% is approximately 1.5% lower. Current staking rewards of 4.13% are approximately 0.25% higher than the effective federal funds rate of 3.88%. Though both the inflation rate and fed rate change, they stay in balance over time. Other currencies have a wider spread. This makes NEAR ideal for sweep funds and other currency storage. In addition, NEAR is volatile. Rather than being a disadvantage this is an asset, volatility can be sold."
-tally_note = "The tally counts the stated claims and the hidden assumptions (ids starting with H). H6_near reframes H6 and sits beside it, outside the count. Not testable and Not computed are listed on their own and never folded into supported or refuted."
+tally_note = "The tally counts the stated claims and the hidden assumption (ids starting with H). H6_near reframes H6 and sits beside it, outside the count. Not testable and Not computed are listed on their own and never folded into supported or refuted."
 thesis = "NEAR is deflationary relative to the dollar and other currencies."
 boundaries = "Past and future governance conditions are not relevant, if the conditions change investors can move elsewhere with plenty of notice. Similarly, past performance and market conditions are only useful in so far as they are indicative of near term behavior. Future investors don't own NEAR yet so don't care about where it is relative to the peak (which would be a sunk cost anyway). In other words we are concerned with the current macro-economic environment and NEAR's current utility."
 
@@ -33,27 +33,14 @@ boundaries = "Past and future governance conditions are not relevant, if the con
 
 [H1]
 kind = "stated"
-title = "NEAR is deflationary"
-claimed = "NEAR is deflationary"
-test = "Did NEAR's total supply shrink over the last 365 days, and keep shrinking for at least 90 consecutive days?"
-metrics = ["g_365", "g_365_neg_run_days"]
-requires = ["g_365"]
-supported = "g_365 < 0 and g_365_neg_run_days >= 90"
-refuted = "g_365 > 0"
-chart = "c02"
-charts = ["c02"]
-section = "O1"
-
-[H1b]
-kind = "stated"
 title = "NEAR's supply grows slower than major currencies' money"
 claimed = "NEAR is deflationary compared to other currencies."
-test = "Over each currency's latest year, did NEAR's supply grow slower than US broad money and than the median broad-money growth of the most-traded currencies?"
-metrics = ["gap_m2", "h1b_gap_med", "h1b_n_faster", "n_fiat_money", "m2_yoy", "g_365_at_m2"]
-requires = ["gap_m2", "h1b_gap_med", "n_fiat_money"]
+test = "Over the latest year of each (NEAR's supply to the latest chain sample, each currency's money to its latest month), did NEAR's supply grow slower than US broad money and than the median broad-money growth of the most-traded currencies?"
+metrics = ["gap_m2", "h1_gap_med", "h1_n_faster", "n_fiat_money", "m2_yoy", "g_365"]
+requires = ["gap_m2", "h1_gap_med", "n_fiat_money"]
 not_computed_if = "n_fiat_money < 7"
 not_computed_reason = "fewer than seven of the panel's most-traded currencies have a latest money-growth reading"
-supported = "gap_m2 > 0 and h1b_gap_med > 0"
+supported = "gap_m2 > 0 and h1_gap_med > 0"
 refuted = "gap_m2 <= 0"
 chart = "c21"
 charts = ["c21", "c11"]
@@ -61,15 +48,15 @@ section = "A1"
 
 [H2]
 kind = "stated"
-title = "NEAR's supply grows about 1.5 pp slower than US prices"
-claimed = "Compared to the US dollar, NEAR's inflation rate of 2.5% is approximately 1.5% lower."
-test = "Is US CPI-U inflation minus NEAR supply growth within 0.5 pp of 1.5 pp now, and in at least 9 of the last 12 months with data?"
-metrics = ["gap_cpi", "cpi_yoy", "g_365_at_cpi", "h2_months_in_band_12", "h2_months_with_data_12"]
-requires = ["gap_cpi"]
-supported = "abs(gap_cpi - 1.5) <= 0.5 and h2_months_in_band_12 >= 9"
-refuted = "gap_cpi <= 0"
-chart = "c11"
-charts = ["c11"]
+title = "Since the issuance ceiling cut, NEAR's supply has grown slower than US prices"
+claimed = "NEAR is deflationary relative to the dollar"
+test = "From the first month after the issuance ceiling cut that US CPI-U can match to the latest CPI month, did NEAR's supply grow slower than US consumer prices, both annualized over the same months?"
+metrics = ["h2_gap", "h2_near_g", "h2_cpi", "h2_from", "h2_to", "h2_months_slower", "h2_months_read", "cut_date"]
+requires = ["h2_gap"]
+supported = "h2_gap > 0"
+refuted = "h2_gap < 0"
+chart = "c23"
+charts = ["c23"]
 section = "A1"
 
 [H3]
@@ -83,23 +70,22 @@ supported = "spread_adj_365 > 0 and spread_adj_365 <= 1.0"
 partly = "spread_adj_365 > 1.0"
 refuted = "spread_adj_365 <= 0"
 chart = "c01"
-charts = ["c01", "c12"]
+charts = ["c01"]
 section = "A2"
 
 [H4]
 kind = "stated"
-title = "Staking yield and fed funds stay in balance"
+title = "NEAR's supply-and-staking edge over the dollar holds as rates move"
 claimed = "Though both the inflation rate and fed rate change, they stay in balance over time."
-test = "Under the issuance rule now in force, over at least 8 full quarters that include a Fed move of 100 bp or more, is the quarterly spread's standard deviation below 1 pp with a level correlation above 0.5?"
-metrics = ["spread_q_sd_rule", "corr_levels_rule", "n_q_rule", "fed_range_q_bp_rule"]
-requires = ["n_q_rule"]
-untestable_if = "n_q_rule < 8"
-untestable_reason = "fewer than 8 full quarters have passed under the issuance rule now in force"
-trigger = "8 full quarters under the issuance rule now in force"
-supported = "spread_q_sd_rule < 1.0 and corr_levels_rule > 0.5 and n_q_rule >= 8 and fed_range_q_bp_rule >= 100"
-refuted = "spread_q_sd_rule > 1.5 or corr_levels_rule < 0.2"
-chart = "c12"
-charts = ["c12", "c01"]
+test = "NEAR's edge over the dollar is US CPI-U inflation minus NEAR's supply growth, plus liquid-staking yield minus compounded fed funds, each over the same trailing year, read every month, in years ending before and after the issuance ceiling cut; NEAR's dollar price is not part of it. Was it at or below zero in no more than 40% of the months?"
+metrics = ["adv_share_le0", "adv_months_le0", "adv_months", "adv_months_before", "adv_months_after", "adv_mean_before", "adv_mean_after", "adv_years", "adv_months_clean_after"]
+requires = ["adv_share_le0", "adv_months_before", "adv_months_after"]
+not_computed_if = "adv_months_before < 1 or adv_months_after < 1"
+not_computed_reason = "one side of the issuance ceiling cut has no month with every input"
+supported = "adv_share_le0 <= 40"
+refuted = "adv_share_le0 > 40"
+chart = "c24"
+charts = ["c24"]
 section = "A2"
 
 [H5]
@@ -144,21 +130,33 @@ section = "O5"
 kind = "stated"
 title = "NEAR's volatility can be sold"
 claimed = "Rather than being a disadvantage this is an asset, volatility can be sold."
-test = "Is there a NEAR options market, and has NEAR implied volatility exceeded later realized volatility (mean above zero, t above 2, at least 180 days)?"
-metrics = ["n_venues_with_near_options", "n_option_venues_checked", "venues_unchecked"]
-requires = ["n_venues_with_near_options", "n_option_venues_checked"]
-not_computed_if = "n_option_venues_checked == 0"
-not_computed_reason = "no options venue could be checked from the network that pulled the data"
-untestable_if = "n_venues_with_near_options == 0"
-untestable_reason = "none of the options venues I could check lists NEAR options, so there is no NEAR implied volatility to sell"
-trigger = "a checked venue lists NEAR options"
-supported = "vrp_near_mean > 0 and vrp_near_t > 2 and vrp_near_days >= 180"
-refuted = "vrp_near_mean <= 0"
-chart = "c15"
-charts = ["c15"]
+test = "No options venue I could check lists NEAR, so the test sells NEAR's swings on a perpetual: keep the NEAR staked, sell 10% of the stake short at the daily close after each 10% rise, at most 5 times, and buy each slice back after a 10% fall. Over every one-year window with full data, did this ladder end ahead of a short of 25% of the stake held all year with the same dollars on the venue, after funding, fees, slippage, interest and any liquidation? Supported if its average lead stays above zero in at least 97.5% of 1,000 histories redrawn from blocks of 30 of NEAR's own days and centred on the real result, on both Hyperliquid and Binance; refuted if in 2.5% or fewer on both."
+metrics = ["vol_perp_hl_swing_share", "vol_perp_bn_swing_share", "vol_perp_hl_swing", "vol_perp_bn_swing", "vol_perp_hl_funding_year", "vol_perp_hl_windows", "vol_perp_bn_windows", "vol_perp_hl_years", "n_venues_with_near_options", "n_option_venues_checked"]
+requires = ["vol_perp_hl_swing_share", "vol_perp_bn_swing_share", "vol_perp_hl_years", "vol_perp_bn_years"]
+not_computed_if = "vol_perp_hl_years < 3 or vol_perp_bn_years < 3"
+not_computed_reason = "the one-year windows with funding on a venue span fewer than three separate years"
+supported = "vol_perp_hl_swing_share >= 97.5 and vol_perp_bn_swing_share >= 97.5"
+refuted = "vol_perp_hl_swing_share <= 2.5 and vol_perp_bn_swing_share <= 2.5"
+chart = "c26"
+charts = ["c26", "c15"]
 section = "A5"
 
-# ---------------------------------------------------------------- hidden assumptions
+[H10]
+kind = "stated"
+title = "Patient holders can capture NEAR's volatility"
+claimed = "Rather than being a disadvantage this is an asset"
+test = "Three strategies, over every one-year window with full data: sell at the next close after NEAR first closes 25% above cost (else at the year's end); rebalance to the desk's NEAR share every 30 days; or run the ladder of short sales on a NEAR perpetual. Did any beat holding by more than it did on 1,000 histories of NEAR's own daily moves shuffled in blocks of 30 days? A strategy beats chance when it beats at least 97.5% of those histories and loses to chance when it beats 2.5% or fewer. The ladder counts only when Hyperliquid and Binance, the longer record, agree."
+metrics = ["vol_rally_rank", "vol_rebal_rank", "vol_perp_hl_rank", "vol_perp_bn_rank", "vol_rally_excess", "vol_rebal_excess", "vol_perp_hl_excess", "vol_perp_bn_excess", "vol_windows", "vol_years", "vol_first_start", "vol_last_end"]
+requires = ["vol_rally_rank", "vol_rebal_rank", "vol_perp_hl_rank", "vol_perp_bn_rank", "vol_years", "vol_perp_hl_years", "vol_perp_bn_years"]
+not_computed_if = "vol_years < 3 or vol_perp_hl_years < 3 or vol_perp_bn_years < 3"
+not_computed_reason = "the one-year windows with every input span fewer than three separate years"
+supported = "(vol_rally_rank >= 97.5 or vol_rebal_rank >= 97.5 or (vol_perp_hl_rank >= 97.5 and vol_perp_bn_rank >= 97.5)) and vol_rally_rank > 2.5 and vol_rebal_rank > 2.5 and (vol_perp_hl_rank > 2.5 or vol_perp_bn_rank > 2.5)"
+refuted = "(vol_rally_rank <= 2.5 or vol_rebal_rank <= 2.5 or (vol_perp_hl_rank <= 2.5 and vol_perp_bn_rank <= 2.5)) and vol_rally_rank < 97.5 and vol_rebal_rank < 97.5 and (vol_perp_hl_rank < 97.5 or vol_perp_bn_rank < 97.5)"
+chart = "c25"
+charts = ["c25"]
+section = "A5"
+
+# ---------------------------------------------------------------- the hidden assumption
 
 [H9]
 kind = "hidden"
@@ -177,33 +175,6 @@ chart = "c07"
 charts = ["c07"]
 section = "O5"
 
-[H10]
-kind = "hidden"
-title = "Fee burn offsets issuance"
-assumption = "Fees burned by usage offset new issuance, so net supply growth is small or negative."
-claimed = "NEAR is deflationary"
-test = "What share of the NEAR minted in the last 365 days did fees burn? An upper bound can refute but cannot support."
-metrics = ["burn_share_365", "burn_method", "n_burn_epochs_365", "burn_share_365_ub", "burn_share_365_sampled"]
-requires = ["burn_share_365"]
-supported = "burn_share_365 >= 50 and burn_method != 'upper bound' and burn_share_365_ub >= 50"
-refuted = "burn_share_365 < 10"
-chart = "c05"
-charts = ["c05"]
-section = "O3"
-
-[H12]
-kind = "hidden"
-title = "Inflation dilutes every holder equally"
-assumption = "Supply growth costs every NEAR holder the same share."
-claimed = "Compared to the US dollar, NEAR's inflation rate of 2.5% is approximately 1.5% lower."
-test = "Over the latest window, did stakers' and non-stakers' shares of supply change by the same amount (within 0.1 pp a year)?"
-metrics = ["staker_share_365", "nonstaker_365"]
-supported = "abs(staker_share_365 - nonstaker_365) < 0.1"
-refuted = "staker_share_365 * nonstaker_365 < 0 and abs(staker_share_365 - nonstaker_365) >= 0.1"
-chart = "c03"
-charts = ["c03"]
-section = "O2"
-
 # ---------------------------------------------------------------- reframe
 
 [H6_near]
@@ -221,13 +192,13 @@ section = "A4"
 # ---------------------------------------------------------------- tripwires (what would change my mind)
 
 [tripwires.T1]
-group = "break"          # break: part of the thesis fails; confirm: the thesis gains ground, or a closed test opens
+group = "break"          # break: part of the thesis fails; confirm: the thesis gains ground
 metric = "g_365"
 metric_label = "NEAR supply growth over the last year"
 keys = ["g_365", "i_max_now"]
 threshold_text = "more than 0.5 pp above the issuance ceiling in force"
 expr = "g_365 > i_max_now + 0.5"
-meaning = "Supply growth breaks from the protocol rule that keeps it below the major currencies' money growth."
+meaning = "Supply growth breaks from the protocol ceiling that keeps it below money growth (H1) and US prices (H2)."
 chart = "c02"
 
 [tripwires.T2]
@@ -237,7 +208,7 @@ metric_label = "Change in stakers' share of supply over the last year"
 keys = ["staker_share_365"]
 threshold_text = "at or below zero"
 expr = "staker_share_365 <= 0"
-meaning = "Stakers lose share of supply, so staking no longer keeps a holder ahead of issuance."
+meaning = "Stakers lose share of supply: staking no longer keeps a holder ahead of new issuance."
 chart = "c03"
 
 [tripwires.T3]
@@ -257,7 +228,7 @@ metric_label = "Fees burned as a share of issuance over the last year"
 keys = ["burn_share_365"]
 threshold_text = "100% or more of issuance"
 expr = "burn_share_365 >= 100"
-meaning = "NEAR becomes deflationary: burn exceeds issuance."
+meaning = "Fee burn exceeds new issuance, so total supply shrinks."
 chart = "c05"
 
 [tripwires.T5]
@@ -297,7 +268,7 @@ metric_label = "Venues listing NEAR options"
 keys = ["n_venues_with_near_options"]
 threshold_text = "one venue or more lists NEAR options"
 expr = "n_venues_with_near_options >= 1"
-meaning = "H8 becomes testable."
+meaning = "A NEAR options market opens, so NEAR's volatility could be sold for a premium rather than only through a perpetual."
 chart = "c15"
 
 # ---------------------------------------------------------------- model parameters
@@ -307,12 +278,32 @@ chart = "c15"
 # that feeds it cannot drift apart. Changing one means changing both.
 
 [params]
-h2_target_pp = 1.5        # H2: "approximately 1.5% lower" (the centre of the band h2_months_in_band_12 counts)
-h2_tol_pp = 0.5           # H2: a month is in band when |gap - h2_target_pp| <= h2_tol_pp
-h2_window_months = 12     # H2: months counted by h2_months_in_band_12 / h2_months_with_data_12
-h4_sd_pp = 1.0            # H4 supported needs spread_q_sd_rule below this; the c12 title switches on it
-band_pp = 0.5             # c12: a quarter with abs(spread) <= band_pp sits in the gray band
-burn_majority_pct = 50    # H10 supported needs burn_share_365 at or above this; the c05 title switches on it
+adv_le0_max_pct = 40      # H4: refuted when NEAR's advantage over the dollar is at or below zero in more than this share of months
+vol_horizon_days = 365    # H10: each window is one year, the wait a long-term holder is asked to accept
+vol_rally_pct = 25        # H10 selling into rallies: sell at the first close this far above cost, a round level between a small move and a doubling
+vol_rally_ladder = [10, 25, 50, 100]   # data page only: the same strategy at other levels, so no single level carries the result; no rule reads it
+vol_rebal_days = 30       # H10 rebalancing: back to the desk's NEAR share every this many days, about monthly
+vol_min_years = 3         # H8, H10 are not computed when the one-year windows span fewer than this many separate years
+vol_null_block_days = 30  # H10 shuffled and H8 redrawn histories: NEAR's daily moves are cut into blocks this long, so a month of clustered moves stays together
+vol_null_draws = 1000     # H10 shuffled and H8 redrawn histories per build; enough that a rank or a share moves by a tenth of a point per history
+vol_rank_hi = 97.5        # H10: a strategy beats chance when it beats at least this share of the shuffled histories; H8: supported when the ladder's lead stays above zero in at least this share of the redrawn histories (two-sided five percent)
+vol_rank_lo = 2.5         # H10: a strategy loses to chance when it beats this share of the shuffled histories or fewer; H8: refuted at this share of the redrawn histories or fewer (the mirror of vol_rank_hi)
+vol_perp_rung_pct = 10        # H8, H10 perp ladder: a slice is sold short after each rise this large and bought back after each fall this large; about two ordinary NEAR days, and the smallest level of the rally ladder
+vol_perp_slice_pct = 10       # perp ladder: the share of the starting stake sold short per rung, small enough that one trade is not a decision
+vol_perp_rungs = 5            # perp ladder: the most slices short at once, so at least half the stake always keeps NEAR's price
+vol_perp_static_pct = 25      # H8: the short that never trades, this share of the stake held all year; half the ladder's most (vol_perp_rungs x vol_perp_slice_pct / 2), fixed before a window starts
+vol_perp_fee_pct = 0.045      # perp ladder: fee on every trade, Hyperliquid's published base taker fee, applied to both venues
+vol_perp_slip_pct = 0.10      # perp ladder: every trade fills this far against the holder
+vol_perp_maint_pct = 5        # perp ladder: the venue closes a short whose equity falls below this share of its value (Hyperliquid: half the initial margin at the NEAR perpetual's maximum leverage)
+vol_perp_collateral = 1.0     # perp ladder: dollars kept on the venue per dollar of the most the ladder can be short, because staked NEAR cannot be posted there
+vol_perp_topup_at = 0.8       # perp ladder: send dollars when the venue's equity falls below this share of the collateral target
+vol_perp_sweep_at = 1.25      # perp ladder: bring dollars home when the venue's equity exceeds this multiple of the target
+vol_perp_transfer_days = 3    # perp ladder: days a transfer to or from the venue takes
+vol_perp_sens_rate_add = [3, 6]          # data page only: the perp ladder with dollars costing fed funds plus these points a year; no rule reads it
+vol_perp_sens_collateral = [0.75, 0.5]   # data page only: the ladder with these multiples of the collateral target; no rule reads it
+vol_perp_sens_transfer_days = [1, 7]     # data page only: transfers taking these many days; no rule reads it
+vol_perp_sens_slip_pct = [0.30, 0.50]    # data page only: every trade filling this far against the holder; no rule reads it
+vol_perp_sens_lag_days = 1               # data page only: decide at a close, fill this many closes later; no rule reads it
 within_pp = 2.0           # H9: a window counts toward pct_within_2pp_1y when |ret - cash| <= within_pp
 sweep_majority = 0.5      # c14 row 3: partial when at least this share of windows beat the benchmark
 s_hypo = 0.60             # c10: the hypothetical staked share (a fraction); tripwire T6 fires above it
@@ -333,6 +324,7 @@ sim_es_deep_every = 40    # the deeper tail on the data page: the worst sim_path
 sim_dots = 100            # dots in the plot (each the middle year of its hundredth)
 sim_seed_checks = [1, 2, 3, 4, 5]   # five other seeds: their spread sets the precision of every simulated figure
 sim_usd_step_exact = 10000   # closed-form dollar figures round to this many dollars
+sim_usd_step_edge = 10    # the resets' change to the expected value rounds to this many dollars
 # simulated figures round to the first step above their spread across the seeds (scaled to the NEAR part), so a
 # different seed cannot move a printed figure by a whole step
 sim_steps_usd = [10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000, 5000000, 10000000, 20000000, 50000000]
@@ -347,15 +339,8 @@ sim_day_es = 0.975        # one-day expected shortfall level
 
 [labels]
 g_365 = "NEAR supply growth, last year"
-g_365_neg_run_days = "days in the current run of shrinking supply"
-gap_m2 = "how much slower NEAR supply grew than US money"
-m2_yoy = "US money supply, year over year"
-g_365_at_m2 = "NEAR supply growth, year to the money-supply month"
-gap_cpi = "how much slower NEAR supply grew than US prices"
-cpi_yoy = "US consumer prices, year over year"
-g_365_at_cpi = "NEAR supply growth, year to the price month"
-h2_months_in_band_12 = "months in the last year near the claimed gap"
-h2_months_with_data_12 = "months in the last year with data"
+gap_m2 = "how much slower NEAR supply grew than US money, each over its latest year"
+m2_yoy = "US money supply, year to its latest month"
 spread_adj_365 = "staking minus fed funds, like for like, last year"
 y_lst_365 = "liquid staking yield, last year"
 ffcomp_365 = "fed funds compounded, last year"
@@ -370,31 +355,16 @@ rv_365_btc = "bitcoin price volatility, last year"
 n_venues_with_near_options = "venues listing NEAR options"
 n_option_venues_checked = "options venues checked"
 venues_unchecked = "options venues that could not be checked"
-vrp_near_mean = "NEAR implied minus realized volatility, mean"
-vrp_near_t = "t-statistic of that premium"
-vrp_near_days = "days of NEAR implied volatility"
-burn_share_365 = "fees burned as a share of issuance, last year"
-burn_method = "how the burn share was measured"
-n_burn_epochs_365 = "epochs behind the burn share"
-burn_share_365_sampled = "the burn share from one epoch a month"
-burn_share_365_ub = "upper bound on the burn share"
 i_max_now = "issuance ceiling now"
 cut_date = "date of the ceiling cut"
 staker_share_365 = "change in a staker's share of all NEAR, per year"
-nonstaker_365 = "change in an unstaked holder's share, per year"
 h6n_rows13_pass = "NEAR treasury tests passed, principal and yield"
 h6n_row2_fail = "NEAR treasury liquidity test failed"
 intents_vol_365d = "NEAR Intents volume, last year"
 s_now = "share of supply staked"
 y_s60 = "staking yield at the tripwire's staked share"
 spread_adj_90 = "staking minus fed funds, like for like, last ninety days"
-h1b_gap_med = "median of how much faster each major currency's money grew than NEAR supply"
-h1b_n_faster = "major currencies whose money grew faster than NEAR supply"
 n_fiat_money = "major currencies with a latest money-growth reading"
-spread_q_sd_rule = "standard deviation of the quarterly spread, current issuance rule"
-corr_levels_rule = "correlation of the two rates, quarterly levels, current issuance rule"
-n_q_rule = "full quarters under the current issuance rule"
-fed_range_q_bp_rule = "how far the Fed's target ceiling moved in those quarters, basis points"
 h5_now_narrower = "readings where NEAR's latest spread is narrower than the panel median"
 h5_now_wider = "readings where NEAR's latest spread is wider than the panel median"
 near_reading_a = "NEAR's spread, rate minus own inflation"
@@ -407,6 +377,60 @@ n_windows_usd_1y = "one-year dollar windows ending in the last year"
 mint_vs_ceiling_median_365_pp = "median epoch mint minus the ceiling, last year"
 n_mint_epochs_365 = "epochs in the mint check, last year"
 intents_vol_90d_seq_ratio = "NEAR Intents volume, last ninety days against the ninety before"
+h1_gap_med = "median of how much faster each major currency's money grew than NEAR supply"
+h1_n_faster = "major currencies whose money grew faster than NEAR supply"
+h2_gap = "how much slower NEAR supply grew than US prices after the ceiling cut, from the first month with a CPI base, a year"
+h2_near_g = "NEAR supply growth after the ceiling cut, from the first month with a CPI base, a year"
+h2_cpi = "US consumer prices after the ceiling cut, from the first month with a CPI base, a year"
+h2_from = "first month boundary read after the ceiling cut"
+h2_to = "last month boundary read"
+h2_months_read = "months after the cut with both readings"
+h2_months_slower = "months after the cut in which NEAR supply grew more slowly than prices"
+adv_share_le0 = "share of months NEAR's advantage over the dollar was at or below zero"
+adv_months = "months with every input"
+adv_months_before = "months whose year ends on or before the ceiling cut"
+adv_months_after = "months whose year ends after the ceiling cut"
+adv_months_le0 = "months at or below zero"
+adv_mean_before = "average advantage, years ending on or before the cut"
+adv_mean_after = "average advantage, years ending after the cut"
+adv_years = "separate years the months span"
+adv_months_clean_after = "months wholly after the ceiling cut"
+adv_clean_from = "first month wholly after the ceiling cut"
+h2_cpi_alt = "US consumer prices from the last level published before the ceiling cut, a year"
+h2_gap_alt = "how much slower NEAR supply grew than US prices, with prices from the last level published before the ceiling cut, a year"
+vol_rally_rank = "selling into rallies: share of shuffled histories it beat"
+vol_rebal_rank = "rebalancing: share of shuffled histories it beat"
+vol_rally_excess = "selling into rallies minus holding, real history less the shuffled average"
+vol_rebal_excess = "rebalancing minus holding, real history less the shuffled average"
+vol_rally_mean = "selling into rallies minus holding, average"
+vol_rebal_mean = "rebalancing minus holding, average"
+vol_windows = "one-year windows with every input"
+vol_years = "separate years the windows span"
+vol_first_start = "first one-year window starts"
+vol_last_end = "last one-year window ends"
+vol_trend_mean = "average one-year price change across the windows"
+vol_perp_hl_swing_share = "perp ladder on Hyperliquid: share of redrawn histories, centred on the real result, in which it ended ahead of the short that never trades"
+vol_perp_bn_swing_share = "perp ladder on Binance: share of redrawn histories, centred on the real result, in which it ended ahead of the short that never trades"
+vol_perp_hl_swing = "perp ladder on Hyperliquid minus a short that never trades, average year"
+vol_perp_bn_swing = "perp ladder on Binance minus a short that never trades, average year"
+vol_perp_hl_funding_year = "funding paid to shorts on Hyperliquid over the latest shared year, a year"
+vol_perp_hl_windows = "overlapping one-year windows with Hyperliquid funding"
+vol_perp_bn_windows = "overlapping one-year windows with Binance funding"
+vol_perp_hl_years = "separate years the Hyperliquid windows span"
+vol_perp_bn_years = "separate years the Binance windows span"
+vol_perp_hl_rank = "perp ladder on Hyperliquid: share of shuffled histories it beat"
+vol_perp_bn_rank = "perp ladder on Binance: share of shuffled histories it beat"
+vol_perp_hl_excess = "perp ladder on Hyperliquid minus holding, real history less the shuffled average"
+vol_perp_bn_excess = "perp ladder on Binance minus holding, real history less the shuffled average"
+vol_perp_cb_listed = "day Coinbase Derivatives listed its US-regulated NEAR perpetual"
+vol_perp_cb_days = "daily bars of Coinbase's NEAR perpetual since its listing"
+vol_perp_cb_contract = "NEAR in one Coinbase NEAR perpetual contract"
+vol_perp_cb_oi_usd = "open positions on Coinbase's NEAR perpetual at the snapshot, in dollars"
+vol_perp_cb_funding_interval = "time between funding-rate updates on Coinbase's NEAR perpetual"
+vol_perp_cb_access_read = "day Coinbase's US derivatives eligibility pages were read"
+vol_perp_cb_short_margin_overnight = "Coinbase's overnight margin for a NEAR short, share of its value"
+vol_perp_cb_short_margin_intraday = "Coinbase's intraday margin for a NEAR short, share of its value"
+vol_perp_cb_margin_rise = "NEAR rise at which a short backed by dollars equal to its value meets Coinbase's overnight margin, with no top-up"
 
 # ---------------------------------------------------------------- cross-checks (computed by pipeline/build.py)
 

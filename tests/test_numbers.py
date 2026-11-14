@@ -57,7 +57,7 @@ def test_parse_spec_rejects_unknown_specs():
 
 
 def test_days_print_one_day_in_the_singular():
-    # a run of days such as g_365_neg_run_days
+    # a count of days such as vol_perp_transfer_days (the perp ladder's transfer time)
     assert fmt(1, "days") == "1 day"
     assert fmt(1.0, "days") == "1 day"
     assert fmt(7, "days") == "7 days"

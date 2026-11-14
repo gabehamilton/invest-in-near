@@ -1,0 +1,27 @@
+{
+  "columns": [
+    "time",
+    "time_ms",
+    "funding_rate",
+    "premium"
+  ],
+  "complete": true,
+  "description": "Hyperliquid NEAR perpetual, hourly funding rate (fraction of notional for the hour; positive: longs pay shorts) and premium, as published; time is the UTC hour, time_ms the venue timestamp",
+  "error": null,
+  "fetched_at": "2026-11-13T17:28:10+00:00",
+  "file": "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+  "first_time": "2023-11-01T17:00:00Z",
+  "last_time": "2026-11-13T17:00:00Z",
+  "pages": 54,
+  "params": {
+    "coin": "NEAR",
+    "page_rows": 500,
+    "startTime": 0,
+    "type": "fundingHistory"
+  },
+  "refresh": "full history re-downloaded every run; on a mid-run HTTP error the fetched rows replace matching cached rows and the rest of the cached file is kept (meta complete=false)",
+  "response_sha256": "6c8b346815eaa1bac8bc45a60eadf423670405a9851769e87dda4b6c3c685fd1",
+  "rows": 26592,
+  "rows_from_previous_file": 0,
+  "source_url": "https://api.hyperliquid.xyz/info"
+}

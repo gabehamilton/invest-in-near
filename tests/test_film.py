@@ -2,10 +2,9 @@
 
 These are the checks the film's direction lists for the page: the thesis comes before any script that is not the
 class setter; every shot has a duration and one caption, and every scene names claims and charts that exist on the
-page; every figure in the film is a registry figure and the number lint passes; all thirteen claim ids appear with
-their verdicts.json word; the runtime and the caption reading speed hold; the turn and the callback fall back to
-their neutral variants when the literal reading is not refuted; the desk scene and its skip link exist only with the
-simulation's keys; the film's assets stay inside their budgets and load nothing from the network; and the film's
+page; every figure in the film is a registry figure and the number lint passes; every claim id appears with its
+verdicts.json word; the runtime and the caption reading speed hold; the supply scene reads supply and burn; the desk
+scene and its skip link exist only with the simulation's keys; the film's assets stay inside their budgets and load nothing from the network; and the film's
 geometry is a pure function of the data, so `make verify` reproduces the page byte for byte.
 The desk checks take the simulation's keys away, or null one of them, on a copy of the data; none of it
 reaches site/.
@@ -19,6 +18,7 @@ import html
 import json
 import os
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -26,12 +26,16 @@ import pytest
 from pipeline import build as b
 from pipeline import lint
 
+sys.path.insert(0, str(Path(__file__).parent))
+import test_no_traces as NT  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
 ASSETS = SITE / "assets"
 PATHS = b.Paths(root=ROOT, out=ROOT)
-CLAIMS = ("H1", "H1b", "H2", "H3", "H4", "H5", "H6", "H6_near", "H7", "H8", "H9", "H10", "H12")
-SCENES = ["title", "word", "money", "yield", "cost", "ledger"]
+CLAIMS = ("H1", "H2", "H3", "H4", "H5", "H6", "H6_near", "H7", "H8", "H9", "H10")
+SCENES = ["title", "supply", "money", "yield", "vol", "sell", "ledger"]
+AGENT_HEADING = "Test your own thesis against this one"
 MAX_CPS = 17.0          # caption characters per second of its shot: every caption is timed to seventeen at most
 RUNTIME = (150.0, 200.0)
 SIM_CHARTS = ("c30", "c31", "c32", "c33")
@@ -168,7 +172,7 @@ def test_runtime_and_caption_speed():
     total = sum(d for _s, d, _m in shots)
     assert RUNTIME[0] <= total <= RUNTIME[1], total
     for sid, dur, markup in shots:
-        if sid == "d5":       # the held last frame: playback stops, the caption is not timed
+        if " is-hold" in markup[:markup.index(">")]:   # a frame that holds when the reader takes it: never timed
             continue
         cps = len(caption_of(markup)) / dur
         assert cps <= MAX_CPS, f"{sid}: {cps:.1f} characters a second"
@@ -176,22 +180,69 @@ def test_runtime_and_caption_speed():
 
 # ---------------------------------------------------------------------------------------------- 6 variants
 
-def test_turn_and_callback_render_neutral_when_the_word_is_not_refuted():
-    data = site_data()
-    real = film_of(render_index(data))
-    turned = data["verdicts"]["H1"]["verdict"] == "Refuted" and data["verdicts"]["H1b"]["verdict"] == "Supported"
-    assert ('data-variant="turn"' in real) == turned
-    data = copy.deepcopy(data)
-    data["verdicts"]["H1"]["verdict"] = "Supported"
-    film = film_of(render_index(data))
-    w5 = dict((s, m) for s, _d, m in shots_of(film))["w5"]
-    l2 = dict((s, m) for s, _d, m in shots_of(film))["l2"]
-    assert 'data-variant="neutral"' in w5 and 'data-variant="neutral"' in l2
-    assert "the word fails" not in w5 + l2 and "survive" not in caption_of(l2)
-    assert '<li class="survive"' not in l2
+def test_supply_scene_reads_supply_and_burn():
+    """The supply scene measures and does not test: s1 sets supply growth against its ceiling on c02, s2 the fee
+    burn against what was minted on c05, each with an eyebrow, its figures and a caption, and neither carries a
+    claim, a test, a verdict stamp or a chip. Nothing of the old scene's display type or effects remains, and the
+    thesis line in l2 carries no chip."""
+    film = film_of(page_html())
+    scene = next(s for s in SCENE.finditer(film) if s.group(1) == "supply")
+    assert scene.group(2) == "" and scene.group(3).split() == ["c02", "c05"]
+    shots = dict((s, m) for s, _d, m in shots_of(film))
+    s1, s2, l2 = shots["s1"], shots["s2"], shots["l2"]
+    assert 'id="f-s1-c02"' in s1
+    s1_keys = re.findall(r'<span class="num[^"]*" data-key="([^"]+)"', s1)
+    assert "g_365" in s1_keys and "i_max_now" in s1_keys
+    assert 'id="f-s2-c05"' in s2
+    assert set(re.findall(r'<span class="num[^"]*" data-key="([^"]+)"', s2)) == {"burn_share_365"}
+    for shot in (s1, s2):
+        assert '<p class="eyebrow">' in shot and "is-stamped" not in shot
+        for mark in ('class="stamp"', "data-claim=", 'class="test"', 'class="quote"', 'class="vframe'):
+            assert mark not in shot, mark
+    for gone in ('class="mega"', 'data-fx="narrow"', 'data-fx="widen"', "data-variant="):
+        assert gone not in film, gone
+    assert 'class="tag"' not in l2
 
 
 # ---------------------------------------------------------------------------------------------- 7 the desk
+
+def test_selling_scene():
+    """Volatility, then Selling σ: v1 prices the volatility (a model price, no stamp), v2 and v3 put the first two
+    strategies on c25 with their ranks, v4 stamps H8 on c26 with both venues' swing and Hyperliquid's funding rate,
+    and v5 gives H10's verdict. The Volatility scene keeps none of it. The σ title keeps its case wherever the film
+    prints a scene title, because uppercasing would print a different letter."""
+    film = film_of(page_html())
+    scenes = [s.group(1) for s in SCENE.finditer(film)]
+    assert scenes.index("sell") == scenes.index("vol") + 1 and scenes.index("ledger") == scenes.index("sell") + 1
+    titles = dict(re.findall(r'<h2 class="scene-title" id="st-([a-z]+)">(.*?)</h2>', film, re.S))
+    assert visible(titles["sell"]) == "Selling σ" and visible(titles["vol"]) == "Volatility", titles
+    sell = film[film.index('id="scene-sell"'):]
+    sell = sell[:sell.index("</section>")]
+    vol = film[film.index('id="scene-vol"'):film.index('id="scene-sell"')]
+    assert re.search(r'<section class="scene" id="scene-sell"[^>]*\sdata-keepcase[\s>]', film)
+    assert [s for s, _d, _m in shots_of(sell)] == ["v1", "v2", "v3", "v4", "v5"]
+    shots = dict((s, m) for s, _d, m in shots_of(sell))
+    keys = lambda shot: re.findall(r'<span class="num[^"]*" data-key="([^"]+)"', shot)  # noqa: E731
+    stamps = lambda shot: re.findall(r'class="stamp" data-verdict="[^"]+" data-claim="([^"]+)"', shot)  # noqa: E731
+    assert "vol_call_now" in keys(shots["v1"]) and not stamps(shots["v1"])
+    for sid, key in (("v2", "vol_rally_rank"), ("v3", "vol_rebal_rank")):
+        assert f'id="f-{sid}-c25"' in shots[sid] and key in keys(shots[sid]) and not stamps(shots[sid]), sid
+    assert stamps(shots["v4"]) == ["H8"] and 'id="f-v4-c26"' in shots["v4"]
+    # the shot reads a short test (and names strategy three); the reading view prints the claim's own test
+    assert 'class="test test-short"' in shots["v4"] and 'class="test test-full"' in shots["v4"]
+    # the first two strategies' shots light only their own row of c25
+    assert 'data-rows-on="Selling into rallies"' in shots["v2"] and 'data-rows-on="Rebalancing"' in shots["v3"]
+    assert {"vol_perp_hl_swing", "vol_perp_bn_swing", "vol_perp_hl_funding_year"} <= set(keys(shots["v4"]))
+    assert stamps(shots["v5"]) == ["H10"]
+    assert not [k for k in keys(vol) if k.startswith("vol_")] and "c25" not in vol
+    assert not re.search(r'data-claim="H(8|10)"', vol)
+    assert "Σ" not in film and not NT.says(visible(film), NT.BANNED_PAGES)
+    css = (ASSETS / "film.css").read_text(encoding="utf-8")
+    keep = [r for r in re.findall(r"[^{}]*\{[^{}]*\}", css) if "[data-keepcase]" in r]
+    assert keep and all("text-transform:none" in r.replace(" ", "") for r in keep)
+    js = (ASSETS / "film.js").read_text(encoding="utf-8")
+    assert "data-keepcase" in js
+
 
 def without_sim(data: dict) -> dict:
     """The site data with every simulation key and chart taken away, as before the simulation has run."""
@@ -223,6 +274,8 @@ def test_desk_scene_and_its_skip_link_exist_only_with_the_simulation_keys():
         assert word not in visible(film).lower(), word
     total = sum(d for _s, d, _m in shots_of(film))
     assert RUNTIME[0] <= total <= RUNTIME[1], total
+    # the closing scene stands without the desk: the film still ends on it
+    assert [s for s, _d, _m in shots_of(film)][-1] == "a1" and SCENE.findall(film)[-1][0] == "agent"
     plain = next(text for _t, _m, outs, text in b.render_all(plain_data, PATHS) if "THESIS.md" in outs)
     assert "## Desk simulation" not in plain
     if b.film_desk(full["numbers"], full["charts"]) is None:
@@ -230,9 +283,10 @@ def test_desk_scene_and_its_skip_link_exist_only_with_the_simulation_keys():
     desk = film_of(render_index(full))
     assert 'data-scene="desk"' in desk and 'href="#desk"' in desk and 'id="sim"' in desk
     ids = [s for s, _d, _m in shots_of(desk)]
-    assert ids[-5:] == ["d1", "d2", "d3", "d4", "d5"]
+    assert ids[-6:] == ["d1", "d2", "d3", "d4", "d5", "a1"]
     total = sum(d for _s, d, _m in shots_of(desk))
     assert RUNTIME[0] <= total <= RUNTIME[1], total
+    assert round(total, 1) == 199.0, total
     thesis = next(text for _t, _m, outs, text in b.render_all(full, PATHS) if "THESIS.md" in outs)
     assert "## Desk simulation" in thesis, "THESIS.md gains the desk section with the simulation's keys"
     for key in ("sim_carry_usd", "sim_split_usd", "sim_dots"):   # any figure the frame prints: no scene without it
@@ -259,7 +313,7 @@ def test_desk_plot_is_baked_from_c30_and_sim_js_owns_the_rest():
     assert sorted(marks) == sorted(["zero", *lay["marks"]]), marks
     # what sim.js creates itself is in the page only for readers without JavaScript
     bare = re.sub(r"<noscript>.*?</noscript>", "", sim, flags=re.S)
-    for cls in ("sim-headline", "sim-hurdle", "sim-left"):
+    for cls in ("sim-headline", "sim-mode", "sim-compare", "sim-hurdle", "sim-left"):
         assert f'class="{cls}' not in bare and f' {cls}"' not in bare, cls
     assert re.search(r'<ul class="sim-tiles">', bare) and 'class="note sim-note"' in bare
     keys = re.findall(r'<li class="sim-tile" data-key="([a-z0-9_]+)"', bare)
@@ -270,6 +324,38 @@ def test_desk_plot_is_baked_from_c30_and_sim_js_owns_the_rest():
 
 def kb(path: Path) -> float:
     return path.stat().st_size / 1024
+
+
+def test_closing_scene_hands_off_from_the_desk():
+    """The desk's last frame opens and holds when the reader takes it; Play, or the link at the desk's end, goes on
+    to the closing scene, the agent module's cards without their ids, which opens too and ends the film."""
+    page = page_html()
+    film = film_of(page)
+    scenes = SCENE.findall(film)
+    assert scenes[-1][0] == "agent"
+    ledger = next(s for s in scenes if s[0] == "ledger")
+    assert scenes[-1][1] == ledger[1] and scenes[-1][1].split(), "the evidence button names every claim"
+    agent = film[film.index('<section class="scene" id="scene-agent"'):]
+    h2 = re.search(r'<h2 class="scene-title" id="st-agent">(.*?)</h2>', agent, re.S)
+    assert h2 and visible(h2.group(1)) == AGENT_HEADING
+    shots = dict((s, m) for s, _d, m in shots_of(film))
+    assert re.search(r'<div class="shot is-agent is-open" id="a1"', shots["a1"])
+    assert '<ol class="agents">' in shots["a1"] and 'href="#agent"' in shots["a1"]
+    assert not re.search(r'<li class="agent" id=', shots["a1"]), "the film's cards carry no ids"
+    assert 'id="agent-' not in film
+    play = re.search(r'<button type="button" data-act="play"[^>]*>', page)
+    assert play and 'data-label-next="' in play.group(0)
+    if "d5" not in shots:
+        return
+    assert re.search(r'<div class="shot is-desk is-hold is-open" id="d5"', shots["d5"])
+    nxt = re.search(r'<p class="sim-next"><a href="#scene-agent" data-skip="agent">([^<]+)</a></p>', film)
+    assert nxt and nxt.group(1) == "Next: test your own thesis against this one"
+    back = re.search(r'<a href="#desk" data-skip="desk">([^<]+)</a>', shots["a1"])
+    assert back and back.group(1) == "Back to the desk simulation"
+    # d1 shows the cash it starts from, never an empty outline
+    d1 = shots["d1"]
+    assert "is-ghost" not in d1 and 'fill="none"' not in d1
+    assert d1.count('<rect class="seg"') == 2
 
 
 def test_asset_budgets():
@@ -415,7 +501,7 @@ def test_pay_beat_renders_after_the_money_beat_with_both_radii_baked():
     svg = re.search(r'<svg class="o-svg"[^>]*>', film).group(0)
     for attr in ("data-ring-money", "data-ring-pay", "data-usd-pay"):
         assert f'{attr}="' in svg, attr
-    title = film[film.index('data-scene="title"'):film.index('data-scene="word"')]
+    title = film[film.index('data-scene="title"'):film.index('data-scene="supply"')]
     for gone in ("data-ring-usd-pay", "data-hollow-pay", "data-mode", "data-wash-pay"):
         assert gone not in title, gone
     data = site_data()
@@ -503,7 +589,7 @@ def test_the_thesis_reads_in_its_current_words_everywhere():
 
 # ---------------------------------------------------------------------------------------------- 13 both at once
 
-HOLD_KEYS = ("hold_near_net", "hold_near_rank", "hold_n_ranked")
+RANK_KEYS = ("pay_near_rank", "pay_n_ranked", "y_lst_365")
 MONTH = re.compile(r"\d{4}-\d{2}")
 
 
@@ -514,12 +600,12 @@ def test_the_first_caption_and_the_title_tell_three_figures_in_order():
     film = film_of(page_html())
     shots = dict((s, m) for s, _d, m in shots_of(film))
     assert caption_of(shots["t1"]) == "A straightforward thesis, tested against public data."
-    title = film[film.index('data-scene="title"'):film.index('data-scene="word"')]
+    title = film[film.index('data-scene="title"'):film.index('data-scene="supply"')]
     heroes = title[title.index('<div class="heroes">'):title.index('<p class="tested"')]
     assert "chip" not in heroes and "eyebrow" not in heroes, "no verdict chip or eyebrow beside a title figure"
     assert "mixed" not in visible(title).lower()
     tested = re.search(r'<p class="tested"[^>]*>(.*?)</p>', title, re.S).group(1)
-    assert re.findall(r'data-claim="([A-Za-z0-9_]+)"', tested) == ["H1b", "H3", "H5"]
+    assert re.findall(r'data-claim="([A-Za-z0-9_]+)"', tested) == ["H1", "H3", "H5"]
     # money, then pay, then rank: the figures arrive in that order on the scene clock
     at = lambda cls: [float(x) for x in re.findall(rf'<div class="hero{cls}" data-at="([0-9.]+)"', title)]  # noqa: E731
     money, pay, rank = at(""), at(" is-pay"), at(" is-rank")
@@ -529,31 +615,32 @@ def test_the_first_caption_and_the_title_tell_three_figures_in_order():
 
 
 def test_ranking_keys_exist_with_their_formula_and_sources():
+    """F-pay-rank ranks the plain yearly rates: staked NEAR's liquid-staking yield over the last year against each
+    currency's latest policy rate, recomputed here from the registry's own inputs. A tie never ranks NEAR ahead; a
+    currency with no policy rate is left out of the count."""
     numbers = site_data()["numbers"]
     panel = [c for c in ("usd", "eur", "jpy", "gbp", "cny", "chf", "aud", "cad", "hkd", "sgd", "inr", "krw", "mxn",
                          "nzd", "sek", "nok") if numbers.get(f"fx_{c}_rank", {}).get("value") is not None]
-    near = numbers["hold_near_net"]
-    assert near["formula_id"] == "F-hold-net" and near["source_files"] and near["value"] is not None
-    assert len(near["inputs"]) == 2 and all(MONTH.search(i) for i in near["inputs"]), "the windows are named"
-    y, g = numbers["y_lst_365"]["value"], numbers["g_365"]["value"]
-    assert near["value"] == pytest.approx(((1 + y / 100) / (1 + g / 100) - 1) * 100, abs=1e-3)
-    nets = {}
-    for c in panel:
-        n = numbers[f"hold_{c}_net"]
-        assert n["formula_id"] == "F-hold-net" and n["source_files"], c
-        pol, mon = numbers[f"pol_{c}_latest"]["value"], numbers[f"mon_{c}_gm_latest"]["value"]
-        if pol is None or mon is None:
-            assert n["value"] is None and n["null_reason"], c
-            if pol is None:
-                assert n["null_reason"].startswith("no policy rate") and "regime" in n["null_reason"], c
-            continue
-        assert n["value"] == pytest.approx(((1 + pol / 100) / (1 + mon / 100) - 1) * 100, abs=1e-3), c
-        assert len(n["inputs"]) == 2 and all(MONTH.search(i) for i in n["inputs"]), c
-        nets[c] = n["value"]
-    for key in ("hold_near_rank", "hold_n_ranked"):
-        assert numbers[key]["formula_id"] == "F-hold-rank" and numbers[key]["source_files"], key
-    assert numbers["hold_n_ranked"]["value"] == 1 + len(nets)
-    assert numbers["hold_near_rank"]["value"] == 1 + sum(1 for v in nets.values() if v > near["value"])
+    y = numbers["y_lst_365"]["value"]
+    assert y is not None
+    pols = {c: numbers[f"pol_{c}_latest"]["value"] for c in panel}
+    rated = {c: v for c, v in pols.items() if v is not None}
+    for c in set(pols) - set(rated):
+        assert numbers[f"pol_{c}_latest"]["null_reason"], c
+    for key in ("pay_near_rank", "pay_n_ranked"):
+        n = numbers[key]
+        assert n["formula_id"] == "F-pay-rank" and n["source_files"] and n["unit"] == "count", key
+        assert any(i.startswith("y_lst_365") for i in n["inputs"]), "NEAR's side is named"
+        for c, v in rated.items():
+            assert any(i.startswith(f"{c.upper()} ") for i in n["inputs"]), (key, c)
+        for c in set(pols) - set(rated):
+            assert any("not ranked" in i and c.upper() in i for i in n["inputs"]), (key, c)
+    assert numbers["pay_n_ranked"]["value"] == 1 + len(rated)
+    assert numbers["pay_near_rank"]["value"] == 1 + sum(1 for v in rated.values() if v >= y)
+    # nothing of the earlier ranking survives in the registry
+    gone = ("hold" + "_", *(f"g_365_at_{side}" for side in ("cpi", "core", "pce", *panel)))
+    assert not [k for k in numbers if k.startswith(gone)]
+    assert not [n["formula_id"] for n in numbers.values() if (n.get("formula_id") or "").startswith("F-" + "hold")]
     # China's and Hong Kong's rates come from their own BIS file, with what each series is
     for c, what in (("cny", "Loan Prime Rate"), ("hkd", "peg")):
         if c in panel and numbers[f"pol_{c}_latest"]["value"] is not None:
@@ -564,53 +651,78 @@ def test_ranking_keys_exist_with_their_formula_and_sources():
 
 def test_rank_beat_resolves_the_orbit_into_a_ladder():
     """div.shot[data-orbit="rank"] follows the pay beat; every ranked body and the core carry their ladder place;
-    the ladder and every rank label carry data-when="rank"; the figures arrive once the move has landed; the text
-    names both inputs and the honest clause; a currency without a rate is named as not ranked."""
+    the ladder and every rank label carry data-when="rank"; the ladder runs in rank order of the plain rates (a tie
+    puts the currency above NEAR), its scale starts at zero and film.js draws its tick values; the figures arrive
+    once the move has landed; the text names both rates and the honest clause; a currency without a rate is named
+    as not ranked."""
     data = site_data()
+    numbers = data["numbers"]
     rank = data["film"]["orbit"]["rank"]
     if not rank:
         pytest.skip("the ranking keys are not in site/data")
     film = film_of(page_html())
     shots = shots_of(film)
     assert len(re.findall(r'<div class="shot[^>]*data-orbit="rank"', film)) == 1
-    title = film[film.index('data-scene="title"'):film.index('data-scene="word"')]
+    title = film[film.index('data-scene="title"'):film.index('data-scene="supply"')]
     orbit = title[title.index('<figure class="orbit"'):title.index("</figure>")]
     assert re.search(r'<g class="o-ladder" data-when="rank">', orbit)
-    assert re.search(r'<g class="o-core" data-rank-x="[0-9.]+" data-rank-y="[0-9.]+"', orbit)
+    core = re.search(r'<g class="o-core" data-rank-x="([0-9.]+)" data-rank-y="([0-9.]+)"', orbit)
+    assert core
     ranked = {bd["code"] for bd in rank["bodies"]}
+    dot_y = {"near": float(core.group(2))}
     for attrs in re.findall(r'<g class="o-body"([^>]*)>', orbit):
         code = re.search(r'data-code="([A-Z]+)"', attrs).group(1)
         assert ("data-rank-x=" in attrs) == (code in ranked), code
-    labels = re.findall(r'<span class="o-lab[^"]*" data-when="rank" data-for="([a-zA-Z]+)"', orbit)
-    assert sorted(labels) == sorted([*ranked, "near", "up", "down"])
+        if code in ranked:
+            dot_y[code] = float(re.search(r'data-rank-y="([0-9.]+)"', attrs).group(1))
+    labels = re.findall(r'<span class="o-lab[^"]*" data-when="rank" data-for="([a-zA-Z]+)"[^>]*top:([0-9.]+)%',
+                        orbit)
+    assert sorted(c for c, _top in labels) == sorted([*ranked, "near"])
     for bd in rank["bodies"]:
-        assert f'data-key="hold_{bd["code"].lower()}_net"' in orbit, bd["code"]
-    # the ladder's two directions are words from the copy, and its tick values are drawn by film.js
-    assert re.search(r'data-for="up"[^>]*>your share grows<', orbit) and re.search(r'data-for="down"[^>]*>shrinks<',
-                                                                                    orbit)
-    assert len(re.findall(r'<line class="o-rt" data-tick="-?[0-9.]+"', orbit)) == len(rank["ticks"])
+        assert f'data-key="pol_{bd["code"].lower()}_latest"' in orbit, bd["code"]
+    assert re.search(r'data-when="rank" data-for="near"[^>]*>.*?data-key="y_lst_365"', orbit)
+    # rank order: highest rate at the top; a tie puts the currency above NEAR; equal currencies keep the panel order
+    rate = {bd["code"]: numbers[f"pol_{bd['code'].lower()}_latest"]["value"] for bd in rank["bodies"]}
+    rate["near"] = numbers["y_lst_365"]["value"]
+    panel_i = {bd["code"]: bd["i"] for bd in rank["bodies"]}
+    want = sorted(rate, key=lambda c: (-rate[c], c == "near", panel_i.get(c, -1)))
+    assert [c for c, _top in sorted(labels, key=lambda lt: float(lt[1]))] == want
+    assert want.index("near") + 1 == numbers["pay_near_rank"]["value"]
+    assert len(want) == numbers["pay_n_ranked"]["value"]
+    # each dot sits at its rate on one value axis: higher rate, higher on the page
+    for hi, lo in zip(want, want[1:]):
+        assert dot_y[hi] <= dot_y[lo] + 1e-9, (hi, lo)
+    # the scale starts at zero, and its tick values are drawn by film.js
+    ticks = [float(t) for t in re.findall(r'<line class="o-rt" data-tick="(-?[0-9.]+)"', orbit)]
+    assert len(ticks) == len(rank["ticks"]) and min(ticks) == 0 and max(ticks) >= max(rate.values())
     # figures land after the move: the rank beat starts after t1, t2, t3 and tpay; the morph takes about two seconds
     start = sum(d for s, d, _m in shots[:4])
     heroes = re.findall(r'<div class="hero is-rank" data-at="([0-9.]+)"', title)
     assert len(heroes) == 2 and all(float(at) >= start + 2.2 - 1e-9 for at in heroes), heroes
-    for key in HOLD_KEYS:
+    for key in RANK_KEYS:
         assert f'data-key="{key}"' in title, key
     words = visible(title)
-    assert "staking" in words and "supply growth" in words and "policy rate" in words and "money growth" in words
+    assert "staking" in words and "supply growth" in words and "policy rate" in words
+    assert "yearly rate holding pays" in words
     assert "benchmark" in words and "paid in NEAR" in words, "the honest clause"
     trank = dict((s, m) for s, _d, m in shots)["trank"]
+    assert "yearly rate holding pays" in caption_of(trank)
     for bd in rank["unranked"]:
         assert bd["name"] in visible(trank) and bd["code"] in visible(orbit), bd["code"]
+    # the no-JS article lists every rate in rank order, NEAR in its place
+    article = re.search(r'<p class="vh">(.*?)</p>', trank, re.S).group(1)
+    keys = re.findall(r'data-key="(pol_[a-z]+_latest|y_lst_365)"', article)
+    assert keys == [("y_lst_365" if c == "near" else f"pol_{c.lower()}_latest") for c in want]
 
 
 def test_rank_beat_is_absent_without_the_ranking_keys():
     data = site_data()
-    numbers = {k: v for k, v in data["numbers"].items() if not k.startswith("hold_")}
+    numbers = {k: v for k, v in data["numbers"].items() if k not in ("pay_near_rank", "pay_n_ranked")}
     orbit = b.film_orbit(numbers, data["charts"]["c21"])
     assert orbit is not None and orbit["rank"] is None and orbit["pay"] is not None
     stripped = copy.deepcopy(data)
-    stripped["numbers"]["hold_near_rank"] = {**stripped["numbers"]["hold_near_rank"], "value": None,
-                                             "display": "n/a", "status": "null", "null_reason": "test: no rank"}
+    stripped["numbers"]["pay_near_rank"] = {**stripped["numbers"]["pay_near_rank"], "value": None,
+                                            "display": "n/a", "status": "null", "null_reason": "test: no rank"}
     film = film_of(render_index(stripped))
     assert 'data-shot="trank"' not in film and 'class="o-ladder"' not in film and 'data-when="rank"' not in film
     assert 'data-shot="tpay"' in film

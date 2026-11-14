@@ -66,14 +66,14 @@ section = "O1"
 kind = "stated"
 title = "Volatility can be sold"
 claimed = "volatility can be sold"
-test = "Is there an options market?"
+test = "Does any venue list it?"
 metrics = ["n_venues"]
 requires = ["n_venues"]
 untestable_if = "n_venues == 0"
-untestable_reason = "no venue lists options"
-trigger = "a venue lists options"
-supported = "vrp_mean > 0"
-refuted = "vrp_mean <= 0"
+untestable_reason = "no venue lists it"
+trigger = "a venue lists it"
+supported = "n_venues > 1"
+refuted = "n_venues <= 1"
 chart = "c01"
 section = "A5"
 
@@ -380,7 +380,7 @@ def charts(reg):
 '''
 
 BETA = '''
-"""Fake model: an options-venue count (zero, so H8 is Not testable)."""
+"""Fake model: a venue count (zero, so H8 is Not testable)."""
 from pipeline import numbers
 
 

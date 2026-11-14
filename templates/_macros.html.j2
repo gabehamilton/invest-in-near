@@ -273,6 +273,7 @@
 {%- set legend = form in ['dot-range', 'diverging-bar'] or (form == 'table-heatmap' and ch.get('reference_lines')) or (form not in ['bar', 'table', 'table-heatmap'] and nlabels > true|int) -%}
 <div class="legend{{ ' has-legend' if legend }}" aria-hidden="true"></div>
   <div class="plot{{ ' multi' if nplot > true|int }}{{ ' mini' if table_form }}" data-form="{{ plot_form }}"
+    {%- if (ch.get('x') or {}).get('legend') == 'series' %} data-key="series"{% endif %}
     {%- if row_form %} style="--rows: {{ row_count(ch)|trim }}"{% elif form == 'table-heatmap' %} style="--rows: {{ series|length }}"{% endif %}
     {%- if film %} aria-hidden="true"{% else %} tabindex="0" role="group" aria-label="Interactive chart. Arrow keys step through the values; Escape clears."{% endif %}>
     {%- if nplot %}{% for p in ns.plot %}<div class="panel{{ ' focus' if focus and p.get('id') in focus.split() }}" data-panel="{{ p.get('id') }}"></div>{% endfor %}{% else %}<div class="panel"></div>{% endif -%}
@@ -471,9 +472,40 @@
       <a href="https://github.com/gabehamilton/invest-in-near/blob/main/LICENSE">MIT licence</a>
       · <a href="https://github.com/gabehamilton/invest-in-near">Source on GitHub</a>
       {%- if build.get('site_url') %} · live at <a href="{{ build.site_url }}">{{ build.site_url }}</a>{% endif %}</p>
+    <p class="disclaimer">{{ copy('disclaimer') }}</p>
     <p class="disclosure">{{ copy('disclosure') }}</p>
   </div>
 </footer>
+{%- endautoescape %}{%- endmacro %}
+
+{#- The agent cards, in the order the module recommends them; the links go to each product's front door, not to a
+    prefilled prompt. #agent calls it with its ids (agent-<id>); the film's closing scene calls it with ids=false, so
+    no id is on the page twice. The copy buttons start hidden and charts.js (initAgent) shows every one of them. -#}
+{% macro agent_cards(ids=true) -%}{% autoescape true -%}
+{%- set agents = [
+  {'id': 'nearai', 'name': 'NEAR AI Cloud', 'tag': copy('agent_nearai_tag'), 'text': copy('agent_nearai_text'), 'attach': true,
+   'links': [('Open NEAR AI Private Chat', 'https://private.near.ai'), ('NEAR AI Cloud account', 'https://cloud.near.ai')]},
+  {'id': 'chatgpt', 'name': 'ChatGPT', 'tag': '', 'text': copy('agent_chatgpt_text'), 'attach': false,
+   'links': [('Open ChatGPT', 'https://chatgpt.com')]},
+  {'id': 'claude', 'name': 'Claude', 'tag': '', 'text': copy('agent_claude_text'), 'attach': false,
+   'links': [('Open Claude', 'https://claude.ai/new')]}
+] -%}
+<ol class="agents">
+    {%- for a in agents %}
+    <li class="agent"{% if ids %} id="agent-{{ a.id }}"{% endif %} data-agent="{{ a.id }}">
+      <h3 class="agent-name">{{ a.name }}{% if a.tag %} <span class="agent-tag">{{ a.tag }}</span>{% endif %}</h3>
+      <p>{{ a.text }}</p>
+      <div class="agent-actions">
+        <button type="button" class="agent-copy" hidden{% if a.attach %} data-attach="THESIS.md"{% endif %}>Copy prompt{% if a.attach %} and THESIS.md{% endif %}</button>
+        {%- for label, href in a.links %}
+        <a class="agent-open" href="{{ href }}" target="_blank" rel="noopener noreferrer">{{ label }}</a>
+        {%- endfor %}
+        {%- if a.attach %}<a class="agent-open" href="THESIS.md">THESIS.md</a>{% endif %}
+        <span class="agent-status" role="status" aria-live="polite"></span>
+      </div>
+    </li>
+    {%- endfor %}
+  </ol>
 {%- endautoescape %}{%- endmacro %}
 
 {#- Document head shared by both pages. film=true (the film page): dark only, the two display fonts preloaded,
@@ -632,8 +664,9 @@ Claim {{ ident(cid) }} · {{ {'hidden': 'hidden assumption', 'reframe': 'reframe
 
 {#- A chart inside the film: the card's legend and plot shell, ids prefixed so none repeats the evidence card's.
     charts.js draws it (start(fig)); a checklist panel prints as its table. focus: the panel ids at full strength
-    (marked .focus here; the rest dim, and hide on a phone). -#}
-{% macro chart_shell(cid, prefix, focus='', at='0.3') -%}{% autoescape true -%}
+    (marked .focus here; the rest dim, and hide on a phone). caption: the shot's own line in place of the chart's
+    title; rows: the row labels a shot is about, joined by '|' (charts.js dims the other rows). -#}
+{% macro chart_shell(cid, prefix, focus='', at='0.3', caption='', rows='') -%}{% autoescape true -%}
 {%- if cid in charts -%}
 {%- set ch = charts[cid] -%}
 {%- set form = ch.get('form') or 'empty' -%}
@@ -641,8 +674,8 @@ Claim {{ ident(cid) }} · {{ {'hidden': 'hidden assumption', 'reframe': 'reframe
 {%- set ns = namespace(checks=[]) -%}
 {%- for p in ch.get('panels') or [] if p.get('row_templates') %}{% set ns.checks = ns.checks + [p] %}{% endfor -%}
 {%- set drawn = (ch.get('series') or []) and not unavailable and not ns.checks -%}
-<figure class="film-chart" id="{{ prefix }}-{{ cid }}"{% if drawn %} data-chart="{{ cid }}"{% endif %} data-form="{{ form }}"{% if focus %} data-focus="{{ focus }}"{% endif %} data-at="{{ at }}">
-  <figcaption class="card-title chart-title">{{ text(ch.get('title_template') or ch.get('title') or '') }}</figcaption>
+<figure class="film-chart" id="{{ prefix }}-{{ cid }}"{% if drawn %} data-chart="{{ cid }}"{% endif %} data-form="{{ form }}"{% if focus %} data-focus="{{ focus }}"{% endif %}{% if rows %} data-rows-on="{{ rows }}"{% endif %} data-at="{{ at }}">
+  <figcaption class="card-title chart-title">{{ caption if caption else text(ch.get('title_template') or ch.get('title') or '') }}</figcaption>
   {%- if ns.checks and not unavailable %}{% for p in ns.checks %}
   {{ checklist(p) }}
   {%- endfor %}{% elif drawn %}

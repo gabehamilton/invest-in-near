@@ -1,4 +1,4 @@
-"""Money growth of the ten most-traded currencies against NEAR's supply growth (claim H1b; chart c21; cross-check X9).
+"""Money growth of the ten most-traded currencies against NEAR's supply growth (claim H1; chart c21; cross-check X9).
 
 Runs after currencies and before sweep (build.MODEL_ORDER). Reads data/raw only, no network:
   bis_fx/fx_turnover_<year>.csv     BIS Triennial Survey turnover by currency; the panel is the ten largest
@@ -6,14 +6,18 @@ Runs after currencies and before sweep (build.MODEL_ORDER). Reads data/raw only,
                                     the ECB's own annual growth rate)
   money/<ccy>/money_alt.csv         the national series the OECD mirrors, where it is not money.csv (cross-check X9)
   money/oecd/monagg.csv             the OECD broad-money mirror (cross-check X9)
-and NEAR's month-end supply growth from the RPC samples (macro.near_g_monthly). A missing value nulls every quantity
-that needs it; nothing is interpolated or back-cast.
+and NEAR's supply growth over its latest year, g_365 (the supply model's, to the latest full-day RPC sample), with its
+month-end growth from the RPC samples (macro.near_g_monthly) for the same-months check only. A missing value nulls
+every quantity that needs it; nothing is interpolated or back-cast.
 
 Formulas (fractions in, fractions out; percent registered with pct):
   F-bis-rank             sort the survey's turnover by currency, take the ten largest
   F-money-growth-latest  g_M,latest = M_t / M_{t-12} - 1 at the latest month with both (EUR: the ECB's published rate)
   F-median               median over the currencies with a value; the count is registered beside it
-  F-h1b-gap              gap_c = g_M,latest,c - g_365_at_c (NEAR's month-end supply growth over the same twelve months)
+  F-h1-gap               gap_c = g_M,latest,c - g_365: each side over its own latest year (NEAR's to the latest chain
+                         sample, each currency's money to its latest month); h1_gap_med, h1_n_faster over the panel.
+                         Same-months check (the data page only): h1_n_faster_same = count of c with g_M,latest,c above
+                         NEAR's month-end growth over the same twelve months as c's money reading
   X9                     national money against the OECD mirror of the same aggregate, latest common month
 """
 
@@ -26,7 +30,8 @@ from datetime import date
 from pipeline.chartspec import Chart, Query, Series
 from pipeline.models import formulas as F
 from pipeline.models import load
-from pipeline.models.macro import derived_query, empty_state, files_as_of, iso, near_g_monthly, notes_for, ready, rnd, ym
+from pipeline.models.macro import (derived_query, empty_state, files_as_of, iso, near_g_monthly, notes_for, ready, rnd,
+                                   upstream, ym)
 from pipeline.numbers import Registry
 
 BIS_YEAR = "2025"           # the survey the panel is ranked from (the next survey is April 2028)
@@ -201,7 +206,13 @@ def compute(reg: Registry) -> None:
             inputs=[f"the {PANEL_SIZE} largest by turnover"] + [f.code for f in in_panel],
             null_reason=None if in_panel else "no BIS turnover file in data/raw/bis_fx")
 
+    # NEAR's side of every gap: its supply growth over the latest year (g_365, to the latest chain sample)
+    g365, why_g = upstream(reg, "g_365")
+    g365_files = list(reg.get("g_365").source_files) if "g_365" in reg else []
+    g365_window = "; ".join(reg.get("g_365").inputs) if "g_365" in reg else ""
+    # the same-months check: NEAR's month-end growth over the twelve months of each currency's money reading
     g_near, g_files = near_g_monthly()
+    same: list[tuple[str, float, str]] = []
     for f in fiats.values():
         c = f.c
         files = f.files
@@ -217,20 +228,16 @@ def compute(reg: Registry) -> None:
             v = F.pct(r.value) if (suffix in PCT_KEYS and r.value is not None) else r.value
             reg.put(f"mon_{c}_{suffix}", v, unit, fid, source_files=files, inputs=r.inputs,
                     null_reason=None if v is not None else (r.reason or "not computed"), signed=signed)
-        # H1b: NEAR's month-end supply growth over the same twelve months as the latest money reading
-        m = f.r["gm_month"].value
+        # H1: the currency's money over its latest year against NEAR's supply over its latest year
+        m, gl = f.r["gm_month"].value, f.r["gm_latest"].value
+        gap = F.pct(gl) - g365 if (gl is not None and g365 is not None) else None
+        why = (f"{f.code} has no latest money growth: {f.r['gm_latest'].reason}" if gl is None else why_g)
+        reg.put(f"h1_gap_{c}", gap, "pp", "F-h1-gap", source_files=sorted(set(files + g365_files)),
+                inputs=[f"mon_{c}_gm_latest (year to {m}) - g_365 ({g365_window})"] if gap is not None else [],
+                null_reason=None if gap is not None else why)
         p = g_near.get(date.fromisoformat(m + "-01")) if m else None
-        g = p.value if p else None
-        why = (f"{f.code} has no latest money growth: {f.r['gm_month'].reason}" if not m else
-               f"NEAR month-end g_365 for {m} is not computed (RPC supply samples a year apart are missing)")
-        reg.put(f"g_365_at_{c}", F.pct(g) if g is not None else None, "%", "F-growth", source_files=g_files,
-                inputs=[f"NEAR g_365 month-end {m} (samples {iso(p.start)} -> {iso(p.end)})"] if g is not None else [],
-                null_reason=None if g is not None else why)
-        gl = f.r["gm_latest"].value
-        gap = F.pct(gl) - F.pct(g) if (gl is not None and g is not None) else None
-        reg.put(f"h1b_gap_{c}", gap, "pp", "F-h1b-gap", source_files=files + g_files,
-                inputs=[f"mon_{c}_gm_latest - g_365_at_{c}"],
-                null_reason=None if gap is not None else (f.r["gm_latest"].reason or why))
+        if gl is not None and p is not None and p.value is not None:
+            same.append((f.code, F.pct(gl) - F.pct(p.value), f"{f.code} {m}: NEAR {iso(p.start)} -> {iso(p.end)}"))
 
     # the median and count over the panel
     latest = [reg.value(f"mon_{f.c}_gm_latest") for f in in_panel if reg.value(f"mon_{f.c}_gm_latest") is not None]
@@ -241,13 +248,21 @@ def compute(reg: Registry) -> None:
     reg.put("n_fiat_money", len(latest), "count", "F-median", source_files=all_files,
             inputs=[f.code for f in in_panel if reg.value(f"mon_{f.c}_gm_latest") is not None])
 
-    gaps = [(f.code, reg.value(f"h1b_gap_{f.c}")) for f in in_panel if reg.value(f"h1b_gap_{f.c}") is not None]
-    reg.put("h1b_gap_med", _med([g for _, g in gaps]), "pp", "F-h1b-gap", source_files=all_files + g_files,
-            inputs=[f"median of h1b_gap_<c> over {len(gaps)} currencies"],
-            null_reason=None if gaps else "no currency has both a latest money growth and NEAR's growth to match")
-    reg.put("h1b_n_faster", sum(1 for _, g in gaps if g > 0) if gaps else None, "count", "F-h1b-gap",
-            source_files=all_files + g_files, inputs=[c for c, g in gaps if g > 0],
-            null_reason=None if gaps else "no h1b_gap_<c> is computed")
+    gaps = [(f.code, reg.value(f"h1_gap_{f.c}")) for f in in_panel if reg.value(f"h1_gap_{f.c}") is not None]
+    near_files = sorted(set(all_files + g365_files))
+    reg.put("h1_gap_med", _med([g for _, g in gaps]), "pp", "F-h1-gap", source_files=near_files,
+            inputs=[f"median of h1_gap_<c> over {len(gaps)} currencies"],
+            null_reason=None if gaps else (why_g or "no currency in the panel has a latest money growth"))
+    reg.put("h1_n_faster", sum(1 for _, g in gaps if g > 0) if gaps else None, "count", "F-h1-gap",
+            source_files=near_files, inputs=[c for c, g in gaps if g > 0],
+            null_reason=None if gaps else "no h1_gap_<c> is computed")
+    # the same count over the same twelve months as each currency's money reading (the data page's check)
+    in_codes = {f.code for f in in_panel}
+    same = [x for x in same if x[0] in in_codes]
+    reg.put("h1_n_faster_same", sum(1 for _, g, _w in same if g > 0) if same else None, "count", "F-h1-gap",
+            source_files=sorted(set(all_files + g_files)), inputs=[w for _c, g, w in same if g > 0],
+            null_reason=None if same else "NEAR's month-end supply growth is not computed for any currency's money "
+                                          "month (RPC supply samples a year apart are missing)")
     _mirror(reg, fiats)
 
 
@@ -283,7 +298,7 @@ def _queries(d: dict) -> list[Query]:
     out += [derived_query(t) for t in (
         "F-bis-rank: sort OTC FX turnover by currency, take the ten largest",
         "F-money-growth-latest: M_t / M_{t-12} - 1 at the latest month with both (EUR: the ECB's published rate)",
-        "F-h1b-gap: h1b_gap_<c> = mon_<c>_gm_latest - g_365_at_<c>",
+        "F-h1-gap: h1_gap_<c> = mon_<c>_gm_latest - g_365",
         "F-median over the currencies with a value")]
     return out
 
@@ -298,11 +313,12 @@ def _domain(values: list[float]) -> list[float]:
 
 def chart_c21(reg: Registry) -> Chart:
     """c21: NEAR's supply growth against each major currency's broad-money growth over its latest twelve months
-    (H1b's lead chart)."""
+    (H1's lead chart)."""
     d = analyze(reg)
     fiats = d["fiats"]
     in_panel = [fiats[c] for c in d["panel"]]
     usd, other, rows, x_vals = [], [], [], []
+    g365 = reg.value("g_365") if "g_365" in reg else None
     for f in in_panel:
         c = f.c
         label = f"{f.code} {NAMES.get(f.code, f.code)}" + (
@@ -313,9 +329,8 @@ def chart_c21(reg: Registry) -> Chart:
         (usd if f.code == "USD" else other).append([label, rnd(gl)])
         rows.append([f.code, NAMES.get(f.code, f.code), f.r["aggregate"].value, rnd(gl),
                      reg.value(f"mon_{c}_gm_month") if f"mon_{c}_gm_month" in reg else None,
-                     rnd(reg.value(f"g_365_at_{c}")) if f"g_365_at_{c}" in reg else None,
-                     rnd(reg.value(f"h1b_gap_{c}")) if f"h1b_gap_{c}" in reg else None])
-    g365 = reg.value("g_365") if "g_365" in reg else None
+                     rnd(g365),
+                     rnd(reg.value(f"h1_gap_{c}")) if f"h1_gap_{c}" in reg else None])
     if g365 is not None:
         x_vals.append(g365)
     series = [Series("usd_gm_latest", "US dollar money growth, latest twelve months", "usd", usd, role="emphasis",
@@ -326,7 +341,7 @@ def chart_c21(reg: Registry) -> Chart:
             if g365 is not None else [])
     files = sorted({p for f in in_panel for p in f.files} | set(d["bis_files"]))
     chart = Chart(
-        id="c21", section="A1", priority="lead", claims=["H1b"], verdicts=["H1b"], title="", sentence="",
+        id="c21", section="A1", priority="lead", claims=["H1"], verdicts=["H1"], title="", sentence="",
         form="dot-range", eyebrow="Supply against money, latest year",
         sources=sorted({f"{(load.money_meta(f.c, 'money').get('publisher') or f.code)}" for f in fiats.values()
                         if load.money_meta(f.c, "money")})
@@ -334,9 +349,9 @@ def chart_c21(reg: Registry) -> Chart:
            "NEAR archival RPC (total supply samples)"],
         queries=_queries(d) + [derived_query("g_365 = supply now / supply a year earlier - 1 (RPC samples)")],
         table={"columns": ["code", "currency", "money_aggregate", "money_growth_latest_pct", "latest_month",
-                           "near_supply_growth_same_12m_pct", "gap_pp"], "rows": rows},
+                           "near_supply_growth_pct", "gap_pp"], "rows": rows},
         code_ref="pipeline/models/money.py::chart_c21",
-        formula_ids=["F-bis-rank", "F-money-growth-latest", "F-growth", "F-h1b-gap", "F-median"],
+        formula_ids=["F-bis-rank", "F-money-growth-latest", "F-growth", "F-h1-gap", "F-median"],
         x={"type": "linear", "unit": "%", "domain": _domain(x_vals) if x_vals else [-5, 10], "clamp": True},
         y={"type": "category", "unit": "%"}, series=series, reference_lines=refs,
         coverage={"first": None, "last": None, "n": len([r for r in rows if r[3] is not None]),
@@ -351,27 +366,26 @@ def chart_c21(reg: Registry) -> Chart:
         chart.empty_state = empty_state("No year of NEAR supply growth or no broad-money series in data/raw.",
                                         "RPC supply samples and the central-bank money series", "make data && make charts")
         return chart
-    gap = reg.value("h1b_gap_med") if "h1b_gap_med" in reg else None
+    gap = reg.value("h1_gap_med") if "h1_gap_med" in reg else None
     if gap is not None and gap > 0:
         chart.title = "NEAR's supply grew more slowly than the major currencies' money over the past year"
     elif gap is not None:
         chart.title = "NEAR's supply grew at least as fast as the median major currency's money over the past year"
     else:
         chart.title = "NEAR's supply growth against the major currencies' money, latest year"
-    # the line is NEAR to the latest chain sample; the gap uses NEAR over each currency's own twelve months, so the
-    # sentence also quotes NEAR over the US money month, the window most of the panel shares
-    if ready(reg, "g_365_at_m2", "m2_month"):
-        chart.sentence_template = ("NEAR's supply grew {g_365} over the year to the latest chain sample (the line) and "
-                                   "{g_365_at_m2} over the year to {m2_month}, against a median {fiat_gm_latest_med} for "
-                                   "the major currencies' money, each over its latest year; this is supply only, not "
-                                   "demand.")
+    # the line is NEAR over its latest year, to the latest chain sample; each dot is a currency's money over its own
+    # latest year, to its latest month: the sentence names both windows
+    if ready(reg, "latest_rpc_date"):
+        chart.sentence_template = ("NEAR's supply grew {g_365} over the year to {latest_rpc_date} (the line), against a "
+                                   "median {fiat_gm_latest_med} for the major currencies' money, each over its own "
+                                   "latest year to its latest month; this is supply only, not demand.")
     else:
         chart.sentence_template = ("NEAR's supply grew {g_365} over the year to the latest chain sample (the line), "
                                    "against a median {fiat_gm_latest_med} for the major currencies' money, each over its "
-                                   "latest year; this is supply only, not demand.")
+                                   "own latest year to its latest month; this is supply only, not demand.")
     chart.notes_templates = notes_for(reg, [
-        "Each currency is compared with NEAR's supply growth over the same twelve months; the median of those gaps "
-        "is {h1b_gap_med}, the figure the supply claim tests.",
+        "Each currency's money growth over its latest year is set against NEAR's supply growth over the year to "
+        "{latest_rpc_date}; the median of those gaps is {h1_gap_med}, the figure the supply claim tests.",
         "Broad money includes deposits created by bank lending; NEAR's supply is issued by protocol only, so it is "
         "nearer to base money.",
         "The dollar's money grew {m2_yoy} on FRED's broad US money series.",

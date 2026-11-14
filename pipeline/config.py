@@ -138,13 +138,19 @@ def http_get(url: str, *, params: dict | None = None, headers: dict | None = Non
     raise RuntimeError(f"unreachable: {url}")
 
 
-def http_post_json(url: str, payload: dict, *, retries: int = 4, backoff: float = 2.0,
-                   timeout: float = 60.0) -> dict:
+def http_post(url: str, payload: dict, *, retries: int = 4, backoff: float = 2.0,
+              timeout: float = 60.0) -> requests.Response:
+    """POST a JSON body with retry on 429/5xx. Raises for other HTTP errors."""
     for attempt in range(retries + 1):
         resp = _session.post(url, json=payload, timeout=timeout)
         if resp.status_code in (429, 500, 502, 503, 504) and attempt < retries:
             time.sleep(retry_after(resp.headers, backoff * (2 ** attempt)))
             continue
         resp.raise_for_status()
-        return resp.json()
+        return resp
     raise RuntimeError(f"unreachable: {url}")
+
+
+def http_post_json(url: str, payload: dict, *, retries: int = 4, backoff: float = 2.0,
+                   timeout: float = 60.0) -> dict:
+    return http_post(url, payload, retries=retries, backoff=backoff, timeout=timeout).json()

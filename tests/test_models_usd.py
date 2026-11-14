@@ -28,8 +28,9 @@ REPO = Path(__file__).resolve().parents[1]
 MODULES = (macro, market, demand, derivatives, currencies, sweep)
 CONTRACT_KEYS = {
     "macro": "m2_yoy m2_month cpi_yoy cpi_month core_yoy pce_yoy pce_month gap_cpi gap_m2 gap_core gap_pce "
-             "h1b_months_with_data h1b_months_expected h1b_months_below h1b_below_run h2_months_in_band_12 "
-             "h2_months_with_data_12",
+             "h1_months_with_data h1_months_expected h1_months_below h1_below_run h2_from h2_to h2_months "
+             "h2_near_g h2_cpi h2_gap h2_gap_dir h2_months_read h2_months_slower h2_months_blank g_since_cut "
+             "g_since_cut_from g_since_cut_to h2_base h2_alt_base h2_cpi_alt h2_gap_alt",
     "market": "rv_365_near rv_365_btc rv_365_eth rv_365_eur rv_90_near x_btc x_eur rv30_median mdd_365 sigma_d "
               "worst_day worst_day_date ratio_gap_to_day share_days_gt_spread n_windows_usd_1y pct_within_2pp_1y "
               "pct_beat_cash_1y near_close_latest latest_common_date",
@@ -200,8 +201,8 @@ def test_empty_raw_registers_every_key_and_charts_degrade(raw):
     assert {"rv_365_near", "gap_cpi", "intents_vol_30d", "vrp_btc", "h5_now_narrower", "nslp_near"} <= nulls
     for k, n in reg.items():
         assert n.value is not None or n.null_reason, k
-    assert set(charts) == {"c06", "c07", "c08", "c09", "c11", "c13", "c14", "c15"}
-    for cid in ("c06", "c07", "c08", "c09", "c11", "c13", "c15"):
+    assert set(charts) == {"c06", "c07", "c08", "c09", "c11", "c13", "c14", "c15", "c23"}
+    for cid in ("c06", "c07", "c08", "c09", "c11", "c13", "c15", "c23"):
         assert charts[cid].status == "unavailable", cid
         assert all(charts[cid].empty_state.values())
     assert charts["c14"].status in ("partial", "unavailable")
@@ -226,9 +227,17 @@ def macro_raw(root, blank_oct=True, skip=()):
     rpc_history(root, month_starts(D0, date(2026, 11, 1)), skip=skip)
 
 
+def near_latest_year(reg: Registry, g: float) -> Registry:
+    """NEAR's supply growth over its latest year (percent, the supply model's g_365): the NEAR side of every gap."""
+    reg.put("g_365", g, "%", "F-growth", source_files=["data/raw/rpc/history_samples.csv"],
+            inputs=["total_supply_near 2025-11-01", "total_supply_near 2026-11-01"])
+    reg.put("latest_rpc_date", "2026-11-01", "date", "D1", source_files=["data/raw/rpc/history_samples.csv"])
+    return reg
+
+
 def test_macro_yoy_gaps_and_oct_2025_blank(raw):
     macro_raw(raw)
-    reg = Registry()
+    reg = near_latest_year(Registry(), 2.25)
     macro.compute(reg)
     assert reg.value("m2_yoy") == pytest.approx(100 * (1.005 ** 12 - 1), abs=1e-3)
     assert reg.value("m2_month") == "2026-09"
@@ -242,15 +251,18 @@ def test_macro_yoy_gaps_and_oct_2025_blank(raw):
     # NEAR g for month 2026-09 closes at the 2026-10-01 sample: exactly 2.5 %.
     assert data.g[date(2026, 9, 1)].value == pytest.approx(0.025, abs=1e-9)
     assert data.g[date(2026, 9, 1)].end == date(2026, 10, 1)
-    assert reg.value("gap_cpi") == pytest.approx(100 * (1.004 ** 12 - 1) - 2.5, abs=1e-3)
-    assert reg.value("gap_m2") == pytest.approx(100 * (1.005 ** 12 - 1) - 2.5, abs=1e-3)
-    assert reg.value("gap_pce") == pytest.approx(100 * (1.002 ** 12 - 1) - 2.5, abs=1e-3)
-    # H1b: M2 6.17 % > g 2.5 % in every month since the first window.
-    assert reg.value("h1b_months_with_data") == reg.value("h1b_months_expected")
-    assert reg.value("h1b_months_below") == reg.value("h1b_months_with_data")
-    # H2: gap 2.41 pp is outside 1.5 +/- 0.5; 2025-10 has no data, so 11 of 12 months have data.
-    assert reg.value("h2_months_with_data_12") == 11
-    assert reg.value("h2_months_in_band_12") == 0
+    # every gap reads NEAR's latest year (g_365, here 2.25 %), not the month-end growth at the US month
+    assert reg.value("gap_cpi") == pytest.approx(100 * (1.004 ** 12 - 1) - 2.25, abs=1e-3)
+    assert reg.value("gap_m2") == pytest.approx(100 * (1.005 ** 12 - 1) - 2.25, abs=1e-3)
+    assert reg.value("gap_pce") == pytest.approx(100 * (1.002 ** 12 - 1) - 2.25, abs=1e-3)
+    assert all("g_365" in " ".join(reg.get(f"gap_{m}").inputs) for m in ("m2", "cpi", "pce", "core"))
+    # the same-months figure for the data page's check: NEAR over M2's own twelve months, and where they start
+    assert reg.value("g_365_at_m2") == pytest.approx(2.5, abs=1e-6)
+    assert reg.value("g_365_at_m2_from") == "2025-10-01"
+    assert not any(f"g_365_at_{m}" in reg for m in ("cpi", "core", "pce"))
+    # H1: M2 6.17 % > g 2.5 % in every month since the first window.
+    assert reg.value("h1_months_with_data") == reg.value("h1_months_expected")
+    assert reg.value("h1_months_below") == reg.value("h1_months_with_data")
     chart = macro.inflation_measures(reg)
     dump(chart.to_json())
     assert chart.status == "ok"
@@ -259,31 +271,112 @@ def test_macro_yoy_gaps_and_oct_2025_blank(raw):
     assert cpi_pts["2025-10-01"] is None  # the line breaks; never filled
 
 
-def test_macro_h2_band_counts(raw):
-    start = date(2019, 1, 1)
-    fred_monthly(raw, "M2SL", start, date(2026, 9, 1), 0.005)
-    fred_monthly(raw, "CPIAUCSL", start, date(2026, 9, 1), 0.0033, blanks=(date(2025, 10, 1),))
-    fred_monthly(raw, "PCEPI", start, date(2026, 9, 1), 0.002)
-    fred_monthly(raw, "CPILFESL", start, date(2026, 9, 1), 0.0025)
-    rpc_history(raw, month_starts(D0, date(2026, 11, 1)))
-    reg = Registry()
-    macro.compute(reg)
-    gap = 100 * (1.0033 ** 12 - 1) - 2.5
-    assert abs(gap - 1.5) <= 0.5
-    assert reg.value("h2_months_in_band_12") == 11
-    assert reg.value("h2_months_with_data_12") == 11
-
-
-def test_macro_missing_rpc_sample_nulls_gap_and_share(raw):
+def test_macro_missing_rpc_sample_nulls_the_same_months_figure_and_share(raw):
     macro_raw(raw, skip=(date(2026, 10, 1), date(2024, 3, 1)))
+    reg = near_latest_year(Registry(), 2.5)
+    macro.compute(reg)
+    # the gaps read g_365, so a missing month-end sample leaves them; it nulls the same-months figure with its reason
+    assert reg.value("gap_cpi") is not None
+    assert reg.value("g_365_at_m2") is None and "2026-10-01" in reg.get("g_365_at_m2").null_reason
+    assert reg.value("h1_months_below") <= reg.value("h1_months_with_data") < reg.value("h1_months_expected")
+    chart = macro.inflation_measures(reg)
+    dump(chart.to_json())
+    assert chart.status == "ok"
+
+
+def test_macro_without_nears_latest_year_nulls_the_gaps(raw):
+    macro_raw(raw)
     reg = Registry()
     macro.compute(reg)
-    assert reg.value("gap_cpi") is None and "2026-10-01" in reg.get("gap_cpi").null_reason
-    assert reg.value("h2_months_in_band_12") is None
-    assert reg.value("h1b_months_below") <= reg.value("h1b_months_with_data") < reg.value("h1b_months_expected")
+    for m in ("m2", "cpi", "pce", "core"):
+        assert reg.value(f"gap_{m}") is None and "g_365" in reg.get(f"gap_{m}").null_reason, m
     chart = macro.inflation_measures(reg)
     dump(chart.to_json())
     assert chart.status == "partial" and chart.status_banner
+
+
+# --- H2: the matched window since the ceiling cut (c23) ---------------------------------------------------------
+
+def h2_raw(root, g=0.025, blank=date(2025, 10, 1)):
+    """An uneven CPI path with one blank level at the cut's month, monthly supply samples plus off-edge spikes
+    one day either side of the window's edges (they must never be read)."""
+    levels = {}
+    for k, m in enumerate(month_starts(date(2019, 1, 1), date(2026, 9, 1))):
+        levels[m] = None if m == blank else round(100 * math.exp(0.003 * k + 0.002 * math.sin(k)), 8)
+    put_csv(root, "fred/CPIAUCSL.csv", ["date", "value"], [[m.isoformat(), v] for m, v in levels.items()])
+    spikes = {date(2025, 11, 30), date(2025, 12, 2), date(2026, 9, 30), date(2026, 10, 2)}
+    supply = {}
+    rows = []
+    for d in sorted({*month_starts(D0, date(2026, 11, 1)), *spikes}):
+        t = (d - D0).days
+        supply[d] = 1e9 * (1 + g) ** (t / 365.25) * (1 + 0.01 * math.sin(t)) * (1.5 if d in spikes else 1)
+        rows.append([d.isoformat(), 1000 + t * 86400,
+                     (datetime(d.year, d.month, d.day, tzinfo=timezone.utc) - timedelta(seconds=1)).isoformat(),
+                     "E", supply[d], None, None, None, None, None, None, None, 80, 0.025])
+    put_csv(root, "rpc/history_samples.csv", RPC_COLS, rows)
+    return levels, supply
+
+
+def test_h2_window_starts_at_the_first_published_base(raw):
+    levels, supply = h2_raw(raw)
+    reg = fake_upstream(Registry(), cut_date=("2025-10-30", "date"))
+    macro.compute(reg)
+    # 2025-11 is the first month after the cut, but its base (2025-10) is blank: the window opens at 2025-12
+    assert reg.value("h2_from") == "2025-12-01"
+    assert reg.value("h2_base") == "2025-11"
+    # CPI has no 2026-10 level, so the last matched month is 2026-09 and the window closes on 2026-10-01
+    assert reg.value("h2_to") == "2026-10-01"
+    n = 10
+    assert reg.value("h2_months") == n
+    # the registry stores four decimals; the hand values below are checked to that precision
+    cpi = (levels[date(2026, 9, 1)] / levels[date(2025, 11, 1)]) ** (12 / n) - 1
+    assert reg.value("h2_cpi") == pytest.approx(100 * cpi, abs=1e-4)
+    s0, s1 = supply[date(2025, 12, 1)], supply[date(2026, 10, 1)]
+    near = (s1 / s0) ** (365.25 / (date(2026, 10, 1) - date(2025, 12, 1)).days) - 1
+    assert reg.value("h2_near_g") == pytest.approx(100 * near, abs=1e-4)
+    assert reg.value("h2_gap") == pytest.approx(100 * (cpi - near), abs=1e-4)
+    assert reg.value("h2_gap_dir") == "slower"
+    # the candidate months without a reading are listed with the reason, never filled
+    blank = reg.value("h2_months_blank")
+    assert "2025-11 (CPI for 2025-10 not published)" in blank and "2026-10" in blank
+    assert reg.value("h2_months_read") == 10
+    # the alternative base: the last level published before the cut's month (2025-10 is blank -> 2025-09)
+    assert reg.value("h2_alt_base") == "2025-09"
+    chart = macro.since_cut(reg)
+    dump(chart.to_json())
+    rows = {r[0]: r for r in chart.table["rows"]}
+    assert "whole window" in rows
+
+
+def test_h2_window_with_no_cut_is_null_with_the_reason(raw):
+    h2_raw(raw)
+    reg = Registry()
+    macro.compute(reg)
+    for key in ("h2_from", "h2_gap", "h2_gap_dir", "h2_months_blank", "g_since_cut"):
+        assert reg.value(key) is None and reg.get(key).null_reason == macro.NO_CUT, key
+    chart = macro.since_cut(reg)
+    dump(chart.to_json())
+    assert chart.status == "unavailable"
+
+
+def test_h2_gap_dir_flips_at_zero():
+    row = {"date": date(2025, 12, 1), "height": 1}
+    for near, want in ((0.03, "slower"), (0.0300001, "faster"), (0.0299999, "slower")):
+        reg = Registry()
+        w = macro.CutWindow(date(2025, 10, 30), None, m0=date(2025, 12, 1), m1=date(2026, 9, 1), r0=row,
+                            r1={"date": date(2026, 10, 1), "height": 2}, near=near, cpi_g=0.03)
+        macro._put_since_cut(reg, w)
+        assert reg.value("h2_gap_dir") == want, near
+        if want == "slower" and near == 0.03:
+            assert reg.value("h2_gap") == 0
+
+
+def test_h2_gap_dir_is_faster_when_near_outgrows_cpi(raw):
+    h2_raw(raw, g=0.09)
+    reg = fake_upstream(Registry(), cut_date=("2025-10-30", "date"))
+    macro.compute(reg)
+    assert reg.value("h2_gap") < 0 and reg.value("h2_gap_dir") == "faster"
+    dump(macro.since_cut(reg).to_json())
 
 
 def test_macro_alt_title_when_near_grows_faster(raw):
@@ -291,7 +384,7 @@ def test_macro_alt_title_when_near_grows_faster(raw):
     path = raw / "data" / "raw" / "rpc" / "history_samples.csv"
     path.unlink()
     rpc_history(raw, month_starts(D0, date(2026, 11, 1)), g=0.08)
-    reg = Registry()
+    reg = near_latest_year(Registry(), 8.0)
     macro.compute(reg)
     assert reg.value("gap_cpi") < 0 and reg.value("gap_cpi_dir") == "faster"
     chart = macro.inflation_measures(reg)

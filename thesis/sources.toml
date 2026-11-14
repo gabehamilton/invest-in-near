@@ -126,6 +126,69 @@ committed = "yes"
 tos_note = "Deribit public API; context only (no NEAR implied volatility exists)."
 fix = "uv run python -m pipeline.pull --only derivatives"
 
+[sources.perps_hyperliquid]
+name = "Hyperliquid NEAR perpetual (hourly funding, daily and hourly candles)"
+class = "approved-primary"
+endpoint = "https://api.hyperliquid.xyz/info (POST fundingHistory, candleSnapshot)"
+auth = "none"
+paths = ["data/raw/perps/near_funding_hyperliquid_hourly.csv", "data/raw/perps/near_perp_hyperliquid_*.csv"]
+stale = { rule = "days", max = 3 }
+stale_text = "last hour or day more than 3 days before the build"
+committed = "yes"
+tos_note = "Hyperliquid public info endpoint (read-only, no account or key); Hyperliquid terms apply. Funding starts at the listing, 2023-11-01; daily candles before it carry no trades and are left out; the venue serves only its latest 5,000 candles, so the hourly file accumulates across pulls. Used for claim H8 and the perp ladder. Hyperliquid's terms are reported to count US persons among Restricted Persons (secondary text, not read first-hand); reading its public data needs no account."
+fix = "uv run python -m pipeline.pull --only perps"
+
+[sources.perps_kraken]
+name = "Kraken Derivatives PF_NEARUSD perpetual (hourly funding, daily candles)"
+class = "approved-crosscheck"
+endpoint = "https://futures.kraken.com/derivatives/api/v4/historicalfundingrates?symbol=PF_NEARUSD, https://futures.kraken.com/api/charts/v1/trade/PF_NEARUSD/1d"
+auth = "none"
+paths = ["data/raw/perps/near_funding_kraken_hourly.csv", "data/raw/perps/near_perp_kraken_daily.csv"]
+stale = { rule = "days", max = 3 }
+stale_text = "last hour or day more than 3 days before the build"
+committed = "yes"
+tos_note = "Kraken Derivatives public market data; Kraken terms apply. Funding history is served for a rolling year only, so the funding file accumulates from the first pull; candles start at the listing, 2022-06-13. Read only for the sign of funding over the latest year the three venues share; its rate's period is not confirmed, so no rate is printed."
+fix = "uv run python -m pipeline.pull --only perps"
+
+[sources.perps_binance]
+name = "Binance USD-M NEARUSDT perpetual (8-hour funding, daily candles)"
+class = "approved-crosscheck"
+endpoint = "https://data.binance.vision/data/futures/um/monthly/fundingRate/NEARUSDT/ and .../klines/NEARUSDT/1d/ (monthly and daily zip files)"
+auth = "none"
+paths = ["data/raw/perps/near_funding_binance_8h.csv", "data/raw/perps/near_perp_binance_daily.csv"]
+stale = { rule = "days", max = 3 }
+stale_text = "daily candles more than 3 days behind; funding (published in monthly files) more than 35 days after its month-end"
+committed = "yes"
+tos_note = "Binance public bulk-data host; Binance terms apply. Every file is checked against the sha256 Binance publishes for it. Funding is published in monthly files only, so it ends with the last published month; quotes are in USDT. The longer record for the perp ladder; Binance futures are reported not to be open to US persons."
+fix = "uv run python -m pipeline.pull --only perps"
+
+[sources.perps_binance.file_stale]
+near_funding_binance_8h = { rule = "days_after_month_end", max = 35 }
+
+[sources.perp_terms]
+name = "NEAR perpetual contract terms (Hyperliquid, Kraken Derivatives)"
+class = "approved-primary"
+endpoint = "https://api.hyperliquid.xyz/info (POST metaAndAssetCtxs), https://futures.kraken.com/derivatives/api/v3/instruments, https://futures.kraken.com/derivatives/api/v3/tickers/PF_NEARUSD"
+auth = "none"
+paths = ["data/raw/perps/near_perp_terms.json"]
+stale = { rule = "days", max = 3 }
+stale_text = "snapshot more than 3 days before the build"
+committed = "yes"
+tos_note = "Public exchange APIs. A snapshot of each venue's NEAR contract (leverage, margin tiers, funding parameters) and live context (funding, open interest, mark) at fetch time, not a history."
+fix = "uv run python -m pipeline.pull --only perps"
+
+[sources.perps_coinbase]
+name = "Coinbase Derivatives NEAR Perp, NER-20DEC30-CDE (daily candles, contract snapshot)"
+class = "approved-crosscheck"
+endpoint = "https://api.coinbase.com/api/v3/brokerage/market/products/NER-20DEC30-CDE and .../candles?granularity=ONE_DAY (Coinbase Advanced public market data)"
+auth = "none"
+paths = ["data/raw/perps/near_perp_coinbase_daily.csv", "data/raw/perps/near_perp_coinbase_terms.json"]
+stale = { rule = "days", max = 3 }
+stale_text = "last daily candle or snapshot more than 3 days before the build"
+committed = "yes"
+tos_note = "Coinbase public market data (no account or key); Coinbase terms apply. Coinbase Derivatives, LLC is a CFTC-regulated exchange, reached by US customers through the futures commission merchant Coinbase Financial Markets; this is a separate source from the Coinbase Exchange spot candles. One contract is 500 NEAR, margined in US dollars. Daily candles start at the listing, 2026-02-28, with volume in contracts. Coinbase publishes no keyless funding history (the exchange's funding-rate endpoint needs an API key; Coinbase supplies the history on request), so funding appears only as the current rate in the snapshot. US customers Coinbase approves can trade this NEAR perpetual, so an approved US holder can run the perp ladder here; Coinbase's help pages (Wayback captures of 2026-11-13) say access needs an approved application and an eligible address and may not be available in all jurisdictions, and name no US state as excluded. Its record is shorter than one year, so no one-year window exists yet and no claim reads it."
+fix = "uv run python -m pipeline.pull --only perps"
+
 [sources.defillama]
 name = "DefiLlama (NEAR Intents volume and fees)"
 class = "approved-primary"
@@ -197,7 +260,7 @@ fix = "set GCP_PROJECT in .env, run gcloud auth application-default login, then 
 freshness = { rule = "behind_rpc_tip", max = 7, last_obs = "max_block_date" }
 
 [sources.constants]
-name = "Declared constants (nearcore, core-contracts, eCFR, press)"
+name = "Declared constants (nearcore, core-contracts, eCFR, press, Coinbase help)"
 class = "declared-constant"
 endpoint = "thesis/constants.toml (each entry: source URL, verbatim quote, retrieval date)"
 auth = "none"

@@ -44,7 +44,7 @@ text = "The most the burn can be, from supply alone: what the ceiling would have
 
 [[terms]]
 id = "cpi"
-term = "CPI and core CPI"
+term = "CPI (CPI-U) and core CPI"
 text = "The US consumer price index for all urban consumers, published by the Bureau of Labor Statistics. Core leaves out food and energy."
 
 [[terms]]
@@ -68,6 +68,56 @@ term = "Implied volatility"
 text = "The volatility an options price assumes. Implied minus realized is, on average, what an option seller earns for taking the risk."
 
 [[terms]]
+id = "call"
+term = "Call option"
+text = "The right to buy at a set price by a set date. Its price rises with the swings the market expects before that date."
+
+[[terms]]
+id = "rebalancing"
+term = "Rebalancing"
+text = "Trading back to a fixed mix at set intervals, here the desk's share in NEAR and the rest in dollars: selling some NEAR after it rises and buying some after it falls. The desk simulation runs the same strategy against dollars and euros and calls it resetting the NEAR part to its share."
+
+[[terms]]
+id = "shuffled"
+term = "Shuffled history"
+text = "NEAR's own daily price moves, cut into blocks of {vol_null_block_days} and put back in a random order. It keeps every move, the volatility and the overall trend and changes only their order, so a strategy's result on it is what chance gives."
+
+[[terms]]
+id = "perpetual"
+term = "Perpetual future"
+text = "A contract that tracks NEAR's price and never expires. Buyers and sellers post collateral, and one side pays the other funding to keep the contract's price near the spot price."
+
+[[terms]]
+id = "perpetual-style"
+term = "Perpetual-style future"
+text = "A US-regulated form of a perpetual, listed on a futures exchange: Coinbase Derivatives' NEAR contract sets a funding rate every hour like a perpetual but carries an expiry date years away, and it is margined in dollars."
+
+[[terms]]
+id = "short"
+term = "Short"
+text = "A bet that the price falls: sell now, buy back later. A short on a perpetual is settled in dollars, so the NEAR it hedges stays staked."
+
+[[terms]]
+id = "perp-ladder"
+term = "Perp ladder"
+text = "The third way of selling NEAR's swings: keep the NEAR staked and sell {vol_perp_slice_pct} of the stake short on a perpetual after each {vol_perp_rung_pct} rise, up to {vol_perp_cap_pct}, buying each slice back after a {vol_perp_rung_pct} fall. It gains when NEAR swings and comes back, and loses when NEAR runs one way."
+
+[[terms]]
+id = "funding"
+term = "Funding"
+text = "The payment between the two sides of a perpetual, settled every hour or every eight hours by each venue's formula. Hyperliquid's and Binance's formulas add a fixed interest term, so shorts are paid a set rate whenever the perpetual trades close to the spot price."
+
+[[terms]]
+id = "static-short"
+term = "Short that never trades"
+text = "What the perp ladder is measured against: a short of {vol_perp_static_pct} of the stake, sold at the start of a year and bought back at its end, with the same dollars on the venue. What the ladder gains over it is what trading the swings added."
+
+[[terms]]
+id = "redrawn"
+term = "Redrawn history"
+text = "Blocks of {vol_null_block_days} of NEAR's own days drawn at random with repeats, so some months appear twice and some not at all, then shifted so their average matches the real result: they show how far a result moves with the months drawn."
+
+[[terms]]
 id = "tripwire"
 term = "Tripwire"
-text = "A measured result that would change the thesis, checked against the latest data. Some would break part of it; others would strengthen it, or open a test that is closed today."
+text = "A measured result that would change the thesis, checked against the latest data. Some would break part of it; others would strengthen it."

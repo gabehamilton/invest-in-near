@@ -4,7 +4,7 @@ Synthetic raw directories (built in tmp_path, with pipeline.config / load / numb
 formula path: the merged history + dense sample loader (dedupe, conflict, the tip row), exact growth, edge tolerance,
 nulls, the ceiling bracket vs an exact change height, the four burn methods (exact from BigQuery, exact from every
 epoch boundary in epoch_mints, sampled from epoch_history, upper bound), the realized-mint check, BigQuery absent/present, LST yields and spreads, the DFF publication lag,
-quarterly statistics under the rule in force, the c10 grid and the holder windows. Sanity bounds run against the real
+the c10 grid and the holder windows. Sanity bounds run against the real
 data/raw/ and skip (with the reason) only when the input they need is not on disk yet.
 """
 
@@ -33,7 +33,7 @@ T0 = datetime(2020, 10, 1, tzinfo=UTC)
 YEAR_S = 365 * 86400
 
 GROUP_A_KEYS = {
-    "supply": ["g_365", "g_365_neg_run_days", "i_max_now", "cut_date", "cut_height", "supply_now", "s_now", "s_max",
+    "supply": ["g_365", "i_max_now", "cut_date", "cut_height", "supply_now", "s_now", "s_max",
                "unstaked_now", "burn_share_365", "burn_method", "mint_per_day_365", "burn_per_day_365", "bq_max_date",
                "max_abs_diff_near", "n_overlap", "latest_rpc_date", "epoch_hours_median_30d", "rpc_tip_date",
                "rpc_weekly_from", "rpc_daily_from", "burn_share_365_ub", "n_burn_epochs_365",
@@ -41,9 +41,8 @@ GROUP_A_KEYS = {
                "mint_vs_ceiling_median_365_pp", "mint_vs_ceiling_min_365_pp", "mint_vs_ceiling_max_365_pp",
                "n_mint_epochs_365", "mint_check_from", "hsp027_from", "hsp027_height", "hsp027_protocol"],
     "staking": ["lst_start_date", "y_lst_365", "y_lst_90", "y_st_365", "y_li_365", "y_formula_365", "lst_haircut",
-                "effr_mean_365", "effr_latest", "spread_adj_365", "spread_naive_365", "spread_adj_90",
-                "n_q_rule", "spread_q_sd_rule", "corr_levels_rule", "fed_range_q_bp_rule", "sep_year", "sep_median",
-                "sep_longer_run", "y_s60"],
+                "effr_mean_365", "effr_latest", "spread_adj_365", "spread_naive_365", "spread_adj_90", "sep_year",
+                "sep_median", "sep_longer_run", "y_s60"],
     "holders": ["staker_share_365", "nonstaker_365"],
 }
 ALL_KEYS = [k for keys in GROUP_A_KEYS.values() for k in keys]
@@ -268,7 +267,7 @@ def test_empty_raw_registers_every_key_null_and_charts_degrade(raw):
         assert key in reg, key
         n = reg.get(key)
         assert n.value is None and n.null_reason, (key, n.value)
-    assert set(charts) == {"c01", "c02", "c03", "c05", "c10", "c12", "c16"}
+    assert set(charts) == {"c01", "c02", "c03", "c05", "c10", "c16"}
     for chart in charts.values():
         chart.to_json()
         assert chart.status == "unavailable", chart.id
@@ -294,7 +293,6 @@ def test_growth_is_exact_and_uses_block_times(raw):
     assert reg.value("g_365") == pytest.approx(2.45, abs=1e-6)
     series = supply.build_model().series
     assert all(w["g"] * 100 == pytest.approx(2.45, abs=1e-6) for w in series)
-    assert reg.value("g_365_neg_run_days") == 0
     # first window end: the first sample whose date - 365 has a sample within 7 days (2021-11-01 -> 2020-11-01)
     assert series[0]["r1"]["date"] == date(2021, 11, 1)
     assert reg.value("latest_rpc_date") == LATEST.isoformat()
@@ -384,12 +382,11 @@ def test_g365_null_when_window_start_has_no_sample_within_seven_days(raw):
     reg, charts = run_all()
     assert reg.value("g_365") is None
     assert "2025-11-10" in reg.get("g_365").null_reason
-    assert reg.value("g_365_neg_run_days") is None
     assert charts["c02"].status == "partial"
     charts["c02"].to_json()
 
 
-def test_negative_growth_run_and_shrink_title(raw):
+def test_negative_growth_shrink_title(raw):
     rows = []
     for d in baseline_dates():
         t = target_time(d)
@@ -404,10 +401,7 @@ def test_negative_growth_run_and_shrink_title(raw):
     write_history(raw, rows)
     reg, charts = run_all()
     assert reg.value("g_365") < 0
-    series = supply.build_model().series
-    # consecutive negative windows back to the first negative one, no gap > 35 days in between
-    negatives = [w["r1"]["date"] for w in series if w["g"] < 0]
-    assert reg.value("g_365_neg_run_days") == (LATEST - negatives[0]).days
+    assert all(w["g"] < 0 for w in supply.build_model().series if w["r1"]["date"] >= date(2026, 6, 1))
     assert "shrank" in charts["c02"].title and "-" not in charts["c02"].title
 
 
@@ -955,59 +949,6 @@ def test_formula_yield_null_when_samples_leave_a_gap(raw):
     charts["c10"].to_json()
 
 
-def test_quarterly_spread_statistics(raw):
-    # samples only at quarter starts, with chosen LST prices and a DFF constant within each quarter; the issuance
-    # rule changes between the first two samples, so the statistics read the four quarters from cut_date on
-    quarters = [date(2022, 4, 1), date(2022, 7, 1), date(2022, 10, 1), date(2023, 1, 1), date(2023, 4, 1),
-                date(2023, 7, 1)]
-    q_rates = [0.5, 2.0, 3.5, 4.5, 5.0]                 # DFF within each complete quarter
-    q_yield = [0.090, 0.085, 0.070, 0.045, 0.052]      # stNEAR = LiNEAR annual yield per quarter
-    price, rows = 1.0, []
-    for i, q in enumerate(quarters):
-        t = target_time(q)
-        r = history_row(q, t, int((t - T0).total_seconds()), lst=True, rate=0.05 if i == 0 else 0.025)
-        if i:
-            span = (t - target_time(quarters[i - 1])).total_seconds() / 86400
-            price *= (1 + q_yield[i - 1]) ** (span / 365.25)
-        r["stnear_price"] = r["linear_price"] = f"{price:.15f}"
-        rows.append(r)
-    write_history(raw, rows)
-
-    def dff(d: date) -> float:
-        for q0, q1, v in zip(quarters, quarters[1:], q_rates):
-            if q0 <= d < q1:
-                return v
-        return 5.0
-    write_fred(raw, "DFF", daily(date(2022, 1, 1), date(2023, 7, 31), dff))
-    write_fred(raw, "DFEDTARU", daily(date(2022, 1, 1), date(2023, 7, 31),
-                                      lambda d: 0.25 if d < date(2022, 5, 5) else 3.25 if d < date(2022, 12, 15)
-                                      else 5.25))
-    reg, charts = run_all()
-    assert reg.value("cut_date") == quarters[1].isoformat()
-    spreads = [(y - ffc(r)) * 100 for y, r in zip(q_yield, q_rates)][1:]
-    assert reg.value("n_q_rule") == 4
-    assert reg.value("spread_q_sd_rule") == pytest.approx(statistics.stdev(spreads), abs=1e-4)
-    assert reg.value("corr_levels_rule") == pytest.approx(
-        statistics.correlation(q_yield[1:], [r / 100 for r in q_rates[1:]]), abs=1e-4)
-    assert reg.value("fed_range_q_bp_rule") == pytest.approx(200)   # the step before the cut is outside the range
-    c12 = charts["c12"]
-    assert [p[0] for p in c12.series[0].points] == ["2022Q3", "2022Q4", "2023Q1", "2023Q2"]
-    assert [p[1] for p in c12.series[0].points] == pytest.approx(spreads, abs=1e-3)
-    c12.to_json()
-
-
-def test_quarter_missing_an_edge_is_listed_not_bridged(raw):
-    rows = [r for r in baseline_history(raw) if not ("2026-03-25" <= r["date"] <= "2026-04-07")]
-    write_history(raw, rows)
-    baseline_macro(raw)
-    reg, charts = run_all()
-    labels = [p[0] for p in charts["c12"].series[0].points]
-    assert labels and "2026Q1" not in labels and "2026Q2" not in labels
-    assert "2026Q1" in charts["c12"].coverage["gaps"]
-    assert charts["c12"].status == "partial"
-    assert reg.value("n_q_rule") == len(labels)
-
-
 def test_fed_turns_and_annotation_merge():
     items = [{"x": "2022-03-17", "label": "a", "kind": "fed_turn"},
              {"x": "2022-04-01", "label": "b", "kind": "data_boundary"},
@@ -1029,10 +970,27 @@ def test_share_yield_windows(raw):
     assert reg.value("nonstaker_365") == pytest.approx((1 / 1.0245 - 1) * 100, abs=1e-4)
     c03 = charts["c03"]
     assert c03.status == "ok" and "transfer" in c03.title
+    assert c03.claims == []
     assert c03.coverage["n"] == 5 and c03.coverage["gaps"] == []
     assert all(y is not None and y > 0 for _, y in c03.series[0].points)     # every window: the staker gained share
     assert [p[0] for p in c03.series[0].points][-1] == "Since the ceiling cut"
     assert {r[0]: r for r in c03.table["rows"]}["Since the ceiling cut"][2] == LATEST.isoformat()
+
+
+def test_c02_c03_and_c05_carry_no_claim(raw):
+    baseline_history(raw)
+    baseline_macro(raw)
+    _, charts = run_all()
+    for cid, eyebrow in (("c02", "O1 · supply against the issuance ceiling"),
+                         ("c03", "O2 · stakers against unstaked holders"),
+                         ("c05", "O3 · fee burn against issuance · trailing year, ")):
+        chart = charts[cid]
+        assert chart.claims == [] and chart.verdicts == [], cid
+        assert chart.eyebrow.startswith(eyebrow), cid
+        chart.to_json()
+    # c05 is a measurement: its title states the burn share and passes no judgment on it
+    title = charts["c05"].title_template
+    assert title.startswith("Fees burned ") and "{burn_share_365}" in title and "offset" not in title
 
 
 def test_wide_cut_bracket_leaves_cut_windows_out(raw):
@@ -1202,16 +1160,6 @@ def test_real_s_now_bound(real):
 
 def test_real_burn_share_bound(real):
     _bounded(real[0], "burn_share_365", None, 10)
-
-
-def test_real_rule_quarters_start_on_or_after_the_cut(real):
-    reg = real[0]
-    cut = reg.value("cut_date")
-    if cut is None:
-        pytest.skip(f"cut_date not computable from the data on disk yet: {reg.get('cut_date').null_reason}")
-    quarters = staking.rule_quarters(staking.build_model(), cut)
-    assert reg.value("n_q_rule") == len(quarters)
-    assert all(w.r0["date"].isoformat() >= cut for w in quarters)
 
 
 def test_real_effr_latest_is_the_last_fred_row(real):

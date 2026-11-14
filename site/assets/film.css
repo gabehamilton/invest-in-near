@@ -75,13 +75,11 @@ body.film-page{background:var(--sky);color:var(--ink);font-family:var(--sans)}
   .quote, & blockquote{font:italic 400 var(--t-quote)/1.1 var(--serif);margin:0 0 22px;color:var(--ink);text-wrap:balance}
   .quote q, .quote .claimed{font:inherit;quotes:none}
   .test{color:var(--ink-2);margin:0 0 26px;max-width:40ch}
+  .test-short{display:none}
   .test .k, .decision .k{display:block;margin-bottom:4px}
   .lead, .sentence{font:400 var(--t-lead)/1.35 var(--sans);max-width:40ch}
   .answer{font:400 var(--t-lead)/1.35 var(--sans);color:var(--ink-2);max-width:44ch;margin-top:12px}
   .lead-big{font:650 var(--t-hero)/1.02 var(--sans);font-stretch:88%;letter-spacing:-0.02em;max-width:18ch;text-wrap:balance}
-  .mega{font:800 var(--t-mega)/0.9 var(--sans);text-transform:uppercase;letter-spacing:-0.01em;margin:0}
-  .mega > span{display:block;white-space:nowrap}
-  .mega-b{font-stretch:75%}
 
   /* figures arrive whole, never tweened */
   .figs, .heroes{display:flex;flex-wrap:wrap;gap:18px 44px;margin-top:8px}
@@ -124,6 +122,7 @@ body.film-page{background:var(--sky);color:var(--ink);font-family:var(--sans)}
   .also .chip, .survive .chip, .tested .chip{margin-right:10px;vertical-align:middle}
   .decision{margin-top:34px;font:500 11px/1.6 var(--mono);letter-spacing:0.06em;color:var(--ink-3);max-width:70ch}
   .vframe{position:relative;max-width:64rem}
+  .split ~ .vframe{margin-top:36px}
   .survive{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;font:400 var(--t-lead)/1.35 var(--sans);margin-top:18px}
   .survive .k{margin:0;color:var(--ink)}
 
@@ -133,6 +132,31 @@ body.film-page{background:var(--sky);color:var(--ink);font-family:var(--sans)}
   .lcol-n{display:block;font:650 var(--t-hero)/1 var(--sans);font-stretch:88%}
   .ledger-shot{max-width:none}
   .apart{margin-top:30px;display:flex;align-items:center;gap:12px}
+
+  /* the closing scene: the agent cards on the film's surfaces, across the frame; the desk's way on to it. On a wide
+     screen the note sits beside the lead, so a laptop's short screen keeps the cards and their status lines in view */
+  .agent-frame > .note{color:var(--ink-2);max-width:62ch;margin-top:14px}
+  .agent-frame .agents{margin:26px 0 18px}
+  .agent-frame .agent-status{scroll-margin-bottom:96px}
+  @media (min-width:1000px){
+    .agent-frame{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);column-gap:4vw;align-items:end}
+    .agent-frame > .lead{max-width:52ch}
+    .agent-frame > :not(.lead, .note){grid-column:1 / -1}
+    .agent-frame > .note{margin:0}
+    .agent-frame .agents{margin:20px 0 12px}
+  }
+  .agent{background:var(--sky-2);border-color:var(--rule)}
+  .agent:first-child{border-color:var(--ink-3)}
+  .agent p{margin:0 0 0.6rem;color:var(--ink-2)}
+  .agent-name{color:var(--ink);font-weight:600}
+  .agent-tag{border-color:var(--rule);color:var(--ink-2)}
+  .agent-copy{color:var(--sky);background:var(--ink);border-color:var(--ink)}
+  .agent-status{color:var(--ink-3)}
+  .sim-next{margin-top:22px}
+  .agent-frame .see a{text-decoration:none}
+  :is(.sim-next a, .tp-go){display:inline-flex;align-items:center;min-height:44px;padding:4px 20px;border:1px solid var(--ink-3);border-radius:22px;color:var(--ink);text-decoration:none;font:500 12px/1.3 var(--mono);letter-spacing:0.1em;text-transform:uppercase}
+  :is(.sim-next a, .tp-go):hover{border-color:var(--ink)}
+  :is(.sim-next a, .tp-go)::after{content:"\00a0\2192"}
 
   .chart-title{font:400 var(--t-body)/1.4 var(--sans);color:var(--ink-2);margin:0 0 12px;max-width:54ch}
   .film-chart{margin:0;position:relative}
@@ -147,6 +171,7 @@ body.film-page{background:var(--sky);color:var(--ink);font-family:var(--sans)}
   .film-chart .legend{font-size:12px;color:var(--ink-2)}
   .film-chart :is(.tbl-btn,.load-note,.card-foot){display:none}
   .film-chart[data-focus] .panel:not(.focus){opacity:0.3}
+  .film-chart .dim{opacity:0.22}
   .twin-link{font-size:14px;margin-top:8px}
   .plot :is(.ax text,.label,.ref text,.ann text,.legend-text){font-family:var(--sans)}
 
@@ -234,6 +259,10 @@ body.film-page{background:var(--sky);color:var(--ink);font-family:var(--sans)}
   .tp-scrub:focus-visible{outline:2px solid var(--near-hi);outline-offset:2px}
 }
 
+/* a scene title that keeps its case (data-keepcase): uppercasing would print a different symbol. Its σ comes from a
+   fallback font, so the fallback is scaled to the mono's own x-height. */
+.film .scene[data-keepcase] .scene-title, .film :is(.slate-scene,.tp-scene,.cb-k).keep{text-transform:none;font-size-adjust:from-font}
+
 /* the page without script: the settled frame */
 
 html:not(.js) .film{
@@ -242,6 +271,8 @@ html:not(.js) .film{
   .o-ring[data-entity="usd"]{stroke-dasharray:2 5;stroke-opacity:0.38}
 }
 :root:not(.film-on) .film [data-when]:not([data-when="money"]), .film.article [data-when]:not([data-when="money"]){display:none}
+/* the ladder's note repeats the pay note and adds to it, so a page that prints both keeps only the ladder's */
+:root:not(.film-on) .film .notes > .tp-note:has(+ .tp-note), .film.article .notes > .tp-note:has(+ .tp-note){display:none}
 
 /* before film.js runs: the thesis, nothing on cue */
 .js:not(.film-on) .film{
@@ -255,6 +286,9 @@ html:not(.js) .film{
 .js .film:not(.article){
   height:100dvh;overflow:hidden;padding:0;
   display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"slate" "frame" "cap" "transport";
+  /* the shot shows a short form of a long test; the reading view prints the claim's own */
+  .test-short{display:block}
+  .test-full{display:none}
 
   .film-chart .checklist{max-height:calc(100dvh - 360px);overflow:hidden;mask-image:linear-gradient(#000 78%,transparent)}
   /* the orbit's two readings share one place, so the picture never moves */
@@ -288,8 +322,10 @@ html:not(.js) .film{
     background:linear-gradient(90deg, var(--sky) 0 50%, rgba(7,8,12,0.6) 72%, rgba(7,8,12,0) 92%)}
   .shot[data-kind="verdict"]{isolation:isolate}
   .vframe{padding:2vh 0}
-  .split ~ .vframe{position:absolute;inset:0;display:grid;align-content:center;justify-items:start;padding:0 0 0 1px}
+  .split ~ .vframe{position:absolute;inset:0;margin:0;display:grid;align-content:center;justify-items:start;padding:0 0 0 1px}
   .shot:has(> .vframe[data-st="in"]) > .split{opacity:0.1}
+  /* a stamped exhibit behind the next claim's verdict: its own verdict does not show through */
+  .shot[data-st="behind"] > .vframe{visibility:hidden}
   .orbit{height:100%}
   .o-cam{width:min(100%, calc(100dvh - 390px), 640px)}
 
@@ -318,9 +354,6 @@ html:not(.js) .film{
   [data-st="in"][data-fx="slam"]{transform:scale(calc(1.18 - 0.18 * var(--p)))}
   [data-st="in"][data-fx="stamp"]{transform:translateX(calc(var(--sh,0) * 1px)) scale(calc(1.3 - 0.3 * var(--p)))}
   [data-fx="stamp"] .stamp-word{font-stretch:calc(125% - 25% * var(--p,1))}
-  [data-fx="narrow"]{font-stretch:calc(125% - 50% * var(--p,1))}
-  [data-fx="widen"]{font-stretch:calc(75% + 50% * var(--p,1))}
-  :is([data-fx="narrow"],[data-fx="widen"]){contain:layout paint}
   [data-st="in"][data-fx="drop"]{transform:translateY(calc((1 - var(--p)) * -24px));opacity:var(--p)}
   [data-st="in"][data-fx="wipe"]{clip-path:inset(0 calc((1 - var(--p)) * 100%) 0 0)}
   [data-fx="reveal"] .plot{clip-path:inset(-12px calc((1 - var(--p,1)) * 100%) -12px -12px)}
@@ -354,6 +387,11 @@ html:not(.js) .film{
   > :not(.tp-play):not(.tp-ev){display:none}
   .tp-ev{margin-left:auto}
 }
+/* the way on from the open desk, beside Play while the reader holds d5 */
+.js .film .transport > .tp-go{display:none}
+.js .film.open:has(#sim[data-film="open"]) .transport > .tp-go{display:inline-flex;order:1;min-height:40px;font-size:11px}
+.js .film.open .transport > .tp-ev{order:2}
+.tp-go-s{display:none}
 
 /* the evidence dialog */
 
@@ -373,7 +411,7 @@ dialog.ev{
   .ev-body{flex:1 0 auto;padding:8px 24px 24px}
   .ev-item{padding:18px 0 22px;border-bottom:1px solid var(--hair)}
   .ev-item:last-child{border-bottom:0}
-  .ev-item > *{max-width:100%;margin-top:0}
+  .ev-item > *{max-width:100%;margin-top:0;scroll-margin-top:96px} /* lands below the sticky head */
   .ev-item .card{margin:0;padding:0;border:0;background:none;box-shadow:none}
   .ev-item .claim-block{border-top:0;padding-top:0}
   .ev-full{position:sticky;bottom:0;margin:0;padding:14px 24px calc(16px + env(safe-area-inset-bottom,0px));background:var(--sky-2);border-top:1px solid var(--hair);font-size:14px}
@@ -452,7 +490,10 @@ dialog.ev{
  }
 
   .js .film .transport:not([hidden]){display:grid;grid-template-columns:44px 52px 44px minmax(0,1fr) 44px auto;grid-template-areas:"track track track track track track" "prev play next time motion ev";gap:2px 8px;padding-top:0;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
-  .js .film.open .transport:not([hidden]){grid-template-areas:"play ev ev ev ev ev"}
+  .js .film.open .transport:not([hidden]){grid-template-areas:"play go go go go ev"}
+  .js .film.open:has(#sim[data-film="open"]) .transport > .tp-go{grid-area:go;justify-self:start;margin-left:8px;padding:4px 14px}
+  .tp-go-l{display:none}
+  .tp-go-s{display:inline}
   .film{
     .tp-prev{grid-area:prev}
     .tp-play{grid-area:play}

@@ -45,6 +45,36 @@ resolve = "A venue check from a non-US network, with each venue's HTTP status."
 links = []
 
 [[items]]
+id = "perp-venues-us"
+title = "A NEAR perpetual for US holders, too new to test"
+status = "open"
+refs = []
+affects = ["H8", "H10", "c26"]
+text = "The ladder is tested on Hyperliquid and Binance, which are reported to exclude US persons (neither's terms were read first-hand here), and Kraken's own instrument record lists only non-US platforms for its NEAR perpetual. Coinbase Derivatives has listed a US-regulated NEAR perpetual-style future since {vol_perp_cb_listed}, which US customers trade in dollars through Coinbase Financial Markets, so an approved US holder can run the ladder there. Coinbase's help pages, read {vol_perp_cb_access_read}, say access needs an approved application and an eligible address, set position limits by income and net worth, and may not be available in every jurisdiction; they name no US state as excluded. Its record holds {vol_perp_cb_days} of daily bars, short of the one-year window the test needs, and Coinbase publishes its funding history only on request, so neither claim reads it."
+resolve = "A year of Coinbase's NEAR perpetual record with its hourly funding, run through the same test as Hyperliquid and Binance."
+links = [{ label = "Coinbase: US perpetual-style futures", href = "https://help.coinbase.com/en/coinbase/derivatives/us-perpetual-futures-overview" }, { label = "Coinbase: US derivatives eligibility", href = "https://help.coinbase.com/en/coinbase/derivatives/us-derivatives-intro" }]
+
+[[items]]
+id = "perp-near-com"
+title = "near.com's perpetual market and fees"
+status = "unverified"
+refs = []
+affects = ["H8", "c26"]
+text = "near.com's own perpetual market list and fees could not be read; the test uses Hyperliquid's public book, which near.com says it routes to."
+resolve = "near.com's NEAR perpetual market and fee schedule, read first-hand."
+links = []
+
+[[items]]
+id = "perp-kraken-units"
+title = "Kraken's funding rate period"
+status = "unverified"
+refs = []
+affects = ["c26"]
+text = "Kraken's published funding rate is used only for its sign, because the period it is quoted for was not confirmed first-hand."
+resolve = "Kraken's documentation or a first-hand read that states the period its NEAR funding rate is quoted for."
+links = []
+
+[[items]]
 id = "treasury-outflow"
 title = "Purpose of the treasury outflow"
 status = "unverified"
@@ -69,7 +99,7 @@ id = "bigquery-freshness"
 title = "BigQuery freshness"
 status = "depends on BigQuery"
 refs = []
-affects = ["H10", "c05", "c16"]
+affects = ["c05", "c16"]
 text = "Exact burn figures need the public NEAR BigQuery dataset, whose latest block date is {bq_max_date}; where it has no data the figure is labelled sampled or upper bound."
 resolve = "The BigQuery dataset keeping pace with the chain (the data page shows its lag in days)."
 links = [{ label = "NEAR docs: BigQuery public dataset", href = "https://docs.near.org/data-infrastructure/big-query" }]

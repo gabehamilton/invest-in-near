@@ -12,7 +12,7 @@ from pipeline.models import verdicts as V
 from pipeline.numbers import Registry
 
 RULES_PATH = config.ROOT / "thesis" / "rules.toml"
-CONTRACT_CLAIMS = ["H1", "H1b", "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9", "H10", "H12", "H6_near"]
+CONTRACT_CLAIMS = ["H1", "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H10", "H9", "H6_near"]
 
 
 def reg_with(**values) -> Registry:
@@ -152,6 +152,18 @@ def test_not_computed_if_gives_its_reason():
     assert V.evaluate_claim("H2", r, reg_with(a=5))["verdict"] == V.SUPPORTED
 
 
+def test_not_computed_if_accepts_or_over_several_records():
+    # H8 and H10 read one record per venue: too few years on any one of them stops the claim
+    r = claim(metrics=["a"], requires=["a", "y1", "y2"], not_computed_if="y1 < 3 or y2 < 3",
+              not_computed_reason="too few years")
+    for y1, y2 in ((2, 4), (4, 2), (2, 2)):
+        out = V.evaluate_claim("H2", r, reg_with(a=5, y1=y1, y2=y2))
+        assert out["verdict"] == V.NOT_COMPUTED and out["null_reason"] == "too few years", (y1, y2)
+    assert V.evaluate_claim("H2", r, reg_with(a=5, y1=3, y2=4))["verdict"] == V.SUPPORTED
+    out = V.evaluate_claim("H2", r, reg_with(a=5, y1=3, y2=(None, "no funding file")))
+    assert out["verdict"] == V.NOT_COMPUTED and "no funding file" in out["null_reason"]
+
+
 def test_tripwire_states():
     trip = {"metric": "a", "threshold_text": "t", "expr": "a > 1", "meaning": "m", "chart": "c01"}
     assert V.evaluate_tripwire("T1", trip, reg_with(a=2))["tripped"] is True
@@ -214,7 +226,7 @@ def test_margin_skips_a_comparison_on_a_ratio_of_two_keys():
 
 
 def test_margin_on_abs_of_a_difference_carries_the_key_unit():
-    # H12's margin is |staker - nonstaker| in pp, not a multiple ("abs" is not a registry key)
+    # a margin on abs(a - b) carries the unit of a, in pp, not a multiple
     rules = {"meta": {"hypothesis": "alpha"},
              "H1": claim(claimed="alpha", metrics=["a", "b"], supported="abs(a - b) < 0.1",
                          refuted="abs(a - b) >= 0.1")}
@@ -303,7 +315,7 @@ def rules():
 def test_rules_file_is_valid_and_complete(rules):
     V.validate_rules(rules)
     assert list(V.claims(rules)) == CONTRACT_CLAIMS
-    assert {cid for cid, r in V.claims(rules).items() if r["kind"] == "hidden"} == {"H9", "H10", "H12"}
+    assert {cid for cid, r in V.claims(rules).items() if r["kind"] == "hidden"} == {"H9"}
     assert {cid for cid, r in V.claims(rules).items() if r["kind"] == "reframe"} == {"H6_near"}
     assert set(rules) == {"meta", "params", "labels", "tripwires", "crosschecks", *CONTRACT_CLAIMS}
     assert list(V.tripwires(rules)) == [f"T{i}" for i in range(1, 9)]
@@ -336,8 +348,7 @@ def test_rules_file_thresholds_are_parsed_not_evaluated_as_python(rules):
     for cid, r in V.claims(rules).items():
         for field in V.EXPR_FIELDS:
             if field in r:
-                assert set(V.keys_in(r[field])) <= set(V.contract_keys(rules)) | {
-                    "vrp_near_mean", "vrp_near_t", "vrp_near_days"}, (cid, field)
+                assert set(V.keys_in(r[field])) <= set(V.contract_keys(rules)), (cid, field)
 
 
 @pytest.mark.parametrize("narrower,wider,expected", [
@@ -406,13 +417,18 @@ def _names(expr: str) -> set[str]:
 
 @pytest.fixture(scope="module")
 def model_registry():
-    """Every model's compute() on this repository's data/raw, in build order (offline)."""
+    """Every model's compute() on this repository's data/raw, in build order (offline). The shuffled histories
+    run at a small draw count: these tests read which keys exist, not the ranks."""
     import importlib
 
     from pipeline.build import MODEL_ORDER, MODEL_PACKAGE
+    from pipeline.models import perps, volatility
     reg = Registry()
-    for name in MODEL_ORDER:
-        importlib.import_module(f"{MODEL_PACKAGE}.{name}").compute(reg)
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(volatility, "NULL_DRAWS", 20)
+        mp.setattr(perps, "DRAWS", 20)
+        for name in MODEL_ORDER:
+            importlib.import_module(f"{MODEL_PACKAGE}.{name}").compute(reg)
     return reg
 
 

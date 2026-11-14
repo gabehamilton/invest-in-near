@@ -41,7 +41,6 @@ from pipeline.numbers import Registry
 
 # --- parameters (sampling rules; not output figures) -------------------------------------------------------
 EDGE_DAYS = 7                     # nearest-sample tolerance at a window edge
-BURN_MAJORITY_PCT = param("burn_majority_pct")   # c05 title switch = H10's supported cut-off (rules.toml [params])
 T3_BURN_PCT = param("t3_burn_pct")               # tripwire T3's burn share; burn_needed_t3 is that share of mint
 GAP_DAYS = 35                     # consecutive samples further apart than this are a coverage gap
 WINDOW_DAYS = 365                 # trailing window for g_365, burn_share_365
@@ -907,21 +906,6 @@ def compute(reg: Registry) -> None:
         put(reg, "ceiling_365", None, "%", "F-ceiling", files,
             reason=m.g365_reason or "no ceiling schedule over the trailing window")
 
-    if m.g365:
-        if m.g365["g"] >= 0:
-            run = 0
-        else:
-            run_start = m.series[-1]["r1"]["date"]
-            for prev, cur in zip(reversed(m.series[:-1]), reversed(m.series)):
-                if prev["g"] >= 0 or (cur["r1"]["date"] - prev["r1"]["date"]).days > GAP_DAYS:
-                    break
-                run_start = prev["r1"]["date"]
-            run = (m.g365["r1"]["date"] - run_start).days
-        put(reg, "g_365_neg_run_days", run, "days", "F-growth", files,
-            ["g_365 at each sample date, consecutive negative windows ending at the latest sample"])
-    else:
-        put(reg, "g_365_neg_run_days", None, "days", "F-growth", files, reason=m.g365_reason or no_rpc)
-
     # --- ceiling ------------------------------------------------------------------------------------
     year_gaps = [y for y in m.years if y["gap_pp"] is not None]
     bracketed = [y["year"] for y in m.years if y["ceil"] is not None and not y["ceil_exact"]]
@@ -1273,7 +1257,7 @@ def rolling_growth(reg: Registry, m: SupplyModel) -> Chart:
     if m.flow_files:
         queries.append(sql_query("daily_supply_flows"))
     chart = Chart(
-        id="c02", section="O1", priority="lead", claims=["H1"], title="", sentence="", form="line",
+        id="c02", section="O1", priority="lead", claims=[], title="", sentence="", form="line",
         sources=[RPC_SOURCE + ": block header total_supply (rpc/history_samples.csv, rpc/dense_samples.csv), "
                  "EXPERIMENTAL_protocol_config max_inflation_rate (rpc/protocol_changes.csv for the exact change "
                  "block)"] + (["NEAR RPC epoch mints and burns, one complete epoch per month "
@@ -1281,8 +1265,8 @@ def rolling_growth(reg: Registry, m: SupplyModel) -> Chart:
         queries=queries, table={"columns": [], "rows": []},
         code_ref="pipeline/models/supply.py::rolling_growth",
         formula_ids=["F-growth", "F-ceiling"] + (["F-mint-check"] if m.epochs else []),
-        eyebrow="O1 · tests H1", x={"type": "time"}, y={"unit": "%"},
-        verdicts=["H1"], as_of=as_of(m.files))
+        eyebrow="O1 · supply against the issuance ceiling", x={"type": "time"}, y={"unit": "%"},
+        verdicts=[], as_of=as_of(m.files))
     # the sign becomes the verb; a shrinking supply prints its figure unsigned
     g = val(reg, "g_365")
     moved = "shrank {g_365:abs}" if g is not None and g < 0 else "grew {g_365}"
@@ -1294,8 +1278,7 @@ def rolling_growth(reg: Registry, m: SupplyModel) -> Chart:
     # one plain sentence says what is drawn; the caveat reconciles the gray line with the nominal ceiling; the
     # method detail (cadence, calendar-year gap, mint check) sits in the notes
     chart.sentence_template = ("Blue is how much NEAR's supply grew over the trailing year at each sample date; gray "
-                               "is the most the issuance ceiling allowed over the same window, and a point below "
-                               "zero would mean supply shrank.")
+                               "is the most the issuance ceiling allowed over the same window.")
     chart.caveat_template = pick(reg, [
         "The gray line compounds the nominal ceiling as it mints, so a full year at today's {i_max_now} allows "
         "{ceiling_365}; growth of {g_365} sits below both.",
@@ -1320,8 +1303,7 @@ def rolling_growth(reg: Registry, m: SupplyModel) -> Chart:
         Series("ceiling", "Issuance ceiling over the same window", "context", with_breaks(cpts),
                role="context", underlay=True),
     ]
-    # the zero line is unlabeled on the plot (a legend swatch for the axis baseline was clutter); the sentence
-    # says what falling below it means
+    # the zero line is unlabeled on the plot (a legend swatch for the axis baseline was clutter)
     chart.reference_lines = [{"y": 0, "label": "zero"}]
     columns = ["kind", "period", "start_sample", "end_sample", "days", "growth_pct", "ceiling_pct", "ceiling_basis",
                "ceiling_minus_growth_pp"]
@@ -1408,7 +1390,7 @@ def mint_burn(reg: Registry, m: SupplyModel) -> Chart:
     queries += block_queries(m.smp)
     files = sorted(set(sum((c.files for c in m.burn), [])) | set(m.files) | set(gross_files))
     chart = Chart(
-        id="c05", section="O3", priority="lead", claims=["H10"], title="", sentence="", form="column",
+        id="c05", section="O3", priority="lead", claims=[], title="", sentence="", form="column",
         sources=[RPC_SOURCE + ": block header total_supply, EXPERIMENTAL_protocol_config max_inflation_rate"] +
                 (["NEAR RPC mint at every epoch boundary of the trailing year (data/raw/rpc/epoch_mints.csv)"]
                  if any(c.method == "epochs" for c in m.burn) else []) +
@@ -1417,31 +1399,25 @@ def mint_burn(reg: Registry, m: SupplyModel) -> Chart:
                 ([f"BigQuery {BQ_DATASET}.blocks via sql/daily_supply_flows.sql"] if m.flow_files else []),
         queries=queries, table={"columns": [], "rows": []}, code_ref="pipeline/models/supply.py::mint_burn",
         formula_ids=sorted({c.formula for c in m.burn if c.formula} | {"F-burn-ub"}) or ["F-burnshare", "F-burn-ub"],
-        eyebrow="O3 · tests H10 · trailing year, " + (label or "not computed"),
-        # the axis fits the columns: a fixed full-issuance scale left them as slivers; the sentence states the
-        # full-issuance line instead of drawing it off in empty space. pack: a column draws only the methods it
+        eyebrow="O3 · fee burn against issuance · trailing year, " + (label or "not computed"),
+        # the axis fits the columns: a fixed full-issuance scale left them as slivers; the sentence and a note
+        # state where burn would match issuance instead of drawing it. pack: a column draws only the methods it
         # has (the trailing year's exact column and the years' sampled ones share a slot)
-        x={"type": "category", "pack": True}, y={"unit": "%"}, verdicts=["H10"], as_of=as_of(files))
-    share = val(reg, "burn_share_365")
-    if share is not None and share >= BURN_MAJORITY_PCT:
-        lead_title = ["Fee burn now offsets {burn_share_365} ({burn_method}) of issuance."]
-    elif kind == "epochs":
+        x={"type": "category", "pack": True}, y={"unit": "%"}, verdicts=[], as_of=as_of(files))
+    # the title states the measurement, never a judgment against a threshold
+    if kind == "epochs":
         lead_title = ["Fees burned {burn_share_365} of the NEAR minted in the last year ({burn_method}, "
-                      "{n_burn_epochs_365} epochs): usage does not offset issuance.",
-                      "Fees burned {burn_share_365} of the NEAR minted in the last year ({burn_method}): usage does "
-                      "not offset issuance."]
+                      "{n_burn_epochs_365} epochs).",
+                      "Fees burned {burn_share_365} of the NEAR minted in the last year ({burn_method})."]
     elif kind == "sampled":
         # the sampled share rests on a handful of epochs; the hard upper bound travels with it
         lead_title = ["Fees burned about {burn_share_365} of the NEAR minted in the last year ({burn_method}, "
-                      "{n_burn_epochs_365} epochs) and at most {burn_share_365_ub}: usage does not offset issuance.",
-                      "Fees burned about {burn_share_365} of the NEAR minted in the last year ({burn_method}): usage "
-                      "does not offset issuance."]
+                      "{n_burn_epochs_365} epochs) and at most {burn_share_365_ub}.",
+                      "Fees burned about {burn_share_365} of the NEAR minted in the last year ({burn_method})."]
     elif kind == "upper bound":
-        lead_title = ["Fees burned at most {burn_share_365} of the NEAR minted in the last year ({burn_method}): "
-                      "usage does not offset issuance."]
+        lead_title = ["Fees burned at most {burn_share_365} of the NEAR minted in the last year ({burn_method})."]
     else:
-        lead_title = ["Fees burned {burn_share_365} of the NEAR minted in the last year: usage does not offset "
-                      "issuance."]
+        lead_title = ["Fees burned {burn_share_365} of the NEAR minted in the last year."]
     chart.title_template = pick(reg, lead_title + ["NEAR fee burn as a share of issuance, by year."])
     hsp027 = put_hsp027(reg)
     paired = kind == "sampled" or any(c.method == "sampled" for c in m.burn)
@@ -1473,7 +1449,7 @@ def mint_burn(reg: Registry, m: SupplyModel) -> Chart:
         "so the true share cannot exceed it; over the trailing year it is {burn_share_365_ub}.",
         "The developer gas rebate ended at block {hsp027_height} on {hsp027_from}, so from then the whole gas fee "
         "burns; before, part of it went to the called contract.",
-        "The axis is scaled to the columns, which sit far below the full-issuance line.",
+        "The axis is scaled to the columns rather than to all of issuance.",
     ])
     if not m.burn or not any(c.method for c in m.burn):
         chart.resolve(reg)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import socket
 import sys
 from datetime import date
@@ -335,9 +336,10 @@ def test_diff_trees_reports_changed_missing_and_extra(tmp_path):
 def test_model_order_matches_contract():
     # a model reads only keys registered by the models before it; sweep reads every earlier one, and the desk
     # simulation (portfolio) reads sweep's exit-liquidity keys; pay (the policy rates the title compares with staking)
-    # reads money's panel and staking's yield, and runs last so it changes nothing the others read
-    assert b.MODEL_ORDER == ("supply", "staking", "holders", "macro", "market", "demand", "derivatives", "currencies",
-                             "money", "sweep", "portfolio", "pay")
+    # reads money's panel and staking's yield; volatility reads the desk share (sim_share), and perps runs last: its
+    # rows of c25 are read when the charts are made, after every model has registered its keys
+    assert b.MODEL_ORDER == ("supply", "staking", "holders", "macro", "advantage", "market", "demand", "derivatives",
+                             "currencies", "money", "sweep", "portfolio", "pay", "volatility", "perps")
 
 
 def test_missing_model_is_a_clear_error(repo):
@@ -386,6 +388,90 @@ def test_copy_condition_on_unknown_id_is_an_error(repo):
     copy.write_text(copy.read_text().replace('when = ["H1=Supported"]', 'when = ["H77=Supported"]'))
     with pytest.raises(b.BuildError, match="H77"):
         run_build(repo)
+
+
+# the values each text key that copy conditions read can take (the interface contract, spec 8.3)
+TEXT_KEY_VALUES = {"vol_rally_band": {"above", "inside", "below"}, "vol_rebal_band": {"above", "inside", "below"},
+                   "h2_gap_dir": {"slower", "faster"}, "sim_strategy_mode": {"rebalance", "hold"},
+                   "vol_cmp_winner": {"rallies", "rebalancing", "ladder", "split"},
+                   "vol_cmp_bn_winner": {"rallies", "rebalancing", "ladder"},
+                   "vol_cmp_hl_winner": {"rallies", "rebalancing", "ladder"}}
+PLACEHOLDER_KEY = re.compile(r"\{([a-z_][a-z0-9_]*)(?::[^{}]*)?\}")
+
+
+def _copy_problems(data: dict, exempt: dict[str, str]) -> list[str]:
+    """Every `when` entry of every variant of every copy key, evaluated with no short-circuit (so a stale id raises
+    BuildError even behind a variant that matches first), each wanted value of a contract text key, and every
+    {placeholder} checked against the registry. `exempt` maps a key prefix to why it may be absent."""
+    h = b.Helpers(data, "md")
+    problems = []
+    for name, entry in (data["copy"] or {}).items():
+        for v in entry.get("variants", []):
+            for c in v.get("when", []):
+                h.condition(c)
+                subject, _op, wanted = b.COND_RE.match(c).groups()
+                if subject in TEXT_KEY_VALUES and not set(wanted.split("|")) <= TEXT_KEY_VALUES[subject]:
+                    problems.append(f"{name}: {c} wants a value {subject} never takes")
+            for k in PLACEHOLDER_KEY.findall(v.get("text", "")):
+                if k not in data["numbers"] and not k.startswith(tuple(exempt)):
+                    problems.append(f"{name}: {{{k}}} is not a registered key")
+    return problems
+
+
+def test_copy_conditions_name_live_ids_and_keys(repo):
+    run_build(repo)
+    data = b.load_site_data(repo.paths)
+    assert _copy_problems(data, {}) == []
+    # a stale id behind a variant that matches first: select_copy never reads it, the full scan does
+    first = next(n for n, e in data["copy"].items() if b.Helpers(data, "md").select_copy(n) is e["variants"][0])
+    data["copy"][first]["variants"].insert(1, {"when": ["H77=Supported"], "text": "stale"})
+    b.Helpers(data, "md").select_copy(first)
+    with pytest.raises(b.BuildError, match="H77"):
+        _copy_problems(data, {})
+    data["copy"][first]["variants"].pop(1)
+    data["copy"][first]["variants"].insert(1, {"when": [], "text": "{no_such_key}"})
+    assert _copy_problems(data, {}) == [f"{first}: {{no_such_key}} is not a registered key"]
+
+    # the real copy against the real built registry, when site/data holds a build of this checkout
+    real = b.Paths(root=Path(__file__).resolve().parents[1], out=Path(__file__).resolve().parents[1])
+    if not (real.root / "site" / "data" / "numbers.json").exists():
+        pytest.skip("site/data is not built (run make charts)")
+    data = b.load_site_data(real)
+    exempt = {}
+    if not any(k.startswith("sim_") for k in data["numbers"]):
+        exempt["sim_"] = "the desk simulation is optional: a build without its keys omits the desk and its copy"
+    assert _copy_problems(data, exempt) == []
+    # sim.json's fixed displays are keyed by the registry names the sim_* copy prints (the renamed H1 month keys)
+    sim = real.root / "site" / "data" / "sim.json"
+    if "sim_" not in exempt and sim.exists():
+        fixed = json.loads(sim.read_text(encoding="utf-8")).get("fixed") or {}
+        assert {"h1_months_below", "h1_months_with_data"} <= set(fixed), sorted(fixed)
+        assert [k for k in fixed if k not in data["numbers"]] == []
+
+
+def test_claim_orders_agree():
+    """The three hard-coded claim orders agree with rules.toml: the index ledger (H6_near after H6), THESIS.md's two
+    ledgers (no H6_near), and the index evidence groups (every claim exactly once)."""
+    import ast
+    import tomllib
+
+    root = Path(__file__).resolve().parents[1]
+    rules = tomllib.loads((root / "thesis" / "rules.toml").read_text(encoding="utf-8"))
+    order = [cid for cid, t in rules.items() if isinstance(t, dict) and "kind" in t]
+
+    def jinja_list(path: Path, name: str):
+        src = path.read_text(encoding="utf-8")
+        m = re.search(rf"\{{%-?\s*set {name} = (.*?)\s*-?%\}}", src, re.S)
+        assert m, f"{path.name}: no `set {name}`"
+        return ast.literal_eval(m.group(1))
+
+    index, thesis = root / "templates" / "index.html.j2", root / "templates" / "THESIS.md.j2"
+    reframed = [c for c in order if c != "H6_near"]
+    expected = reframed[:reframed.index("H6") + 1] + ["H6_near"] + reframed[reframed.index("H6") + 1:]
+    assert jinja_list(index, "ledger_order") == expected
+    assert jinja_list(thesis, "ledger_main") + jinja_list(thesis, "ledger_hidden") == reframed
+    named = [c for g in jinja_list(index, "groups") for c in g["claims"]]
+    assert sorted(named) == sorted(order) and len(named) == len(set(named)), named
 
 
 def test_template_printing_none_fails(repo):

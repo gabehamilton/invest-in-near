@@ -13,7 +13,7 @@ A NEAR investment hypothesis, tested claim by claim against public on-chain and 
 ## Tally
 
 - Tally: {{ copy('ledger_tally') }}
-{%- set tf = namespace(ok=true) %}{% for k in ['h1b_n_faster', 'n_fiat_money', 'pay_n_below', 'pay_n_with_rate', 'hold_near_rank', 'hold_n_ranked'] if k not in numbers or numbers[k].get('value') is none %}{% set tf.ok = false %}{% endfor %}
+{%- set tf = namespace(ok=true) %}{% for k in ['h1_n_faster', 'n_fiat_money', 'pay_n_below', 'pay_n_with_rate', 'pay_near_rank', 'pay_n_ranked', 'latest_rpc_date'] if k not in numbers or numbers[k].get('value') is none %}{% set tf.ok = false %}{% endfor %}
 {%- if tf.ok %}
 - Title figures: {{ copy('llms_title_figures') }}
 {%- endif %}
@@ -41,5 +41,5 @@ A NEAR investment hypothesis, tested claim by claim against public on-chain and 
 - Quote a figure only together with its registry key from numbers.json. A figure without a key is not the site's.
 - Verdicts are one of supported, partly supported, refuted, not testable or not computed. Read the rule before you argue with the verdict.
 - Scope: the current macro environment and NEAR's current utility. Past price is an indicator, not a target; governance is left out.
-- Nothing here is investment advice.
+- {{ copy('disclaimer') }}
 {%- endautoescape %}

@@ -10,20 +10,20 @@
 {%- autoescape true -%}
 {%- set film_on = film is defined and film -%}
 {%- set groups = [
-  {'id': 'title', 'claims': ['H1b'], 'charts': ['c21']},
-  {'id': 'word', 'claims': ['H1', 'H10'], 'charts': ['c02', 'c05', 'c06']},
-  {'id': 'money', 'claims': ['H2'], 'charts': ['c11']},
-  {'id': 'yield', 'claims': ['H3', 'H5', 'H4'], 'charts': ['c01', 'c13', 'c12']},
-  {'id': 'cost', 'claims': ['H12', 'H6', 'H6_near', 'H9', 'H7'], 'charts': ['c03', 'c14', 'c07', 'c09', 'c08']},
-  {'id': 'ledger', 'claims': ['H8'], 'charts': ['c15']},
+  {'id': 'title', 'claims': ['H1'], 'charts': ['c21']},
+  {'id': 'supply', 'claims': [], 'charts': ['c02', 'c03', 'c05', 'c06']},
+  {'id': 'money', 'claims': ['H2'], 'charts': ['c11', 'c23']},
+  {'id': 'yield', 'claims': ['H3', 'H5', 'H4'], 'charts': ['c01', 'c13', 'c24']},
+  {'id': 'vol', 'claims': ['H6', 'H6_near', 'H9', 'H7'], 'charts': ['c14', 'c07', 'c09', 'c08']},
+  {'id': 'sell', 'claims': ['H8', 'H10'], 'charts': ['c26', 'c15', 'c25']},
+  {'id': 'ledger', 'claims': [], 'charts': []},
   {'id': 'desk', 'claims': [], 'charts': ['c30', 'c31', 'c32', 'c33']}
 ] -%}
 {%- set claim_charts = {
-  'H1': ['c02'], 'H1b': ['c21', 'c11'], 'H2': ['c11'], 'H3': ['c01', 'c12'], 'H4': ['c12'],
-  'H5': ['c13'], 'H6': ['c14'], 'H7': ['c09'], 'H8': ['c15'], 'H9': ['c07'], 'H10': ['c05'],
-  'H12': ['c03']
+  'H1': ['c21', 'c11'], 'H2': ['c23'], 'H3': ['c01'], 'H4': ['c24'], 'H5': ['c13'], 'H6': ['c14'],
+  'H7': ['c09'], 'H8': ['c26', 'c15'], 'H9': ['c07'], 'H10': ['c25']
 } -%}
-{%- set ledger_order = ['H1', 'H1b', 'H2', 'H3', 'H4', 'H5', 'H6', 'H6_near', 'H7', 'H8', 'H9', 'H10', 'H12'] -%}
+{%- set ledger_order = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H6_near', 'H7', 'H8', 'H10', 'H9'] -%}
 <!doctype html>
 <html lang="en"{% if film_on %} data-theme="dark"{% endif %}>
 <head>
@@ -98,7 +98,7 @@
 
 <section id="mind" class="wrap" aria-labelledby="mind-h">
   <h2 id="mind-h">What would change my mind</h2>
-  <p class="note">{{ copy('tripwires_intro') }} The supply comparison fails on {{ ident('H1b') }}'s own rule, {{ rule('H1b', 'refuted') }}; the staking comparison on {{ ident('H3') }}'s, {{ rule('H3', 'refuted') }}.</p>
+  <p class="note">{{ copy('tripwires_intro') }} The supply comparison fails on {{ ident('H1') }}'s own rule, {{ rule('H1', 'refuted') }}; the staking comparison on {{ ident('H3') }}'s, {{ rule('H3', 'refuted') }}.</p>
   {%- for group, heading, intro in [('break', 'What would break it', 'tripwires_break_intro'), ('confirm', 'What would confirm it', 'tripwires_confirm_intro')] %}
   {%- set rows = [] %}
   {%- for tid, tw in tripwires.items() if (tw.get('group') or 'break') == group %}{% set _ = rows.append((tid, tw)) %}{% endfor %}
@@ -150,38 +150,15 @@
 </section>
 
 {#- The agent module: the last stage, after the limits. Prose and the prompt live in thesis/copy.toml; the prompt
-    names the published site through "SITE/", filled in here. Agents are listed in the order the module
-    recommends them; the links go to each product's front door, not to a prefilled prompt. -#}
+    names the published site through "SITE/", filled in here. The cards are the shared macro, which the film's
+    closing scene also shows (without ids). -#}
 {%- set site_root = build.get('site_url') or '' -%}
 {%- set agent_prompt = copy('agent_prompt')|replace('SITE/', site_root) -%}
-{%- set agents = [
-  {'id': 'nearai', 'name': 'NEAR AI Cloud', 'tag': copy('agent_nearai_tag'), 'text': copy('agent_nearai_text'), 'attach': true,
-   'links': [('Open NEAR AI Private Chat', 'https://private.near.ai'), ('NEAR AI Cloud account', 'https://cloud.near.ai')]},
-  {'id': 'chatgpt', 'name': 'ChatGPT', 'tag': '', 'text': copy('agent_chatgpt_text'), 'attach': false,
-   'links': [('Open ChatGPT', 'https://chatgpt.com')]},
-  {'id': 'claude', 'name': 'Claude', 'tag': '', 'text': copy('agent_claude_text'), 'attach': false,
-   'links': [('Open Claude', 'https://claude.ai/new')]}
-] -%}
 <section id="agent" class="wrap" aria-labelledby="agent-h">
   <h2 id="agent-h">{{ copy('agent_heading') }}</h2>
   <p class="para">{{ copy('agent_intro') }}</p>
   <p class="note">{{ copy('agent_privacy') }}</p>
-  <ol class="agents">
-    {%- for a in agents %}
-    <li class="agent" id="agent-{{ a.id }}" data-agent="{{ a.id }}">
-      <h3 class="agent-name">{{ a.name }}{% if a.tag %} <span class="agent-tag">{{ a.tag }}</span>{% endif %}</h3>
-      <p>{{ a.text }}</p>
-      <div class="agent-actions">
-        <button type="button" class="agent-copy" hidden{% if a.attach %} data-attach="THESIS.md"{% endif %}>Copy prompt{% if a.attach %} and THESIS.md{% endif %}</button>
-        {%- for label, href in a.links %}
-        <a class="agent-open" href="{{ href }}" target="_blank" rel="noopener noreferrer">{{ label }}</a>
-        {%- endfor %}
-        {%- if a.attach %}<a class="agent-open" href="THESIS.md">THESIS.md</a>{% endif %}
-        <span class="agent-status" role="status" aria-live="polite"></span>
-      </div>
-    </li>
-    {%- endfor %}
-  </ol>
+  {{ m.agent_cards() }}
   <p class="note">{{ copy('agent_cli') }}</p>
   <div class="cmd"><pre><code>make explore THESIS=mine.md</code></pre></div>
   <details class="agent-prompt" open>
@@ -212,12 +189,15 @@
 </dialog>
 <div class="transport" hidden>
   <button type="button" data-act="prev" aria-label="Previous shot" aria-keyshortcuts="ArrowLeft">Previous</button>
-  <button type="button" data-act="play" aria-label="Play" aria-keyshortcuts="Space" data-label-pause="Pause" data-label-replay="Replay">Play</button>
+  <button type="button" data-act="play" aria-label="Play" aria-keyshortcuts="Space" data-label-pause="Pause" data-label-replay="Replay" data-label-next="Next scene">Play</button>
   <button type="button" data-act="next" aria-label="Next shot" aria-keyshortcuts="ArrowRight">Next</button>
   <output class="t-time" aria-live="off"></output>
   <input class="t-scrub" type="range" min="0" max="1" step="any" value="0" aria-label="Position in the film">
   <button type="button" data-act="motion" aria-pressed="true" aria-keyshortcuts="M">Motion</button>
   <button type="button" data-act="evidence" aria-haspopup="dialog" aria-controls="ev-dialog" aria-keyshortcuts="E">Evidence</button>
+  {%- if film.desk %}
+  <a class="tp-go" href="#scene-agent" data-skip="agent"><span class="tp-go-l">{{ copy('film_desk_next') }}</span><span class="tp-go-s">{{ copy('film_scene_agent_short') }}</span></a>
+  {%- endif %}
 </div>
 <div class="capband" aria-live="polite" hidden><p class="capband-text"></p></div>
 {%- endif %}

@@ -1,0 +1,29 @@
+{
+  "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume_contracts"
+  ],
+  "complete": true,
+  "description": "Coinbase Derivatives NEAR Perp (NER-20DEC30-CDE) daily candles (UTC days); volume_contracts is the number of contracts traded, 500 NEAR each; the venue reports no quote volume or trade count",
+  "error": null,
+  "excluded": "unfinished candle for 2026-11-14 (UTC)",
+  "fetched_at": "2026-11-14T03:26:48+00:00",
+  "file": "data/raw/perps/near_perp_coinbase_daily.csv",
+  "first_date": "2026-02-28",
+  "last_date": "2026-11-13",
+  "pages": 1,
+  "params": {
+    "from": "2026-02-01",
+    "granularity": "ONE_DAY",
+    "page_days": 300
+  },
+  "refresh": "full history re-downloaded every run; on a mid-run HTTP error the fetched rows replace matching cached rows and the rest of the cached file is kept (meta complete=false)",
+  "response_sha256": "6701f597e727e54f60a632ca708fe2d915969ad54f7852af615efbaa06b853a7",
+  "rows": 259,
+  "rows_from_previous_file": 0,
+  "source_url": "https://api.coinbase.com/api/v3/brokerage/market/products/NER-20DEC30-CDE/candles"
+}

@@ -175,13 +175,15 @@
      sentence above it print the same figure: rates 2 dp below 10 and 1 dp from 10; counts whole. */
   const rateDp = (v) => (Math.abs(v) < 10 ? 2 : 1);
   const wholeDp = (v) => (Number.isInteger(v) ? 0 : 1);
-  function fmt(v, unit) {
+  /* dp: the chart's own decimals (x.dp) where its registry figures print a fixed number of them (c25, c26) */
+  function fmt(v, unit, dp) {
     if (v === null || v === undefined) return 'no data';
     if (!isNum(v)) return String(v);
+    const rd = isNum(dp) ? dp : rateDp(v);
     switch (unit) {
-      case '%': return plain(v, rateDp(v)) + '%';
-      case 'pp': return (v > 0 ? '+' : '') + plain(v, rateDp(v)) + ' pp';
-      case 'x': return plain(v, rateDp(v)) + '×';
+      case '%': return plain(v, rd) + '%';
+      case 'pp': return (v > 0 ? '+' : '') + plain(v, rd) + ' pp';
+      case 'x': return plain(v, rd) + '×';
       case 'ratio': return plain(v, 2);
       case 'USD': return (v < 0 ? MINUS : '') + '$' + compact(Math.abs(v), true);
       case 'NEAR': return (Math.abs(v) >= 1e4 ? compact(v, true) : smart(v)) + ' NEAR';
@@ -1071,11 +1073,12 @@
     for (const a of anns.items) {
       const X = Math.round(a.x) + 0.5;
       const y1 = a.lines.length ? annTop + (a.l1 + 1) * LANE - 1 : lanesBottom - 4;
-      // the top of the annotated column (its tallest bar, or the zero line), less room for its value label
+      // the top of the annotated column (its tallest bar, or the zero line), less room for its value label: the
+      // marker and leader stop clear of that label's box (its top sits 15px above the bar)
       const ci = Math.floor((a.x - ml) / step);
       const tops = cands.filter((c) => c.i === ci).map((c) => Math.min(c.yEnd, zero));
       const colTop = tops.length ? Math.min(...tops) : zero;
-      const y2 = Math.max(y1 + 5, Math.min(colTop - 18, bottom - 4));
+      const y2 = Math.max(y1 + 5, Math.min(colTop - 22, bottom - 4));
       titled(svg('line', { x1: X, x2: X, y1, y2, 'stroke-dasharray': '2 2' }, ag), a.lines.length ? null : a.full);
       svg('path', { cls: 'ann-mark', d: `M${f1(X - 3.5)},${f1(y2)}L${f1(X + 3.5)},${f1(y2)}L${f1(X)},${f1(y2 + 4.5)}Z` }, ag);
       o.segs.push([X, y1, X, y2 + 5]);
@@ -1126,7 +1129,9 @@
     for (const l of cands) if (l.off) pri.set(l, 5);
     const lab = svg('g', { cls: 'value-labels', 'aria-hidden': 'true' }, s);
     const lim = [ml, annTop, W, H - mb + 2];
-    const order = cands.filter((l) => pri.has(l)).sort((a, b) => pri.get(b) - pri.get(a) || b.i - a.i);
+    // within a column the taller bar labels first, so a shorter neighbour's label never lifts into its place
+    const order = cands.filter((l) => pri.has(l))
+      .sort((a, b) => pri.get(b) - pri.get(a) || b.i - a.i || Math.abs(b.yEnd - zero) - Math.abs(a.yEnd - zero));
     for (const l of order) {
       const t = fmt(l.v, l.se.unit);
       const endpoint = l.i === n - 1 && l.se.role !== 'context';
@@ -1216,8 +1221,14 @@
     top = drawUnit(s, P.unit, W - mr, top, 'end');
     const lo = vi.lo;
     const hi = vi.hi;
-    // a reference line's label gets a line of its own over the rows, so it never meets a row's dot or value
-    const refs = P.refs.filter((r) => r.v !== 0 && r.v >= lo && r.v <= hi);
+    // a reference line's label gets a line of its own over the rows, so it never meets a row's dot or value; a
+    // labelled zero is drawn only when each series is keyed by its own label (c25), elsewhere the baseline is zero
+    const bySeries = P.x && P.x.legend === 'series';
+    const dp = P.x && isNum(P.x.dp) ? P.x.dp : undefined;
+    // a film shot about some rows (data-rows-on: their labels, joined by "|") keeps them at full strength, dims the rest
+    const onEl = g.el.closest ? g.el.closest('[data-rows-on]') : null;
+    const on = onEl ? new Set(onEl.getAttribute('data-rows-on').split('|')) : null;
+    const refs = P.refs.filter((r) => (r.v !== 0 || (bySeries && r.label)) && r.v >= lo && r.v <= hi);
     const rl = refs.some((r) => r.label) ? 14 : 0;
     const mt = top + 4 + rl;
     const mb = 22;
@@ -1239,14 +1250,9 @@
       svg('line', { cls: 'baseline', x1: Z, x2: Z, y1: mt, y2: H - mb }, s);
     }
     const ref = svg('g', { cls: 'ref' }, s);
-    for (const r of refs) {
-      const X = Math.round(sv(r.v)) + 0.5;
-      svg('line', { x1: X, x2: X, y1: mt - rl, y2: H - mb }, ref);
-      if (!r.label) continue;
-      // right of the line, or left of it where the right has no room for the whole label
-      const w = textW(r.label), room = W - X - 6, left = w > room && X - 6 > room;
-      titled(svg('text', { x: left ? X - 4 : X + 4, y: mt - 5, 'text-anchor': left ? 'end' : 'start', text: fit(r.label, left ? X - 6 : room) }, ref), r.label);
-    }
+    for (const r of refs) svg('line', { x1: Math.round(sv(r.v)) + 0.5, x2: Math.round(sv(r.v)) + 0.5, y1: mt - rl, y2: H - mb }, ref);
+    const vlines = refs.map((r) => Math.round(sv(r.v)) + 0.5).concat(lo <= 0 && hi >= 0 ? [Math.round(sv(0)) + 0.5] : []);
+    const above = [];   // value labels set above a dot: a reference label over the rows must not meet them
 
     const marks = svg('g', { cls: 'marks' }, s);
     const lab = svg('g', { cls: 'value-labels' }, s);
@@ -1256,10 +1262,20 @@
     const hl = new Set(Array.isArray(P.x.highlight) ? P.x.highlight.map(String) : []);
     cats.forEach((c, i) => {
       const y0 = mt + rowH * i;
-      const yc = y0 + rowH / 2;
+      // keyed by series, a value label sits above its dot: the dot sits low enough in its row for the label to
+      // stay inside the row, clear of the row above and of the reference label's line
+      const yc = y0 + (bySeries ? Math.max(rowH / 2, Math.min(rowH - 9, 23)) : rowH / 2);
       const here = seriesAt(c);
+      const before = on && !on.has(String(c)) ? [rowLabels, marks, lab].map((gr) => gr.childNodes.length) : null;
       const rcls = 'row-label' + (hl.has(String(c)) ? ' hl' : '');
-      if (labelsLeft) {
+      // a label too wide for the label column takes two lines when the row has room for them (a phone's card)
+      const two = labelsLeft && rowH >= 34 && textW(labels[i], 12) > ml - 12 ? wrap2(labels[i], ml - 12, 12) : null;
+      if (two && two.length === 2) {
+        const t = svg('text', { cls: rcls, x: ml - 10, y: yc - 3, 'text-anchor': 'end' }, rowLabels);
+        svg('tspan', { x: ml - 10, text: two[0].replace(/\s+·$/, '') }, t);   // the break stands for a trailing separator
+        svg('tspan', { x: ml - 10, dy: 14, text: two[1] }, t);
+        titled(t, labels[i]);
+      } else if (labelsLeft) {
         titled(svg('text', { cls: rcls, x: ml - 10, y: yc + 4, 'text-anchor': 'end', text: fit(labels[i], ml - 12, 12) }, rowLabels), labels[i]);
       } else {
         titled(svg('text', { cls: rcls, x: 4, y: y0 + 14, text: fit(labels[i], W - 8, 12) }, rowLabels), labels[i]);
@@ -1278,7 +1294,7 @@
           const x0 = sv(clamp(0, lo, hi));
           const x1 = sclamp(v);
           const off = P.clamped ? (v > hi ? 1 : v < lo ? -1 : 0) : 0;
-          const t = fmt(v, se.unit);
+          const t = fmt(v, se.unit, dp);
           const bar = svg('path', { cls: 'bar', d: hbar(by, each, x0, x1, off ? 0 : 4), style: { fill: P.colorFor(se, v) } }, marks);
           if (off) {
             /* cut at the axis edge (y.clamp): a break mark, two slanted gaps across the bar near its end; the
@@ -1297,13 +1313,17 @@
           }, lab);
         });
       } else {
+        // every range first, so no series' bar covers another's dot
         for (const se of here) {
-          const [v, mn, mx] = se.at.get(c);
+          const [, mn, mx] = se.at.get(c);
           if (isNum(mn) && isNum(mx)) {
             const a = sclamp(Math.min(mn, mx));
             const z = sclamp(Math.max(mn, mx));
             svg('rect', { cls: 'range', x: a, y: yc - 3, width: Math.max(2, z - a), height: 6, rx: 3, style: { fill: 'var(--range)' } }, marks);
           }
+        }
+        for (const se of here) {
+          const [v, mn, mx] = se.at.get(c);
           if (!isNum(v)) {
             svg('text', { cls: 'na-mark', x: sv(clamp(0, lo, hi)) + 4, y: yc + 4, text: 'n/a' }, marks);
             continue;
@@ -1314,14 +1334,27 @@
             const tip = off > 0 ? X + 8 : X - 8;
             svg('path', { d: `M${f1(tip)},${f1(yc)}L${f1(X)},${f1(yc - 5)}L${f1(X)},${f1(yc + 5)}Z`, style: { fill: cvar(se.entity) } }, marks);
           }
-          svg('circle', { cls: 'dot-mark', cx: X, cy: yc, r: 5.5, style: { fill: cvar(se.entity) } }, marks);
+          // keyed by series (c25), a context series' dot is a ring, so it shows on its own band and under a dot
+          const ring = bySeries && se.role === 'context';
+          svg('circle', { cls: 'dot-mark', cx: X, cy: yc, r: ring ? 4.5 : 5.5, style: ring ? { fill: 'var(--surface)', stroke: cvar(se.entity) } : { fill: cvar(se.entity) } }, marks);
           const emph = off || se.role === 'emphasis' || se.entity === 'near' || se.entity === 'usd';
-          if (emph) {
+          const ranged = isNum(mn) && isNum(mx);
+          if (emph && bySeries && !ranged && here.length > 1) {
+            /* another series' band runs under this dot: the label goes above the dot, clear of the band and the dot;
+               a label that would straddle the zero line or a reference line moves to the dot's side of it */
+            const t = fmt(v, se.unit, dp);
+            const w = textW(t, 11, 600);
+            let cx = clamp(X, ml + w / 2, W - 2 - w / 2);
+            for (const L of vlines) {
+              if (cx - w / 2 - 3 < L && cx + w / 2 + 3 > L) cx = clamp(X >= L ? L + 4 + w / 2 : L - 4 - w / 2, ml + w / 2, W - 2 - w / 2);
+            }
+            plated(lab, cx, yc - 12, t, 'middle', null, 'label strong');
+            above.push(textBox(cx, yc - 12, w, 'middle'));
+          } else if (emph) {
             /* the label sits on its own row (vertically centred on the dot), past the end of the range bar, so
                it never floats between rows or covers the bar */
-            const t = fmt(v, se.unit);
+            const t = fmt(v, se.unit, dp);
             const w = textW(t, 11, 600);
-            const ranged = isNum(mn) && isNum(mx);
             const rHi = ranged ? Math.max(X, sclamp(Math.max(mn, mx))) : X;
             const rLo = ranged ? Math.min(X, sclamp(Math.min(mn, mx))) : X;
             const pad = off ? 12 : 9;
@@ -1333,7 +1366,31 @@
           }
         }
       }
+      if (before) [rowLabels, marks, lab].forEach((gr, k) => { for (const n of [...gr.childNodes].slice(before[k])) n.classList.add('dim'); });
     });
+    // reference labels last: right of the line, or left of it where the right has no room for the whole label; a
+    // label that would meet a value label set above a dot (c26's long label over its top row's dot) slides past it,
+    // or takes the other side when that shows more of it
+    for (const r of refs) {
+      if (!r.label) continue;
+      const X = Math.round(sv(r.v)) + 0.5;
+      const side = (left) => {
+        let x = left ? X - 4 : X + 4;
+        for (let k = 0; k < 4; k++) {
+          const t = fit(r.label, left ? x - 2 : W - x - 2);
+          const box = textBox(x, mt - 5, textW(t), left ? 'end' : 'start');
+          const met = above.filter((b) => boxHit(box, b, 1));
+          if (!met.length) return { t, x, left, hit: false };
+          x = left ? Math.min(...met.map((b) => b[0])) - 4 : Math.max(...met.map((b) => b[2])) + 4;
+        }
+        return { t: fit(r.label, left ? X - 6 : W - X - 6), x: left ? X - 4 : X + 4, left, hit: true };
+      };
+      const w = textW(r.label), room = W - X - 6;
+      let pick = side(w > room && X - 6 > room);
+      const other = side(!pick.left);
+      if ((pick.hit && !other.hit) || (pick.hit === other.hit && other.t.length > pick.t.length)) pick = other;
+      titled(svg('text', { x: pick.x, y: mt - 5, 'text-anchor': pick.left ? 'end' : 'start', text: pick.t }, ref), r.label);
+    }
 
     return {
       g, keys: cats,
@@ -1353,10 +1410,10 @@
           const arr = se.at.get(c) || [];
           const v = arr[0];
           if (isNum(v)) xMax = Math.max(xMax, sclamp(v));
-          const range = form === 'dot-range' && isNum(arr[1]) && isNum(arr[2]) ? `range ${fmt(arr[1], se.unit)} to ${fmt(arr[2], se.unit)}` : '';
+          const range = form === 'dot-range' && isNum(arr[1]) && isNum(arr[2]) ? `range ${fmt(arr[1], se.unit, dp)} to ${fmt(arr[2], se.unit, dp)}` : '';
           rows.push({
             color: form === 'bar' ? P.colorFor(se, v) : cvar(se.entity), shape: form === 'bar' ? 'sq' : 'dot',
-            label: form === 'dot-range' || form === 'bar' ? (range || se.label) : se.label, value: fmt(v, se.unit),
+            label: form === 'dot-range' || form === 'bar' ? (range || se.label) : se.label, value: fmt(v, se.unit, dp),
           });
         }
         return { rows, x: Math.min(W - 20, xMax + 8), y: mt + rowH * (i + 0.5) };
@@ -1470,6 +1527,7 @@
       svg('circle', { cx: 8, cy: 5, r: 4, style: { fill: it.color } }, k);
     } else if (it.shape === 'range') {
       svg('rect', { x: 1, y: 3, width: 14, height: 4, rx: 2, style: { fill: it.color, opacity: '0.4' } }, k);
+      if (it.ring) svg('circle', { cx: 8, cy: 5, r: 3.5, style: { fill: 'var(--surface)', stroke: it.color, strokeWidth: '1.5px' } }, k);
     } else if (it.split) {
       svg('rect', { x: 2, y: 0, width: 6, height: 10, rx: 1.5, style: { fill: 'var(--c-positive)' } }, k);
       svg('rect', { x: 9, y: 0, width: 6, height: 10, rx: 1.5, style: { fill: 'var(--c-negative)' } }, k);
@@ -1490,8 +1548,13 @@
     let items = [];
     if (P.form === 'dot-range') {
       // the range key only when some row draws a range (c21 plots single readings against a reference line)
-      const ranged = P.all.some((se) => se.cats.some((c) => { const a = se.at.get(c) || []; return isNum(a[1]) && isNum(a[2]); }));
-      items = [{ shape: 'dot', color: 'var(--ink-2)', label: 'Latest reading' }].concat(ranged ? [{ shape: 'range', color: 'var(--c-context)', label: 'Range over the window' }] : []);
+      const drawsRange = (se) => se.cats.some((c) => { const a = se.at.get(c) || []; return isNum(a[1]) && isNum(a[2]); });
+      if (P.x && P.x.legend === 'series') {
+        // each series keyed once by its own label (c25: shuffled average, a ring, and band against the real history)
+        items = P.all.map((se) => (drawsRange(se) ? { shape: 'range', ring: se.role === 'context', color: 'var(--c-context)', label: se.label } : { shape: 'dot', color: cvar(se.entity), label: se.label }));
+      } else {
+        items = [{ shape: 'dot', color: 'var(--ink-2)', label: 'Latest reading' }].concat(P.all.some(drawsRange) ? [{ shape: 'range', color: 'var(--c-context)', label: 'Range over the window' }] : []);
+      }
     } else if (P.kind === 'heat') {
       if (P.refs[0]) {
         items = [
@@ -1950,11 +2013,11 @@
 
   /* The agent module (#agent): copies the prompt, and for the NEAR AI card first fetches this site's own
      THESIS.md and puts it ahead of the prompt. Nothing leaves the page: the reader pastes into the agent. */
+  // the module's cards and the film's closing scene's share one prompt, #agent's
   function initAgent() {
-    const sec = d.getElementById('agent');
-    const code = sec && sec.querySelector('.agent-prompt pre code');
+    const code = d.querySelector('#agent .agent-prompt pre code');
     if (!code) return;
-    for (const b of sec.querySelectorAll('.agent-copy')) b.hidden = false;
+    for (const b of d.querySelectorAll('.agent-copy')) b.hidden = false;
     const toClipboard = (text) => {
       if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(() => true, () => false);
       const ta = d.createElement('textarea');
@@ -1969,11 +2032,12 @@
       ta.remove();
       return Promise.resolve(ok);
     };
-    sec.addEventListener('click', (e) => {
+    d.addEventListener('click', (e) => {
       const btn = e.target && e.target.closest ? e.target.closest('.agent-copy') : null;
       if (!btn) return;
       const status = btn.parentElement.querySelector('.agent-status');
-      const say = (msg) => { if (status) status.textContent = msg; };
+      // in the film's closing frame the line can sit under the transport: bring it into view
+      const say = (msg) => { if (status) { status.textContent = msg; if (msg && status.closest('.film')) status.scrollIntoView({ block: 'nearest' }); } };
       const prompt = code.textContent.trim() + '\n';
       const attach = btn.dataset.attach;
       say(attach ? 'Fetching THESIS.md' : '');

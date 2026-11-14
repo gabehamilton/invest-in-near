@@ -32,6 +32,7 @@ SOURCES = {
     "money": "pipeline.sources.money",
     "prices": "pipeline.sources.prices",
     "derivatives": "pipeline.sources.derivatives",
+    "perps": "pipeline.sources.perps",
     "near_rpc": "pipeline.sources.near_rpc",
     "defillama": "pipeline.sources.defillama",
     "intents": "pipeline.sources.intents",

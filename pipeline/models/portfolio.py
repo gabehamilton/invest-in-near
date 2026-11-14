@@ -24,12 +24,26 @@ Formulas (anchors on the data page):
   F-sim-dist     sorted u; type-7 quantiles; p05, median, p95; ES95 = -mean(worst N/20); dot k = S[(2k - 1) N/200].
   F-sim-be       mean break-even mu_E* = (1 + R_B + c)/(1 + k y) - 1; per path mu_i = (1 + R_B,i + c)/((1 + k y) G_i) - 1,
                  median break-even = type-7 median of mu_i; break-even cost c* = (1 + mu)(1 + k y) - 1 - R_B.
-  F-sim-budget   w_b = R_B / ES95_unit; ES95 in years of the whole desk's interest = ES95 / (V R_B).
+                 Reset (F-sim-rebal): cost r* = (E_reb - w cu/bp) / (w + mean(T)/2), the round trip per amount traded;
+                 mean: bisection on mu of the exact reset book less w c and h mean(T); median: the N/2-th smallest
+                 per-path break-even by a bisection on mu that re-evaluates only the undecided paths.
+  F-sim-rebal    strategy (b) in the desk: the NEAR part reset to w at days R, 2R, ... < H (R = vol_rebal_days), trading
+                 against the two cash legs in the proportions s : 1 - s. Periods ell = [R, ..., H - R floor(...)]; each
+                 window keeps its raw period products gq, xq of a~ and b~ and folds its matching into the day factors
+                 kG = dayf(1 / mean G_raw), kX = dayf(1 / mean X_raw). Factors without pow: dayf(a, H) is the day root
+                 of a by bisection, pw(r, n) the integer power by squaring. Per path and unit of V, from N = w,
+                 U = (1 - w) s, E = (1 - w)(1 - s): N *= A_p g, U *= U_p, E *= E_p x, and at each mark but the last
+                 M = N + U + E, d = N - w M, N = w M, U += s d, E += (1 - s) d, T += |d|;
+                 u_i = ((M - K) - h T) / w - c with K the cash-only benchmark and h = rt / (2 bp). The mean is exact
+                 (the same recursion with g = x = 1): mean = F-sim-mean + V (E_reb - E_bh) - V h mean(T).
+  F-sim-budget   w_b = R_B / ES95_unit; ES95 in years of the whole desk's interest = ES95 / (V R_B). Reset every R
+                 days: w_b,reb solves w ES95_unit,reb(w) = R_B by bisection on [0, w_b].
   F-sim-liq      days = w V / (p x median daily USD volume); Coinbase volume_base x close, Binance volume_quote (USDT);
                  instant-pool cover = nslp_usd / (w V); LST value = stNEAR and LiNEAR supply x own NEAR price x close.
   F-sim-day      one-day 99% historical VaR and 97.5% ES of the NEAR part from the window's raw a_d - 1.
   F-sim-block    sensitivity only: circular blocks of sim_block_days joint days.
-  F-sim-lognormal sensitivity only: G = exp(sigma Z) with the pool's annual log variance, moment matched.
+  F-sim-lognormal sensitivity only: one normal per period between resets, g_p = exp(sigma_p Z_p) with
+                 sigma_p^2 = days_p x the pool's daily log variance, G = prod g_p, moment matched.
   F-sim-seeds    the spread of each simulated figure across sim_seed_checks; it sets the figure's display step.
 
 Display rule shared with site/assets/sim.js: a figure is rounded half away from zero on a scaled integer before it is
@@ -44,6 +58,7 @@ import os
 import sys
 import tomllib
 import weakref
+from array import array
 from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from pathlib import Path
@@ -69,6 +84,9 @@ UNITS = {"usd": "USD", "pct": "%", "pctstep": "%", "count": "count", "countstep"
 PLOT = {"w": 640, "r": 5, "pad": 12, "top": 26, "bottom": 30, "ten": 10, "flip": 0.55}
 # settle_ms: the live headline waits this long after the last input; part: the participation range [min, max, step]
 UI = {"settle_ms": 400, "mu_step": 0.1, "part": [1, 100, 1], "cost_max": 1000}
+# the desk's strategy control: 1 resets the NEAR part to its share every vol_rebal_days (the default), 0 holds it
+DEFAULT_RB = 1
+BP = 10000            # basis points in one: the trading and custody controls are entered in bp
 
 
 class Missing(Exception):
@@ -202,6 +220,44 @@ def median(xs: list[float]) -> float:
     return s[n // 2] if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2
 
 
+# =========================================================================== pow-free powers (F-sim-rebal; sim.js)
+
+def pw(r: float, n: int) -> float:
+    """r to the non-negative integer power n, by squaring (no pow in either language)."""
+    out, base = 1.0, r
+    while n > 0:
+        if n % 2 == 1:
+            out = out * base
+        n = (n - n % 2) // 2
+        if n > 0:
+            base = base * base
+    return out
+
+
+def dayf(a: float, H: int) -> float:
+    """The day root of a: bisection on [min(a, 1), max(a, 1)] for pw(r, H) = a, until the midpoint is an end."""
+    lo, hi = min(a, 1.0), max(a, 1.0)
+    while True:
+        mid = (lo + hi) / 2
+        if mid <= lo or mid >= hi:
+            return lo
+        if pw(mid, H) < a:
+            lo = mid
+        else:
+            hi = mid
+
+
+def periods(R: int, H: int) -> list[int]:
+    """The days between resets: R at every mark R, 2R, ... below the horizon, then the rest ([30] x 12 + [5])."""
+    ell, acc, m = [], 0, R
+    while m < H:
+        ell.append(R)
+        acc = acc + R
+        m = m + R
+    ell.append(H - acc)
+    return ell
+
+
 # =========================================================================== pools
 
 @dataclass
@@ -240,54 +296,93 @@ def build_pool(close: dict[date, float], fx: list[tuple[date, float]], end: date
 
 # =========================================================================== engines
 
+def _zeros(n: int) -> array:
+    return array("d", bytes(8 * n))
+
+
 def simulate(windows: list[tuple[list[float], list[float]]], n_paths: int, horizon: int, seed: int,
-             half: float) -> list[dict]:
-    """F-sim-path for two windows from one stream: one u32 a day serves both, path-major, day-minor."""
+             half: float, rebal_days: int) -> list[dict]:
+    """F-sim-path for two windows from one stream: one u32 a day serves both, path-major, day-minor. Each window also
+    keeps its raw products of a~ and b~ over each period between resets (F-sim-rebal): gq[p][i], xq[p][i]."""
     s0, s1, s2, s3 = seed_state(seed)
     (a1, b1), (a2, b2) = windows
     n1, n2 = len(a1), len(a2)
+    ell = periods(rebal_days, horizon)
     G1, X1, G2, X2 = [0.0] * n_paths, [0.0] * n_paths, [0.0] * n_paths, [0.0] * n_paths
     H1, H2 = [0] * n_paths, [0] * n_paths
+    gq1, xq1, gq2, xq2 = ([_zeros(n_paths) for _ in ell] for _ in range(4))
     for i in range(n_paths):
         g1 = x1 = g2 = x2 = 1.0
         h1 = h2 = 0
-        for _ in range(horizon):
-            r = (s1 * 5) & M32
-            r = ((((r << 7) | (r >> 25)) & M32) * 9) & M32
-            t = (s1 << 9) & M32
-            s2 ^= s0
-            s3 ^= s1
-            s1 ^= s2
-            s0 ^= s3
-            s2 ^= t
-            s3 = ((s3 << 11) | (s3 >> 21)) & M32
-            j = (r * n1) >> 32
-            g1 *= a1[j]
-            x1 *= b1[j]
-            if g1 <= half:
-                h1 = 1
-            j = (r * n2) >> 32
-            g2 *= a2[j]
-            x2 *= b2[j]
-            if g2 <= half:
-                h2 = 1
+        for p, days in enumerate(ell):
+            q1 = y1 = q2 = y2 = 1.0
+            for _ in range(days):
+                r = (s1 * 5) & M32
+                r = ((((r << 7) | (r >> 25)) & M32) * 9) & M32
+                t = (s1 << 9) & M32
+                s2 ^= s0
+                s3 ^= s1
+                s1 ^= s2
+                s0 ^= s3
+                s2 ^= t
+                s3 = ((s3 << 11) | (s3 >> 21)) & M32
+                j = (r * n1) >> 32
+                a, b = a1[j], b1[j]
+                g1 *= a
+                x1 *= b
+                q1 *= a
+                y1 *= b
+                if g1 <= half:
+                    h1 = 1
+                j = (r * n2) >> 32
+                a, b = a2[j], b2[j]
+                g2 *= a
+                x2 *= b
+                q2 *= a
+                y2 *= b
+                if g2 <= half:
+                    h2 = 1
+            gq1[p][i], xq1[p][i], gq2[p][i], xq2[p][i] = q1, y1, q2, y2
         G1[i], X1[i], G2[i], X2[i], H1[i], H2[i] = g1, x1, g2, x2, h1, h2
-    return [matched(G1, X1, H1), matched(G2, X2, H2)]
+    return [with_periods(matched(G1, X1, H1), gq1, xq1, ell), with_periods(matched(G2, X2, H2), gq2, xq2, ell)]
 
 
 def matched(G: list[float], X: list[float], H: list[int] | None) -> dict:
+    """Moment matching: G / mean(G), X / mean(X). The means are returned too (mg, mx): the resets fold them into
+    their day factors."""
     mg, mx = mean(G), mean(X)
     G = [g / mg for g in G]
-    return {"G": G, "X": [x / mx for x in X], "H": H, "Gs": sorted(G)}
+    return {"G": G, "X": [x / mx for x in X], "H": H, "Gs": sorted(G), "mg": mg, "mx": mx}
 
 
-def simulate_blocks(a: list[float], b: list[float], n_paths: int, horizon: int, seed: int, block: int) -> dict:
-    """F-sim-block: circular blocks of `block` joint days (sensitivity rows only)."""
+def with_periods(sim: dict, gq: list, xq: list, ell: list[int]) -> dict:
+    """The period products and the window's day factors kG = dayf(1 / mg), kX = dayf(1 / mx) (F-sim-rebal, gc)."""
+    H = sum(ell)
+    sim.update(gq=gq, xq=xq, ell=list(ell), kG=dayf(1 / sim["mg"], H), kX=dayf(1 / sim["mx"], H))
+    return sim
+
+
+def drop_periods(sims: list[dict]) -> None:
+    """Free a run's period products once its figures are taken (six seeds of them would hold about 200 MB)."""
+    for sim in sims:
+        sim["gq"] = sim["xq"] = None
+
+
+def simulate_blocks(a: list[float], b: list[float], n_paths: int, horizon: int, seed: int, block: int,
+                    rebal_days: int) -> dict:
+    """F-sim-block: circular blocks of `block` joint days (sensitivity rows only), with the period products."""
     rng = Prng(seed)
     n = len(a)
+    ell = periods(rebal_days, horizon)
+    ends, acc = [], 0
+    for days in ell:
+        acc += days
+        ends.append(acc)
     G, X = [0.0] * n_paths, [0.0] * n_paths
+    gq, xq = [_zeros(n_paths) for _ in ell], [_zeros(n_paths) for _ in ell]
     for i in range(n_paths):
-        g = x = 1.0
+        g = x = q = y = 1.0
+        day = p = 0
         left = horizon
         while left > 0:
             start = (rng.next() * n) >> 32
@@ -295,26 +390,44 @@ def simulate_blocks(a: list[float], b: list[float], n_paths: int, horizon: int, 
                 j = (start + k) % n
                 g *= a[j]
                 x *= b[j]
+                q *= a[j]
+                y *= b[j]
+                day += 1
+                if day == ends[p]:
+                    gq[p][i], xq[p][i] = q, y
+                    q = y = 1.0
+                    p += 1
             left -= block
         G[i], X[i] = g, x
-    return matched(G, X, None)
+    return with_periods(matched(G, X, None), gq, xq, ell)
 
 
-def simulate_lognormal(a: list[float], n_paths: int, horizon: int, seed: int) -> dict:
-    """F-sim-lognormal: G = exp(sigma Z), sigma^2 = horizon x var(log a~), euro flat (sensitivity rows only)."""
+def simulate_lognormal(a: list[float], n_paths: int, horizon: int, seed: int, rebal_days: int) -> dict:
+    """F-sim-lognormal (sensitivity rows only): one normal per period between resets, g_p = exp(sigma_p Z_p) with
+    sigma_p^2 = days_p x var(log a~), G the product of a year's g_p; euro flat. Then moment matched."""
     logs = [math.log(x) for x in a]
     m = mean(logs)
-    sigma = math.sqrt(total((v - m) ** 2 for v in logs) / (len(logs) - 1) * horizon)
+    var = total((v - m) ** 2 for v in logs) / (len(logs) - 1)
+    ell = periods(rebal_days, horizon)
+    P = len(ell)
     rng = Prng(seed)
-    G: list[float] = []
-    while len(G) < n_paths:
+    zs: list[float] = []
+    need = n_paths * P
+    while len(zs) < need:
         u1 = (rng.next() + 1) / 4294967297
         u2 = rng.next() / 4294967296
         rad = math.sqrt(-2.0 * math.log(u1))
         for z in (rad * math.cos(2 * math.pi * u2), rad * math.sin(2 * math.pi * u2)):
-            if len(G) < n_paths:
-                G.append(math.exp(sigma * z))
-    return matched(G, [1.0] * n_paths, None)
+            if len(zs) < need:
+                zs.append(z)
+    sig = [math.sqrt(var * days) for days in ell]
+    gq = [array("d", (math.exp(sig[p] * zs[i * P + p]) for i in range(n_paths))) for p in range(P)]
+    G = [1.0] * n_paths
+    for p in range(P):
+        row = gq[p]
+        for i in range(n_paths):
+            G[i] *= row[i]
+    return with_periods(matched(G, [1.0] * n_paths, None), gq, [array("d", [1.0]) * n_paths for _ in ell], ell)
 
 
 def _workers(n_jobs: int) -> int:
@@ -370,6 +483,14 @@ class State:
     usd: str = "effr"     # effr | dgs1 | ffcomp (sensitivity rows)
     eur: str = "flat"     # flat | parity (sensitivity rows)
     y: str = "y"          # y | y90 | ys60 (sensitivity rows)
+    rb: int = DEFAULT_RB  # 1: the NEAR part reset to w every vol_rebal_days (F-sim-rebal); 0: held without trading
+    rt: float = 0.0       # round-trip trading cost entered, bp (c holds it with custody as a fraction)
+    cu: float = 0.0       # custody entered, bp
+
+    @property
+    def h(self) -> float:
+        """Each reset trade pays half the round trip on the amount traded."""
+        return self.rt / (2 * BP)
 
 
 def legs(st: State, R: Rates) -> tuple[float, float, float]:
@@ -440,6 +561,160 @@ def distribution(S: list[float], M: list[float], tail: dict) -> dict:
     }
 
 
+# =========================================================================== strategy (b) in the desk (F-sim-rebal)
+# Python and sim.js do the same float operations in the same order, so the sorted outcomes agree bit for bit.
+
+def reb_factors(st: State, R: Rates, ell: list[int], kG: float = 1.0, kX: float = 1.0) -> tuple[list, list, list]:
+    """Per period: A_p = pw(dN, l) pw(kG, l), U_p = pw(dU, l), E_p = pw(dE, l) pw(kX, l) with the day roots of the
+    NEAR, dollar and euro factors. With kG = kX = 1 they are the exact factors (pw(1, l) is exactly 1)."""
+    ru, eur_f, y = legs(st, R)
+    near_f = (1 + st.mu) * (1 + st.k * y)
+    H = sum(ell)
+    dN, dU, dE = dayf(near_f, H), dayf(1 + ru, H), dayf(eur_f, H)
+    return ([pw(dN, n) * pw(kG, n) for n in ell], [pw(dU, n) for n in ell], [pw(dE, n) * pw(kX, n) for n in ell])
+
+
+def book(A: list, U: list, E: list, w: float, s: float, reset: bool = True) -> tuple[float, float, float]:
+    """One year with g = x = 1 (every period's draw at its mean): (book, benchmark, turnover) per unit of V."""
+    oms = 1 - s
+    last = len(A) - 1
+    N, Uc, Ec, bU, bE, T = w, (1 - w) * s, (1 - w) * oms, s, oms, 0.0
+    for p in range(last + 1):
+        N = N * A[p]
+        Uc = Uc * U[p]
+        Ec = Ec * E[p]
+        bU = bU * U[p]
+        bE = bE * E[p]
+        if reset and p < last:
+            M = N + Uc + Ec
+            d = N - w * M
+            N = w * M
+            Uc = Uc + s * d
+            Ec = Ec + oms * d
+            T = T + abs(d)
+    return N + Uc + Ec, bU + bE, T
+
+
+def reb_paths(sim: dict, A: list, U: list, E: list, w: float, s: float, idx: list[int] | None = None,
+              reset: bool = True) -> tuple[list[float], list[float], list[float]]:
+    """The recursion for every path, or the paths in idx: per path the book M, the benchmark K and the turnover T,
+    per unit of V. Period-major over lists; each path's own operations are the per-path recursion's, in its order."""
+    gq, xq = sim["gq"], sim["xq"]
+    if idx is not None:
+        gq = [[g[i] for i in idx] for g in gq]
+        xq = [[x[i] for i in idx] for x in xq]
+    n = len(gq[0])
+    oms = 1 - s
+    last = len(A) - 1
+    Nv, Uv, Ev = [w] * n, [(1 - w) * s] * n, [(1 - w) * oms] * n
+    bU, bE, Tv = s, [oms] * n, [0.0] * n
+    for p in range(last + 1):
+        a, uf, e, g, x = A[p], U[p], E[p], gq[p], xq[p]
+        Nv = [v * a * q for v, q in zip(Nv, g)]
+        Uv = [v * uf for v in Uv]
+        Ev = [v * e * y for v, y in zip(Ev, x)]
+        bU = bU * uf
+        bE = [v * e * y for v, y in zip(bE, x)]
+        if reset and p < last:
+            Mv = [nv + uv + ev for nv, uv, ev in zip(Nv, Uv, Ev)]
+            dv = [nv - w * m for nv, m in zip(Nv, Mv)]
+            Nv = [w * m for m in Mv]
+            Uv = [uv + s * d for uv, d in zip(Uv, dv)]
+            Ev = [ev + oms * d for ev, d in zip(Ev, dv)]
+            Tv = [t + abs(d) for t, d in zip(Tv, dv)]
+    return [nv + uv + ev for nv, uv, ev in zip(Nv, Uv, Ev)], [bU + v for v in bE], Tv
+
+
+def reb_units(M: list[float], K: list[float], T: list[float], w: float, h: float, c: float) -> list[float]:
+    """u_i = ((M - K) - h T) / w - c: each reset trade pays half the round trip, charged at the year's end."""
+    return [((m - k) - h * t) / w - c for m, k, t in zip(M, K, T)]
+
+
+def rebalanced(sim: dict, st: State, R: Rates, mu_bounds: tuple[float, float], breakevens: bool = True) -> dict | None:
+    """Strategy (b) at one state: u per path (path order) and sorted, the mean turnover, the exact books with and
+    without resets, and the reset break-evens (F-sim-be). None at w = 0: the resets trade nothing there, and the
+    held units stand for both modes."""
+    w, s, h, c = st.w, st.s, st.h, st.c
+    if w == 0:
+        return None
+    ell = sim["ell"]
+    A, U, E = reb_factors(st, R, ell, sim["kG"], sim["kX"])
+    M, K, T = reb_paths(sim, A, U, E, w, s)
+    u = reb_units(M, K, T, w, h, c)
+    Tbar = mean(T)
+    A0, U0, E0 = reb_factors(st, R, ell)
+    M0, K0, _ = book(A0, U0, E0, w, s, True)
+    Mh, Kh, _ = book(A0, U0, E0, w, s, False)
+    E_reb = M0 - K0
+    return {"u": u, "S": sorted(u), "T": T, "Tbar": Tbar, "E_reb": E_reb, "E_bh": Mh - Kh,
+            # the round-trip cost per amount traded that erases the expected benefit, custody as entered
+            "be_cost": (E_reb - w * st.cu / BP) / (w + Tbar / 2),
+            "be_mu_mean": be_mean_reb(st, R, ell, K0, Tbar, *mu_bounds),
+            "be_mu_median": be_median_reb(sim, st, R, *mu_bounds) if breakevens else None}
+
+
+def be_mean_reb(st: State, R: Rates, ell: list[int], K0: float, Tbar: float, lo: float, hi: float) -> float:
+    """The price change at which the exact reset book's benefit, less costs and the turnover's trading, is zero."""
+    w, h, c = st.w, st.h, st.c
+    while True:
+        mid = (lo + hi) / 2
+        if mid <= lo or mid >= hi:
+            return hi
+        A, U, E = reb_factors(replace(st, mu=mid), R, ell)
+        if book(A, U, E, w, st.s, True)[0] - K0 - w * c - h * Tbar < 0:
+            lo = mid
+        else:
+            hi = mid
+
+
+def be_median_reb(sim: dict, st: State, R: Rates, lo: float, hi: float) -> float:
+    """The N/2-th smallest per-path break-even price change: bisection on mu over the count of paths ahead,
+    re-evaluating only the paths not yet decided (a path behind at mu stays behind below it, ahead stays ahead above
+    it), about 2.1 N path evaluations."""
+    w, s, h, c = st.w, st.s, st.h, st.c
+    und = list(range(len(sim["G"])))
+    pos, half = 0, len(und) / 2
+    while True:
+        mid = (lo + hi) / 2
+        if mid <= lo or mid >= hi:
+            return hi
+        A, U, E = reb_factors(replace(st, mu=mid), R, sim["ell"], sim["kG"], sim["kX"])
+        M, K, T = reb_paths(sim, A, U, E, w, s, und)
+        up, down = [], []
+        for i, m, k, t in zip(und, M, K, T):
+            (up if ((m - k) - h * t) / w - c > 0 else down).append(i)
+        if pos + len(up) >= half:
+            hi, und = mid, up
+        else:
+            lo, und = mid, down
+            pos = pos + len(up)
+
+
+def es_unit_reb(sim: dict, st: State, R: Rates, tail: dict) -> float:
+    """ES95 per unit of the NEAR part, reset every vol_rebal_days (no break-evens)."""
+    w, s = st.w, st.s
+    A, U, E = reb_factors(st, R, sim["ell"], sim["kG"], sim["kX"])
+    M, K, T = reb_paths(sim, A, U, E, w, s)
+    S = sorted(reb_units(M, K, T, w, st.h, st.c))
+    worst = len(S) // tail["es_every"]
+    return 0 - total(S[:worst]) / worst
+
+
+def w_budget_reb(sim: dict, st: State, R: Rates, V: float, tail: dict, w_hi: float) -> float:
+    """F-sim-budget under resets: the largest w in [0, w_hi] with w ES95_unit,reb(w) <= R_B, by bisection until the
+    float bracket is exhausted."""
+    rbar = closed_form(st, R, V)["rbar"]
+    lo, hi = 0.0, w_hi
+    while True:
+        mid = (lo + hi) / 2
+        if mid <= lo or mid >= hi:
+            return lo
+        if mid * es_unit_reb(sim, replace(st, w=mid), R, tail) - rbar <= 0:
+            lo = mid
+        else:
+            hi = mid
+
+
 # =========================================================================== display specs
 
 def specs() -> dict:
@@ -462,7 +737,26 @@ def specs() -> dict:
         "sim_p_beat_n": ["count", 0], "sim_p_behind_n": ["count", 0], "sim_es_interest_years": ["count", 1],
         "sim_exit_days": ["days", 1], "sim_exit_days_p": ["days", 0], "sim_exit_days_short": ["days", 1],
     })
+    # both strategies at every state: the comparison line prints the one not chosen
+    out.update({
+        "sim_reb_edge_usd": ["usd", params()["sim_usd_step_edge"]], "sim_reb_turnover_usd": ["usd*", "r_turnover"],
+        "sim_held_median_usd": ["usd*", "median"], "sim_held_p95_usd": ["usd*", "p95"],
+        "sim_held_es95_usd": ["usd*", "es95"], "sim_held_p_beat_r": ["count*", "p_beat"],
+        "sim_held_be_mu_median": ["pct*", "be_median"],
+        "sim_reb_median_usd": ["usd*", "r_median"], "sim_reb_p95_usd": ["usd*", "r_p95"],
+        "sim_reb_es95_usd": ["usd*", "r_es95"], "sim_reb_p_beat_r": ["count*", "r_p_beat"],
+        "sim_reb_be_mu_median": ["pct*", "r_be_median"],
+    })
     return out
+
+
+def specs_rb() -> dict:
+    """The reset mode's display specs, applied over specs() when rb = 1: the active figures take the reset spreads,
+    and the mean and costs the seed spread of the resets' trading cost."""
+    return {"sim_mean_usd": ["usd*", "r_cost"], "sim_cost_usd": ["usd*", "r_cost"],
+            "sim_median_usd": ["usd*", "r_median"], "sim_p05_usd": ["usd*", "r_p05"], "sim_p95_usd": ["usd*", "r_p95"],
+            "sim_es95_usd": ["usd*", "r_es95"], "sim_p_beat_r": ["count*", "r_p_beat"],
+            "sim_be_mu_median": ["pct*", "r_be_median"]}
 
 
 def resolve(spec: list, need: dict, steps: dict) -> list:
@@ -480,13 +774,14 @@ def resolve(spec: list, need: dict, steps: dict) -> list:
 def cfg_params() -> dict:
     """What evaluate() reads besides the state: tail levels, window lengths, display ladders and specs."""
     p = params()
-    return {"tail": tail_cfg(), "days": list(p["sim_windows"]), "specs": specs(),
+    return {"tail": tail_cfg(), "days": list(p["sim_windows"]), "specs": specs(), "specs_rb": specs_rb(),
             "steps": {"usd": p["sim_steps_usd"], "pp": p["sim_steps_pp"], "count": p["sim_steps_count"]}}
 
 
 def cfg_payload(P: dict) -> dict:
     """The same, from a sim.json payload (the parity test runs the twin on payloads it builds)."""
-    return {"tail": P["tail"], "days": [w["days"] for w in P["windows"]], "specs": P["specs"], "steps": P["steps"]}
+    return {"tail": P["tail"], "days": [w["days"] for w in P["windows"]], "specs": P["specs"],
+            "specs_rb": P["specs_rb"], "steps": P["steps"]}
 
 
 DIRS = {"sim_mean_dir": "sim_mean_usd", "sim_median_dir": "sim_median_usd", "sim_p05_dir": "sim_p05_usd",
@@ -494,9 +789,11 @@ DIRS = {"sim_mean_dir": "sim_mean_usd", "sim_median_dir": "sim_median_usd", "sim
         "sim_mean_flat_dir": "sim_mean_flat_usd",
         "sim_mean_thesis_dir": "sim_mean_thesis_usd", "sim_mean_thesis_cpi_dir": "sim_mean_thesis_cpi_usd",
         "sim_mean_parity_dir": "sim_mean_parity_usd", "sim_mean_dollar_only_dir": "sim_mean_dollar_only_usd",
-        "sim_mean_dgs1_dir": "sim_mean_dgs1_usd", "sim_mean_dgs1_parity_dir": "sim_mean_dgs1_parity_usd"}
+        "sim_mean_dgs1_dir": "sim_mean_dgs1_usd", "sim_mean_dgs1_parity_dir": "sim_mean_dgs1_parity_usd",
+        "sim_held_median_dir": "sim_held_median_usd", "sim_reb_median_dir": "sim_reb_median_usd"}
 RISE = {"sim_be_mu_mean_dir": "sim_be_mu_mean", "sim_be_mu_median_dir": "sim_be_mu_median",
-        "sim_be_cost_dir": "sim_be_cost"}
+        "sim_be_cost_dir": "sim_be_cost", "sim_held_be_mu_median_dir": "sim_held_be_mu_median",
+        "sim_reb_be_mu_median_dir": "sim_reb_be_mu_median"}
 BRACKET = (("sim_mean_value_flat_usd", "value", None, None, None), ("sim_mean_flat_usd", "flat", None, None, None),
            ("sim_mean_thesis_usd", "thesis", None, None, None),
            ("sim_mean_thesis_cpi_usd", "cpi", None, None, None), ("sim_mean_parity_usd", None, None, "parity", None),
@@ -654,15 +951,32 @@ def one_day(pool: Pool) -> dict:
 
 # =========================================================================== outcomes for one state (sim.js mirrors it)
 
-def evaluate(sims: list[dict], inp: Inputs, st: State, spread: list[dict] | None, cfg: dict | None = None) -> dict:
-    """Every live figure for one control state, raw, plus the concrete display spec of each."""
+def evaluate(sims: list[dict], inp: Inputs, st: State, spread: list[dict] | None, cfg: dict | None = None,
+             breakevens: bool = True) -> dict:
+    """Every live figure for one control state, raw, plus the concrete display spec of each. Both strategies are
+    computed at every state: the sim_* figures follow the active one (st.rb), sim_held_* and sim_reb_* hold both.
+    Without breakevens the reset median break-even is skipped (None): the chart rows that never print it."""
     cfg = cfg or cfg_params()
     R, V, tail, windows = inp.rates, inp.V, cfg["tail"], cfg["days"]
     sim = sims[st.win]
     cf = closed_form(st, R, V)
     S, Mu = units(sim, st, R)
-    dist = distribution(S, Mu, tail)
+    held = distribution(S, Mu, tail)
+    rb = rebalanced(sim, st, R, inp.mu_bounds, breakevens)
+    if rb is None:      # w = 0: nothing to reset, the held units stand for both
+        reb, edge, Tbar = held, 0.0, 0.0
+        be_r = (cf["be_cost"], cf["be_mu_mean"], held["be_mu_median"])
+    else:
+        reb = distribution(rb["S"], rb["S"], tail)
+        reb["be_mu_median"] = rb["be_mu_median"]
+        edge, Tbar = V * (rb["E_reb"] - rb["E_bh"]), rb["Tbar"]
+        be_r = (rb["be_cost"], rb["be_mu_mean"], rb["be_mu_median"])
+    reset = st.rb == 1
+    dist = reb if reset else held
+    be_cost, be_mu_mean, be_mu_median = be_r if reset else (cf["be_cost"], cf["be_mu_mean"], held["be_mu_median"])
+    trade = V * st.h * Tbar          # the resets' trading cost, charged against the year's end value
     part, near_f = cf["part"], cf["near_f"]
+    pct = lambda v: None if v is None else 100 * v   # noqa: E731
     cb, bn = inp.vol[(windows[0], "cb")], inp.vol[(windows[0], "bn")]
     cbs, bns = inp.vol[(windows[1], "cb")], inp.vol[(windows[1], "bn")]
     vol = cb + bn if st.venue == "all" else cb
@@ -675,15 +989,15 @@ def evaluate(sims: list[dict], inp: Inputs, st: State, spread: list[dict] | None
         "sim_share": 100 * st.w, "sim_near_usd": part, "sim_cash_interest_usd": cf["interest"],
         "sim_split_usd": 100 * st.s, "sim_split_eur": 100 * (1 - st.s), "sim_mu": 100 * st.mu,
         "sim_participation": 100 * st.p,
-        "sim_mean_usd": cf["mean"], "sim_carry_usd": cf["carry"], "sim_carry_euro_usd": cf["euro"],
-        "sim_price_usd": cf["price"], "sim_cost_usd": cf["cost"],
+        "sim_mean_usd": cf["mean"] + edge - trade if reset else cf["mean"], "sim_carry_usd": cf["carry"],
+        "sim_carry_euro_usd": cf["euro"], "sim_price_usd": cf["price"],
+        "sim_cost_usd": cf["cost"] - trade if reset else cf["cost"],
         "sim_median_usd": part * dist["median"], "sim_p05_usd": part * dist["p05"], "sim_p95_usd": part * dist["p95"],
         "sim_es95_usd": part * dist["es95"],
         "sim_median_price": 100 * ((1 + st.mu) * q7(sim["Gs"], tail["mid"]) - 1),
         "sim_p_beat_n": dist["ahead_n"], "sim_p_behind_n": tail["dots"] - dist["ahead_n"], "sim_p_beat_r": dist["p_beat"],
         "sim_p_half": 100 * half / len(S),
-        "sim_be_mu_mean": 100 * cf["be_mu_mean"], "sim_be_mu_median": 100 * dist["be_mu_median"],
-        "sim_be_cost": 100 * cf["be_cost"],
+        "sim_be_mu_mean": 100 * be_mu_mean, "sim_be_mu_median": pct(be_mu_median), "sim_be_cost": 100 * be_cost,
         "sim_es_interest_years": part * dist["es95"] / cf["interest"] if cf["interest"] > 0 else 0.0,
         "sim_es_desk_pct": 100 * st.w * dist["es95"],
         "sim_exit_days": part / vol, "sim_exit_days_p": part / (st.p * vol), "sim_exit_days_short": part / vol_short,
@@ -691,6 +1005,13 @@ def evaluate(sims: list[dict], inp: Inputs, st: State, spread: list[dict] | None
         "sim_lst_share": 100 * part / inp.lst_mcap,
         "sim_day_swing_usd": part * inp.sigma_d, "sim_var1d99_usd": part * day["var99"],
         "sim_es1d975_usd": part * day["es975"],
+        "sim_reb_edge_usd": edge, "sim_reb_turnover_usd": V * Tbar,
+        "sim_held_median_usd": part * held["median"], "sim_held_p95_usd": part * held["p95"],
+        "sim_held_es95_usd": part * held["es95"], "sim_held_p_beat_r": held["p_beat"],
+        "sim_held_be_mu_median": 100 * held["be_mu_median"],
+        "sim_reb_median_usd": part * reb["median"], "sim_reb_p95_usd": part * reb["p95"],
+        "sim_reb_es95_usd": part * reb["es95"], "sim_reb_p_beat_r": reb["p_beat"],
+        "sim_reb_be_mu_median": pct(be_r[2]),
     }
     for key, mu_key, usd, eur, s in BRACKET:
         alt = replace(st, mu=inp.mu[mu_key] if mu_key else st.mu, usd=usd or st.usd, eur=eur or st.eur,
@@ -702,9 +1023,15 @@ def evaluate(sims: list[dict], inp: Inputs, st: State, spread: list[dict] | None
         scale = abs(part * near_f)
         need = {"median": scale * sp["median"], "p05": scale * sp["p05"], "p95": scale * sp["p95"],
                 "es95": scale * sp["es95"], "be_median": sp["be_median"], "price": abs(1 + st.mu) * sp["price"],
-                "p_beat": sp["p_beat"], "p_half": sp["p_half"]}
-    spec = {k: resolve(v, need, cfg["steps"]) if need else v for k, v in cfg["specs"].items()}
-    return {"raw": out, "spec": spec, "dots": [part * d for d in dist["dots"]], "dist": dist, "cf": cf, "day": day}
+                "p_beat": sp["p_beat"], "p_half": sp["p_half"],
+                "r_median": scale * sp["r_median"], "r_p05": scale * sp["r_p05"], "r_p95": scale * sp["r_p95"],
+                "r_es95": scale * sp["r_es95"], "r_turnover": scale * sp["r_turnover"], "r_p_beat": sp["r_p_beat"],
+                "r_be_median": sp["r_be_median"], "r_cost": st.h * scale * sp["r_turnover"]}
+    specs_now = {**cfg["specs"], **cfg["specs_rb"]} if reset else cfg["specs"]
+    spec = {k: resolve(v, need, cfg["steps"]) if need else v for k, v in specs_now.items()}
+    return {"raw": out, "spec": spec, "dots": [part * d for d in dist["dots"]], "dist": dist, "cf": cf, "day": day,
+            "held": held, "reb": reb, "S": rb["S"] if reset and rb is not None else S,
+            "u_reb": rb["u"] if rb is not None else None}
 
 
 def displays(ev: dict) -> dict:
@@ -726,25 +1053,31 @@ class Result:
     grid: list[dict]
     corr: float
     rv_engine: float
+    w_b_reb: float       # F-sim-budget under resets (sim_w_budget_reb)
 
 
 _RESULTS: "weakref.WeakKeyDictionary[Registry, Result | str]" = weakref.WeakKeyDictionary()
 
 
 def _spread_of(evs: list[dict], near_f: float, part: float) -> dict:
-    """Max minus min across seeds of each simulated figure; dollar figures per dollar of part x near_f."""
+    """Max minus min across seeds of each simulated figure, in both modes (F-sim-seeds); dollar figures per dollar of
+    part x near_f. The held entries keep their names; the reset ones are r_*."""
     def rng(f) -> float:
         vals = [f(e) for e in evs]
         return max(vals) - min(vals)
     unit = abs(part * near_f)
-    return {"median": sig12(rng(lambda e: e["raw"]["sim_median_usd"]) / unit),
-            "p05": sig12(rng(lambda e: e["raw"]["sim_p05_usd"]) / unit),
-            "p95": sig12(rng(lambda e: e["raw"]["sim_p95_usd"]) / unit),
-            "es95": sig12(rng(lambda e: e["raw"]["sim_es95_usd"]) / unit),
-            "be_median": sig12(rng(lambda e: e["raw"]["sim_be_mu_median"])),
-            "price": sig12(rng(lambda e: e["raw"]["sim_median_price"])),
-            "p_beat": sig12(rng(lambda e: e["raw"]["sim_p_beat_r"])),
-            "p_half": sig12(rng(lambda e: e["raw"]["sim_p_half"]))}
+    out = {}
+    for pre, mode in (("", "held"), ("r_", "reb")):
+        out.update({pre + "median": sig12(rng(lambda e: part * e[mode]["median"]) / unit),
+                    pre + "p05": sig12(rng(lambda e: part * e[mode]["p05"]) / unit),
+                    pre + "p95": sig12(rng(lambda e: part * e[mode]["p95"]) / unit),
+                    pre + "es95": sig12(rng(lambda e: part * e[mode]["es95"]) / unit),
+                    pre + "be_median": sig12(rng(lambda e: e["raw"][f"sim_{mode}_be_mu_median"])),
+                    pre + "p_beat": sig12(rng(lambda e: e[mode]["p_beat"]))})
+    out.update({"price": sig12(rng(lambda e: e["raw"]["sim_median_price"])),
+                "p_half": sig12(rng(lambda e: e["raw"]["sim_p_half"])),
+                "r_turnover": sig12(rng(lambda e: e["raw"]["sim_reb_turnover_usd"]) / unit)})
+    return out
 
 
 def default_share(w_b: float, cfg: dict) -> float:
@@ -757,44 +1090,53 @@ def run(reg: Registry) -> Result:
     p = params()
     inp = gather(reg)
     N, H, seed, half = p["sim_paths"], p["sim_horizon_days"], p["sim_seed"], p["sim_half"]
+    R = p["vol_rebal_days"]          # the desk resets at H10's marks (F-sim-rebal)
     if N % (2 * p["sim_dots"]):
         raise ValueError("sim_paths must be a multiple of twice sim_dots")
     wins = [(pool.at, pool.bt) for pool in inp.pools]
-    jobs = [(simulate, wins, N, H, s, half) for s in [seed, *p["sim_seed_checks"]]]
-    jobs += [(simulate_blocks, pool.at, pool.bt, N, H, seed, p["sim_block_days"]) for pool in inp.pools]
+    jobs = [(simulate, wins, N, H, s, half, R) for s in [seed, *p["sim_seed_checks"]]]
+    jobs += [(simulate_blocks, pool.at, pool.bt, N, H, seed, p["sim_block_days"], R) for pool in inp.pools]
     done = run_jobs(jobs)
     sims, checks, blocks = done[0], done[1:1 + len(p["sim_seed_checks"])], done[1 + len(p["sim_seed_checks"]):]
-    logn = [simulate_lognormal(pool.at, N, H, seed) for pool in inp.pools]
+    logn = [simulate_lognormal(pool.at, N, H, seed, R) for pool in inp.pools]
 
-    # the interest-budget share at the default state decides the default NEAR share (AD-2)
-    base = State(w=1.0, s=inp.split, mu=p["sim_mu_default"], k=1, p=inp.participation)
+    # the interest-budget share at the default state, held, decides the default NEAR share (AD-2)
+    base = State(w=1.0, s=inp.split, mu=p["sim_mu_default"], k=1, p=inp.participation, rb=0)
     S0, M0 = units(sims[0], base, inp.rates)
     w_b = closed_form(base, inp.rates, inp.V)["rbar"] / distribution(S0, M0, tail_cfg())["es95"]
-    default = replace(base, w=default_share(w_b, inp.share_cfg))
+    default = replace(base, w=default_share(w_b, inp.share_cfg), rb=DEFAULT_RB)
 
-    # seed spread per window at the default state (F-sim-seeds): it sets each simulated figure's display step
-    spread = []
+    # seed spread per window at the default state, both modes (F-sim-seeds): it sets each simulated figure's display
+    # step. A seed's period products are dropped once its figures are taken.
+    spread, seeds = [], []
+    per_seed = [[evaluate(s, inp, replace(default, win=win), None) for win in range(len(inp.pools))]
+                for s in [sims, *checks]]
+    for s in checks:
+        drop_periods(s)
     for win in range(len(inp.pools)):
-        st = replace(default, win=win)
-        evs = [evaluate(s, inp, st, None) for s in [sims, *checks]]
-        cf = closed_form(st, inp.rates, inp.V)
-        spread.append(_spread_of(evs, cf["near_f"], cf["part"]))
+        cf = closed_form(replace(default, win=win), inp.rates, inp.V)
+        spread.append(_spread_of([e[win] for e in per_seed], cf["near_f"], cf["part"]))
     live = evaluate(sims, inp, default, spread)
-    seeds = [evaluate(s, inp, default, spread) for s in checks]
+    seeds = [e[0] for e in per_seed[1:]]     # each check seed's figures at the default state (raw values only)
+    w_b_reb = w_budget_reb(sims[0], default, inp.rates, inp.V, tail_cfg(), w_b)
 
+    # c33 and c31 rows: the reset mode's figures without its median break-even, which they never print
     sens = []
     for case, win, sim in (("iid", 0, sims), ("iid", 1, sims), ("block", 0, blocks), ("block", 1, blocks),
                            ("lognormal", 0, logn), ("lognormal", 1, logn)):
-        sens.append({"case": case, "win": win, "ev": evaluate(sim, inp, replace(default, win=win), spread)})
+        sens.append({"case": case, "win": win,
+                     "ev": evaluate(sim, inp, replace(default, win=win), spread, breakevens=False)})
+    sens.append({"case": "held", "win": 0, "ev": evaluate(sims, inp, replace(default, rb=0), spread, breakevens=False)})
     for case, change in (("y90", {"y": "y90"}), ("ys60", {"y": "ys60"}), ("dgs1", {"usd": "dgs1"}),
                          ("ffcomp", {"usd": "ffcomp"}), ("parity", {"eur": "parity"}), ("unstaked", {"k": 0})):
-        sens.append({"case": case, "win": 0, "ev": evaluate(sims, inp, replace(default, **change), spread)})
+        sens.append({"case": case, "win": 0,
+                     "ev": evaluate(sims, inp, replace(default, **change), spread, breakevens=False)})
 
     grid = []
     for bp in inp.share_cfg["grid_bp"]:
         for mode in ("value", "flat", "thesis"):
-            st = replace(default, w=bp / 10000, mu=inp.mu[mode])
-            grid.append({"bp": bp, "mode": mode, "ev": evaluate(sims, inp, st, spread)})
+            st = replace(default, w=bp / BP, mu=inp.mu[mode])
+            grid.append({"bp": bp, "mode": mode, "ev": evaluate(sims, inp, st, spread, breakevens=False)})
 
     pool = inp.pools[0]
     pairs = [(a - 1, b - 1) for a, b in zip(pool.a, pool.b) if b != 1.0]
@@ -805,7 +1147,7 @@ def run(reg: Registry) -> Result:
     ml = mean(logs)
     rv_engine = 100 * math.sqrt(total((v - ml) ** 2 for v in logs) / (len(logs) - 1))
     return Result(inp=inp, sims=sims, default=default, w_b=w_b, spread=spread, live=live, seeds=seeds, sens=sens,
-                  grid=grid, corr=corr, rv_engine=rv_engine)
+                  grid=grid, corr=corr, rv_engine=rv_engine, w_b_reb=w_b_reb)
 
 
 def result(reg: Registry) -> Result | None:
@@ -842,16 +1184,22 @@ FORMULA = {
     "sim_mean_thesis_cpi_usd": "F-sim-mean", "sim_mean_parity_usd": "F-sim-mean",
     "sim_mean_dollar_only_usd": "F-sim-mean", "sim_mean_dgs1_usd": "F-sim-mean",
     "sim_mean_dgs1_parity_usd": "F-sim-mean",
+    "sim_reb_edge_usd": "F-sim-rebal", "sim_reb_turnover_usd": "F-sim-rebal",
+    "sim_held_median_usd": "F-sim-dist", "sim_held_p95_usd": "F-sim-dist", "sim_held_es95_usd": "F-sim-dist",
+    "sim_held_p_beat_r": "F-sim-dist", "sim_held_be_mu_median": "F-sim-be",
+    "sim_reb_median_usd": "F-sim-rebal", "sim_reb_p95_usd": "F-sim-rebal", "sim_reb_es95_usd": "F-sim-rebal",
+    "sim_reb_p_beat_r": "F-sim-rebal", "sim_reb_be_mu_median": "F-sim-rebal",
 }
 MEANING = {
     "sim_share": "default NEAR share of the desk: the interest-budget share floored to the slider step",
     "sim_near_usd": "the NEAR part in dollars (share x desk)",
     "sim_cash_interest_usd": "a year of interest on the whole desk at today's blended cash rate",
-    "sim_mean_usd": "expected benefit of the mix against dollars and euros only (closed form)",
+    "sim_mean_usd": "expected benefit of the mix against dollars and euros only (exact: the closed form, with the "
+                    "resets' change and their trading cost when the NEAR part is reset)",
     "sim_carry_usd": "staking yield over the blended cash rate on the NEAR part",
     "sim_carry_euro_usd": "of the carry: euro cash earning less than dollar cash, euro flat on average",
     "sim_price_usd": "the price assumption's share of the expected benefit",
-    "sim_cost_usd": "trading and custody costs entered (none by default)",
+    "sim_cost_usd": "trading and custody costs entered, with the resets' trading (none by default)",
     "sim_median_usd": "the typical simulated year (median)", "sim_p05_usd": "one year in twenty is worse than this",
     "sim_p95_usd": "one year in twenty is better than this",
     "sim_es95_usd": "average shortfall of the worst five simulated years in a hundred",
@@ -861,7 +1209,8 @@ MEANING = {
     "sim_p_half": "simulated years in a hundred in which the NEAR part is at some point worth half its entry value",
     "sim_be_mu_mean": "price change at which the expected benefit is zero",
     "sim_be_mu_median": "average price change the mix needs to come out ahead in most years",
-    "sim_be_cost": "trading and custody costs that would erase the expected benefit",
+    "sim_be_cost": "trading and custody costs that would erase the expected benefit (reset: the round trip per "
+                   "amount traded, custody as entered)",
     "sim_es_interest_years": "the bad-year average in years of the whole desk's interest",
     "sim_es_desk_pct": "the bad-year average as a share of the whole desk",
     "sim_exit_days": "days to sell the NEAR part at a whole median day's volume, last year",
@@ -870,6 +1219,18 @@ MEANING = {
     "sim_nslp_cover": "the instant-exit pool as a share of the NEAR part",
     "sim_lst_share": "the NEAR part as a share of the liquid-staking market (at most: rNEAR is unpriced)",
     "sim_day_swing_usd": "one ordinary day's move of the NEAR part (one standard deviation)",
+    "sim_reb_edge_usd": "the resets' change to the expected value against holding the NEAR part untraded (exact)",
+    "sim_reb_turnover_usd": "the amount the resets trade in an average simulated year",
+    "sim_held_median_usd": "the typical simulated year, NEAR part held without trading",
+    "sim_held_p95_usd": "one year in twenty is better than this, NEAR part held without trading",
+    "sim_held_es95_usd": "the bad-year average, NEAR part held without trading",
+    "sim_held_p_beat_r": "simulated years in a hundred that end ahead, NEAR part held without trading",
+    "sim_held_be_mu_median": "the price change most years need, NEAR part held without trading",
+    "sim_reb_median_usd": "the typical simulated year, NEAR part reset to its share",
+    "sim_reb_p95_usd": "one year in twenty is better than this, NEAR part reset to its share",
+    "sim_reb_es95_usd": "the bad-year average, NEAR part reset to its share",
+    "sim_reb_p_beat_r": "simulated years in a hundred that end ahead, NEAR part reset to its share",
+    "sim_reb_be_mu_median": "the price change most years need, NEAR part reset to its share",
 }
 
 
@@ -881,7 +1242,8 @@ def _put(reg: Registry, key: str, value: Any, unit: str, formula: str, files, in
 
 def describe(st: State) -> str:
     return (f"default state: NEAR share {st.w:g}, dollar share {st.s:g}, price change {st.mu:g}, staked {st.k}, "
-            f"costs {st.c:g}, window {params()['sim_windows'][st.win]} days, exit venue {st.venue}")
+            f"costs {st.c:g}, window {params()['sim_windows'][st.win]} days, exit venue {st.venue}, "
+            f"NEAR part {'reset to its share every vol_rebal_days' if st.rb == 1 else 'held without trading'}")
 
 
 def compute(reg: Registry) -> None:
@@ -930,6 +1292,9 @@ def compute(reg: Registry) -> None:
     _put(reg, "sim_window_end", iso(inp.end), "date", "F-sim-pool", near, ["latest_common_date"])
     _put(reg, "sim_w_budget", round_dp(100 * r.w_b, 2), "%", "F-sim-budget", sources,
          ["the blended cash rate / the bad-year average per dollar of NEAR, at the default state"], decimals=2)
+    _put(reg, "sim_w_budget_reb", round_dp(100 * r.w_b_reb, 2), "%", "F-sim-budget", sources,
+         ["the largest NEAR share whose bad-year average, reset every vol_rebal_days, is within a year of the "
+          "blended cash rate (bisection, window and seed of the default state)"], decimals=2)
     _put(reg, "sim_w_one_day", round_dp(100 * inp.vol[(w0, "cb")] / inp.V, 1), "%", "F-sim-liq", f["vol"] + consts,
          [f"sim_vol_med_{w0}_cb / sim_desk_usd: the share one median Coinbase day could absorb"], decimals=1)
     _put(reg, "sim_rv_engine", round_dp(r.rv_engine, 1), "%", "F-sim-path", near,
@@ -956,13 +1321,15 @@ def compute(reg: Registry) -> None:
     for dkey, vkey in DIRS.items():
         _put(reg, dkey, direction(reg.value(vkey)), "text", FORMULA[vkey], sources, [vkey])
     for dkey, vkey in RISE.items():
-        _put(reg, dkey, rise(reg.value(vkey)), "text", "F-sim-be", sources, [vkey])
+        _put(reg, dkey, rise(reg.value(vkey)), "text", FORMULA[vkey], sources, [vkey])
     for key, value in modes(r.default, inp, "flat", False).items():
-        _put(reg, key, value, "text", "P-sim", consts, ["the default control state"])
+        _put(reg, key, value, "text", "F-sim-rebal" if key == "sim_strategy_mode" else "P-sim", consts,
+             ["the default control state"])
 
     # seed spread (data page): each simulated figure's spread across the seeds, and the step it sets
     for key in ("sim_median_usd", "sim_p05_usd", "sim_p95_usd", "sim_es95_usd", "sim_be_mu_median",
-                "sim_p_beat_r", "sim_p_half"):
+                "sim_p_beat_r", "sim_p_half", "sim_held_median_usd", "sim_held_p95_usd", "sim_held_es95_usd",
+                "sim_held_p_beat_r", "sim_held_be_mu_median", "sim_reb_turnover_usd"):
         vals = [r.live["raw"][key]] + [s["raw"][key] for s in r.seeds]
         spread, spec = max(vals) - min(vals), r.live["spec"][key]
         unit = "USD" if spec[0] == "usd" else "pp" if spec[0] == "pctstep" else "count"
@@ -981,17 +1348,18 @@ def modes(st: State, inp: Inputs, mu_mode: str, changed: bool) -> dict:
     return {"sim_mu_mode": mu_mode, "sim_stake_mode": "staked" if st.k else "unstaked",
             "sim_cost_mode": "none" if st.c == 0 else "entered", "sim_window_mode": "year" if st.win == 0 else "short",
             "sim_venue_mode": "coinbase" if st.venue == "cb" else "both", "sim_changed": "yes" if changed else "no",
-            "sim_split_basis": inp.split_basis, "sim_estr_basis": inp.estr_basis}
+            "sim_split_basis": inp.split_basis, "sim_estr_basis": inp.estr_basis,
+            "sim_strategy_mode": "rebalance" if st.rb == 1 else "hold"}
 
 
-CONTROLS = ("w", "s", "mu", "own", "k", "win", "venue", "p", "rt", "cu")
+CONTROLS = ("w", "rb", "s", "mu", "own", "k", "win", "venue", "p", "rt", "cu")
 
 
 def state_of(ctrl: dict, P: dict) -> State:
     """A control state (the payload's `default` shape) as a model State; sim.js toState() mirrors it."""
     mu = ctrl["own"] if ctrl["mu"] == "own" else P["mu"][ctrl["mu"]]
     return State(w=ctrl["w"], s=ctrl["s"], mu=mu, k=ctrl["k"], c=(ctrl["rt"] + ctrl["cu"]) / P["bp"], p=ctrl["p"],
-                 win=ctrl["win"], venue=ctrl["venue"])
+                 win=ctrl["win"], venue=ctrl["venue"], rb=ctrl["rb"], rt=ctrl["rt"], cu=ctrl["cu"])
 
 
 def inputs_from_payload(P: dict) -> Inputs:
@@ -1030,7 +1398,8 @@ SOURCES = ["Binance spot NEARUSDT daily klines", "Coinbase Exchange NEAR-USD dai
 def _queries() -> list[Query]:
     return [near_query(near_prices()), fred_query("DEXUSEU"), fred_query("EFFR"), fred_query(ESTR), fred_query("DGS1"),
             derived_query("u_i = (1 + mu)(1 + k y) G_i - 1 - [s R_U + (1 - s)((1 + r_EUR) X_i - 1)] - c; D_i = w V u_i; "
-                          "iid joint-day bootstrap of the window's daily moves, gross-demeaned, moment-matched")]
+                          "iid joint-day bootstrap of the window's daily moves, gross-demeaned, moment-matched; the "
+                          "NEAR part reset to w every vol_rebal_days in the default mode (F-sim-rebal)")]
 
 
 def charts(reg: Registry) -> list[Chart]:
@@ -1068,8 +1437,15 @@ def c30(reg: Registry, r: Result) -> Chart:
     p = params()
     live = r.live
     spec = live["spec"]["sim_median_usd"]
-    G = r.sims[0]["Gs"]
-    n = len(G)
+    sim = r.sims[r.default.win]
+    n = len(sim["G"])
+    if r.default.rb == 1 and live["u_reb"] is not None:
+        # reset mode: each dot's own year, the paths ranked by (u_i, i) (spec 1.5)
+        u = live["u_reb"]
+        order = sorted(range(n), key=lambda i: (u[i], i))
+        G = [sim["G"][i] for i in order]
+    else:
+        G = sim["Gs"]
     rows, csv_rows = [], []
     for k, d in enumerate(live["dots"], start=1):
         idx = (2 * k - 1) * n // (2 * p["sim_dots"])
@@ -1086,15 +1462,19 @@ def c30(reg: Registry, r: Result) -> Chart:
                "footnote": "Each row is one simulated year in a hundred, from worst to best: the middle year of its "
                            "hundredth of all the simulated years. The price factor is NEAR's price change behind a "
                            "year of that rank, before staking yield."},
-        code_ref=f"{SIM_FILE}::c30", formula_ids=["F-sim-path", "F-sim-unit", "F-sim-benefit", "F-sim-dist"],
+        code_ref=f"{SIM_FILE}::c30",
+        formula_ids=["F-sim-path", "F-sim-unit", "F-sim-rebal", "F-sim-benefit", "F-sim-dist"],
         x={"type": "linear", "unit": "USD", "layout": geo}, y={"unit": "count"},
         title_template="{sim_dots} simulated years for the {sim_near_usd} NEAR part: ahead in {sim_p_beat_n}, behind "
                        "in {sim_p_behind_n}",
-        sentence_template="Against dollars and euros only, with daily moves like the last year's and the price flat "
-                          "on average, the typical simulated year ends {sim_median_usd:abs} {sim_median_dir} and the "
-                          "average ends {sim_mean_usd:abs} {sim_mean_dir}.",
-        notes_templates=["The average is exact (closed form); the typical year and the tails come from {sim_paths} "
-                         "simulated years, resampling whole days of NEAR and euro moves together."])
+        sentence_template="Against dollars and euros only, with daily moves like the last year's, the price flat "
+                          "on average and the NEAR part reset every {vol_rebal_days}, the typical simulated year ends "
+                          "{sim_median_usd:abs} {sim_median_dir} and the average ends {sim_mean_usd:abs} "
+                          "{sim_mean_dir}.",
+        notes_templates=["The average is exact (the closed form plus the resets' edge, both worked out without "
+                         "simulation); the typical year and the tails come from {sim_paths} simulated years, "
+                         "resampling whole days of NEAR and euro moves together, with the NEAR part reset to its "
+                         "share every {vol_rebal_days}."])
     chart.csv_table = {"columns": ["simulated_year", "difference_usd", "near_price_factor"], "rows": csv_rows}
     return chart.resolve(reg)
 
@@ -1132,16 +1512,16 @@ def c31(reg: Registry, r: Result) -> Chart:
                            "simulated_years_ahead", "days_to_sell_on_coinbase"], "rows": rows,
                "footnote": "Staked, no costs, daily moves like the last year's. The expected value is exact; the "
                            "other columns come from the simulated years."},
-        code_ref=f"{SIM_FILE}::c31", formula_ids=["F-sim-mean", "F-sim-dist", "F-sim-liq"],
+        code_ref=f"{SIM_FILE}::c31", formula_ids=["F-sim-mean", "F-sim-rebal", "F-sim-dist", "F-sim-liq"],
         x={"type": "linear", "unit": "USD"}, y={"type": "category", "unit": "USD"},
         series=[Series(id="typical", label="Typical simulated year, with one year in twenty worse and better",
                        entity="near", points=typ, unit="USD"),
                 Series(id="expected", label="Expected (exact)", entity="context", points=avg, unit="USD",
                        role="context")],
         reference_lines=[{"x": 0, "label": "Same as dollars and euros only"}],
-        title_template="More NEAR scales the outcome, not the odds: ahead in about {sim_p_beat_r} of {sim_dots} "
-                       "simulated years at every share",
-        sentence_template="Each row is a NEAR share of the {sim_desk_usd} desk with the price flat on average: the dot "
+        title_template="Resetting a larger NEAR share scales the outcome far more than the odds",
+        sentence_template="Each row is a NEAR share of the {sim_desk_usd} desk with the price flat on average, each "
+                          "NEAR part reset every {vol_rebal_days}: the dot "
                           "is the typical simulated year, the bar runs from one year in twenty worse to one year in "
                           "twenty better, and the open mark is the exact expected value.")
     chart.csv_table = {"columns": ["near_share_pct", "price_assumption", "expected_usd", "typical_year_usd",
@@ -1202,6 +1582,7 @@ SENS_LABEL = {
     "ys60": "Staking yield if the staked share reached the tripwire level",
     "dgs1": "Dollar leg at a one-year Treasury", "ffcomp": "Dollar leg at fed funds compounded over the last year",
     "parity": "Euro priced to offset its lower rate (interest parity)", "unstaked": "NEAR held but not staked",
+    "held": "Held without trading (no resets)",
 }
 
 
@@ -1235,9 +1616,10 @@ def c33(reg: Registry, r: Result) -> Chart:
                "footnote": "Every row keeps the default NEAR share, split, price assumption and costs and changes one "
                            "thing. The expected value is exact; the rest come from simulated years."},
         code_ref=f"{SIM_FILE}::c33",
-        formula_ids=["F-sim-mean", "F-sim-dist", "F-sim-block", "F-sim-lognormal", "F-sim-tbill"],
+        formula_ids=["F-sim-mean", "F-sim-rebal", "F-sim-dist", "F-sim-block", "F-sim-lognormal", "F-sim-tbill"],
         x={"type": "category"}, y={"unit": "text"},
-        title_template="What moves the answer: rates and staking move the expected value, the window moves the spread",
+        title_template="What moves the answer: rates and staking move the expected value; the window and the resets "
+                       "move the spread",
         sentence_template="Each row changes one input from the defaults, where the expected benefit is "
                           "{sim_mean_usd:abs} {sim_mean_dir} and the typical year {sim_median_usd:abs} "
                           "{sim_median_dir}.")
@@ -1252,7 +1634,7 @@ def c33(reg: Registry, r: Result) -> Chart:
 # the simulation's words, and the desk frame's tile labels, plot labels and assumption line it redraws live
 COPY_PREFIXES = ("sim_", "film_tile_", "film_plot_", "film_desk_assumption")
 # claim chips on the tiles and the price options (sim.js draws one only when the page holds that claim's block)
-CHIPS = {"mean": "H3", "median": "H9", "beat": "H7", "bad": "H7", "exit": "H6", "value": "H12", "thesis": "H1b"}
+CHIPS = {"mean": "H3", "median": "H9", "beat": "H7", "bad": "H7", "exit": "H6", "thesis": "H1", "rb": "H10"}
 # What sim.js lays out under the plot, in order. Each name is a copy entry or a sim_* key, so the wording and its
 # order live here and tests/test_portfolio.py checks every name resolves.
 PAGE = {
@@ -1272,9 +1654,12 @@ PAGE = {
             ["sim_liq_short", "sim_exit_days_short"], ["sim_liq_pool", "sim_nslp_cover"],
             ["sim_liq_unbond", "sim_liq_unbond_v"], ["sim_liq_lst", "sim_lst_share"],
             ["sim_liq_depth", "sim_liq_depth_v"]],
-    "notes": ["sim_why_typical", "sim_stake_note", "sim_window_note", "sim_method", "film_desk_assumption"],
+    "notes": ["sim_why_typical", "sim_stake_note", "sim_window_note", "sim_method", "sim_rebal_note",
+              "film_desk_assumption"],
     "left": ["sim_left_failure", "sim_left_lst", "sim_left_rates", "sim_left_costs", "sim_left_accounting",
-             "sim_left_wrongway"],
+             "sim_left_wrongway", "sim_left_resets"],
+    # the comparison line under the tiles: the strategy not chosen, from the sim_held_* / sim_reb_* keys
+    "compare": "sim_compare",
 }
 
 
@@ -1306,23 +1691,24 @@ def payload(reg: Registry, r: Result) -> dict:
     st = r.default
     return {
         "as_of": reg.get("latest_common_date").value, "seed": p["sim_seed"], "paths": p["sim_paths"],
-        "horizon": p["sim_horizon_days"], "half": p["sim_half"], "tail": tail_cfg(),
+        "horizon": p["sim_horizon_days"], "half": p["sim_half"], "rebal_days": p["vol_rebal_days"],
+        "tail": tail_cfg(),
         "windows": [{"days": pool.days, "a": pool.at, "b": pool.bt, "fix": pool.n_fix,
                      "day": {k: v for k, v in one_day(pool).items() if k in ("var99", "es975")}}
                     for pool in inp.pools],
         "rates": {"RU": R.RU, "RT": R.RT, "RF": R.RF, "rE": R.rE, "y": R.y, "y90": R.y90, "ys60": R.ys60},
         "mu": {**inp.mu, "lo": inp.mu_bounds[0], "hi": inp.mu_bounds[1]},
         "V": inp.V,
-        "default": {"w": st.w, "s": st.s, "mu": "flat", "own": 0.0, "k": st.k, "win": st.win, "venue": st.venue,
-                    "p": st.p, "rt": 0, "cu": 0},
+        "default": {"w": st.w, "rb": st.rb, "s": st.s, "mu": "flat", "own": 0.0, "k": st.k, "win": st.win,
+                    "venue": st.venue, "p": st.p, "rt": 0, "cu": 0},
         "share": {"step_bp": inp.share_cfg["step_bp"], "max_bp": inp.share_cfg["max_bp"], "w_b": sig12(r.w_b),
-                  "w_one_day": sig12(inp.vol[(w0, "cb")] / inp.V)},
-        "split_step": inp.split_step, "bp": 10000, "basis": {"split": inp.split_basis, "estr": inp.estr_basis},
+                  "w_b_reb": sig12(r.w_b_reb), "w_one_day": sig12(inp.vol[(w0, "cb")] / inp.V)},
+        "split_step": inp.split_step, "bp": BP, "basis": {"split": inp.split_basis, "estr": inp.estr_basis},
         "liq": {"cb": inp.vol[(w0, "cb")], "bn": inp.vol[(w0, "bn")], "cbs": inp.vol[(w1, "cb")],
                 "bns": inp.vol[(w1, "bn")], "nslp": inp.raw["nslp_usd"], "lst": inp.lst_mcap},
         "sigma_d": inp.sigma_d, "spread": r.spread,
         "steps": {"usd": p["sim_steps_usd"], "pp": p["sim_steps_pp"], "count": p["sim_steps_count"]},
-        "specs": specs(), "dirs": DIRS, "rise": RISE, "bracket": [list(b) for b in BRACKET],
+        "specs": specs(), "specs_rb": specs_rb(), "dirs": DIRS, "rise": RISE, "bracket": [list(b) for b in BRACKET],
         # tie: digits sim.js reads past a display's last decimal to find an exact half-way value, which Python's
         # format rounds to even and toFixed rounds up
         "fmt": {"scales": [[1e12, "trillion"], [1e9, "billion"], [1e6, "million"]], "group": 3, "ten": 10,

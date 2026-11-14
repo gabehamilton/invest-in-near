@@ -3,6 +3,8 @@
 Formulas:
   F-venues        counts from market/options_venues.json; has_near_options null = the venue could not be queried
                   (geoblock or error): counted in venues_unchecked and labelled "not checked: HTTP <code>", never "no".
+                  near_options = "listed" when a checked venue lists NEAR options, "none" when venues were checked
+                  and none does.
   F-vrp           context only (BTC/ETH, not NEAR): DVOL(t) - forward 30-day realized vol, where the forward RV is
                   the sample stdev of the 30 daily log returns dated t+1..t+30 (Binance closes) x sqrt(365); the
                   mean over every day where both exist.
@@ -58,6 +60,7 @@ def compute(reg: Registry) -> None:
         reason = "market/options_venues.json is missing"
         for key in ("n_venues_with_near_options", "n_option_venues_checked", "venues_unchecked"):
             reg.put(key, None, "count", "F-venues", null_reason=reason)
+        reg.put("near_options", None, "text", "F-venues", null_reason=reason)
     else:
         vs = data.get("venues") or []
         checked = [v for v in vs if v.get("has_near_options") is not None]
@@ -70,6 +73,9 @@ def compute(reg: Registry) -> None:
                 inputs=[stamp] + [f"{v['venue']}: HTTP {v.get('http_status')}" for v in checked])
         reg.put("venues_unchecked", len(unchecked), "count", "F-venues", source_files=vfiles,
                 inputs=[stamp] + [f"{v['venue']}: not checked: HTTP {v.get('http_status')}" for v in unchecked])
+        reg.put("near_options", "listed" if listed else "none" if checked else None, "text", "F-venues",
+                source_files=vfiles, inputs=[stamp, f"{len(listed)} of {len(checked)} checked venues list NEAR options"],
+                null_reason=None if checked else "no options venue could be checked")
 
     for key, symbol, dvol_name in (("vrp_btc", "BTCUSDT", "dvol_deribit_btc_daily"),
                                    ("vrp_eth", "ETHUSDT", "dvol_deribit_eth_daily")):
@@ -83,16 +89,6 @@ def compute(reg: Registry) -> None:
             reg.put(key, None, "pp", "F-vrp", source_files=files,
                     null_reason=f"no day with both Deribit DVOL and 30 forward Binance {symbol} returns")
 
-    # H8's supported/refuted rules read a NEAR variance risk premium. No checked venue lists NEAR options, so
-    # there is no NEAR implied volatility to compute it from: register the keys as null with that reason, so the
-    # rule reads registered keys (and says why they are empty) rather than names no model writes.
-    n_near = reg.value("n_venues_with_near_options") if "n_venues_with_near_options" in reg else None
-    why_vrp = ("no checked venue lists NEAR options, so there is no NEAR implied volatility to compare with "
-               "realized volatility" if n_near == 0 else
-               "NEAR options listings were not checked" if n_near is None else
-               "a venue lists NEAR options, but no NEAR implied-volatility history is pulled yet")
-    for key, unit in (("vrp_near_mean", "pp"), ("vrp_near_t", "ratio"), ("vrp_near_days", "days")):
-        reg.put(key, None, unit, "F-vrp", source_files=vfiles, null_reason=why_vrp)
 
 
 def charts(reg: Registry) -> list[Chart]:
@@ -158,6 +154,9 @@ def vol_market(reg: Registry) -> Chart:
         if ready(reg, "venues_unchecked") and reg.value("venues_unchecked") else "",
         "Where options exist, one-month implied minus realized volatility averaged {vrp_btc} for bitcoin and "
         "{vrp_eth} for ether (a proxy, not NEAR).",
+        "No options venue I could check lists NEAR, so the claim that NEAR's volatility can be sold is tested on a "
+        "perpetual instead."
+        if ready(reg, "near_options") and reg.value("near_options") == "none" else "",
     ])
     if ready(reg, "n_venues_with_near_options", "n_option_venues_checked") and reg.value("n_option_venues_checked"):
         if reg.value("n_venues_with_near_options") == 0:
@@ -168,7 +167,7 @@ def vol_market(reg: Registry) -> Chart:
                                         "checked.")
             else:
                 chart.title_template = ("{n_venues_with_near_options} of the {n_option_venues_checked} options venues "
-                                        "checked list NEAR options, so there is no NEAR volatility to sell there.")
+                                        "checked list NEAR options.")
         else:
             chart.title_template = ("{n_venues_with_near_options} of {n_option_venues_checked} checked venues list "
                                     "NEAR options.")

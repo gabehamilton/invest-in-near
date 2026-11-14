@@ -2,8 +2,9 @@
 
 Every series here is made up for the test: smooth geometric paths so each formula can be checked against a hand
 computation. They test the latest twelve-month money growth and its null rules (a blank month is skipped, never
-filled; a missing file gives its reason), the euro's published rate, the H1b gaps and their median, the X9 mirror,
-and an empty raw directory leaving c21 unavailable and H1b not computed.
+filled; a missing file gives its reason), the euro's published rate, the H1 gaps (each currency's latest year against
+NEAR's latest year, g_365), their median and count, the same-months check, the X9 mirror, and an empty raw directory
+leaving c21 unavailable and H1 not computed.
 """
 
 from __future__ import annotations
@@ -144,7 +145,7 @@ def test_euro_uses_the_published_rate(raw):
     assert "ECB published annual growth rate" in " ".join(f.r["gm_latest"].inputs)
 
 
-# --------------------------------------------------------------------------- panel, medians and the H1b gaps
+# --------------------------------------------------------------------------- panel, medians and the H1 gaps
 
 def test_panel_medians_count_only_currencies_with_a_value(raw):
     write_bis(raw, [("AUD", 300.0), ("CAD", 200.0), ("CHF", 100.0)])
@@ -158,40 +159,57 @@ def test_panel_medians_count_only_currencies_with_a_value(raw):
     latest = [reg.value("mon_aud_gm_latest"), reg.value("mon_cad_gm_latest")]
     assert reg.value("fiat_gm_latest_med") == pytest.approx(sum(latest) / 2, abs=1e-3)   # registered values are rounded
     # no NEAR supply growth in this registry, so the gaps are null with the upstream reason
-    assert reg.get("h1b_gap_aud").value is None and "NEAR month-end g_365" in reg.get("h1b_gap_aud").null_reason
-    assert reg.get("h1b_gap_med").value is None and reg.get("h1b_n_faster").value is None
+    assert reg.get("h1_gap_aud").value is None and "g_365" in reg.get("h1_gap_aud").null_reason
+    assert reg.get("h1_gap_med").value is None and reg.get("h1_n_faster").value is None
 
 
-def test_h1b_gaps_match_each_currency_with_nears_growth_over_the_same_months(raw, monkeypatch):
+def near_latest_year(reg: Registry, g: float) -> None:
+    """NEAR's supply growth over its latest year (percent), as the supply model registers it."""
+    reg.put("g_365", g, "%", "F-growth", source_files=["data/raw/rpc/dense_samples.csv"],
+            inputs=["total_supply_near 2024-12-20", "total_supply_near 2025-12-20"])
+
+
+def test_h1_gaps_set_each_currencys_latest_year_against_nears_latest_year(raw, monkeypatch):
+    """Every gap reads g_365, NEAR's latest year, whatever month the currency's money ends; the month-end growth over
+    each currency's own twelve months only feeds the same-months count, which can differ."""
     write_bis(raw, [("AUD", 300.0), ("CAD", 200.0), ("CHF", 100.0)])
     currency(raw, "AUD")                                    # latest month 2025-12
     currency(raw, "CAD", money_last=(2025, 11), rate=1.006)  # latest month 2025-11
     currency(raw, "CHF", rate=1.0005)
     near_growth(monkeypatch, {"2025-11": 0.03, "2025-12": 0.02})
     reg = Registry()
+    near_latest_year(reg, 5.0)
     money.compute(reg)
-    assert reg.value("g_365_at_aud") == pytest.approx(2.0) and reg.value("g_365_at_cad") == pytest.approx(3.0)
-    gaps = {c: reg.value(f"mon_{c}_gm_latest") - reg.value(f"g_365_at_{c}") for c in ("aud", "cad", "chf")}
+    money_g = {c: 100 * (r ** 12 - 1) for c, r in (("aud", MONEY_RATE), ("cad", 1.006), ("chf", 1.0005))}
+    gaps = {c: money_g[c] - 5.0 for c in money_g}
     for c, gap in gaps.items():
-        assert reg.value(f"h1b_gap_{c}") == pytest.approx(gap, abs=1e-3), c
-    assert reg.value("h1b_gap_med") == pytest.approx(sorted(gaps.values())[1], abs=1e-3)
-    assert reg.value("h1b_n_faster") == sum(1 for g in gaps.values() if g > 0)
-    assert reg.value("h1b_gap_chf") < 0   # a currency whose money grew slower than NEAR's supply
+        assert reg.value(f"h1_gap_{c}") == pytest.approx(gap, abs=1e-3), c
+        assert "g_365" in reg.get(f"h1_gap_{c}").inputs[0], c
+    assert reg.value("h1_gap_med") == pytest.approx(sorted(gaps.values())[1], abs=1e-3)
+    assert reg.value("h1_n_faster") == sum(1 for g in gaps.values() if g > 0) == 1   # CAD only
+    assert reg.value("h1_gap_aud") < 0   # money that grew slower than NEAR's supply over NEAR's latest year
+    # the same-months check: AUD against NEAR's year to 2025-12 (2 %), CAD against its year to 2025-11 (3 %)
+    same = {"aud": money_g["aud"] - 2.0, "cad": money_g["cad"] - 3.0, "chf": money_g["chf"] - 2.0}
+    assert reg.value("h1_n_faster_same") == sum(1 for g in same.values() if g > 0) == 2
+    assert reg.get("h1_n_faster_same").formula_id == "F-h1-gap"
+    assert not any(k.startswith("g_365_at_") for k, _n in reg.items()), "no per-currency NEAR figure is registered"
 
 
-def test_a_month_without_nears_growth_nulls_only_that_gap(raw, monkeypatch):
+def test_a_month_without_nears_month_end_growth_leaves_the_gaps_and_drops_it_from_the_check(raw, monkeypatch):
     write_bis(raw, [("AUD", 300.0), ("CAD", 200.0)])
     currency(raw, "AUD")
     currency(raw, "CAD", money_last=(2025, 11))
     near_growth(monkeypatch, {"2025-12": 0.02})
     reg = Registry()
+    near_latest_year(reg, 2.5)
     money.compute(reg)
-    assert reg.value("h1b_gap_aud") is not None
-    assert reg.get("h1b_gap_cad").value is None and "2025-11" in reg.get("h1b_gap_cad").null_reason
-    assert reg.value("h1b_gap_med") == pytest.approx(reg.value("h1b_gap_aud"), abs=1e-3)
+    assert reg.value("h1_gap_aud") is not None and reg.value("h1_gap_cad") is not None
+    assert reg.value("h1_n_faster") == 2
+    assert reg.value("h1_n_faster_same") == 1 and reg.get("h1_n_faster_same").inputs == [
+        "AUD 2025-12: NEAR 2024-12-01 -> 2025-12-01"]
 
 
-def test_empty_raw_leaves_c21_unavailable_and_h1b_not_computed(raw):
+def test_empty_raw_leaves_c21_unavailable_and_h1_not_computed(raw):
     reg = Registry()
     money.compute(reg)
     assert reg.get("n_fiat_panel").value is None and "no BIS turnover file" in reg.get("n_fiat_panel").null_reason
@@ -200,21 +218,21 @@ def test_empty_raw_leaves_c21_unavailable_and_h1b_not_computed(raw):
     assert chart.status == "unavailable" and chart.series == []
     assert chart.empty_state
     with RULES_PATH.open("rb") as fh:
-        rule = tomllib.load(fh)["H1b"]
-    assert verdicts.evaluate_claim("H1b", rule, reg)["verdict"] == verdicts.NOT_COMPUTED
+        rule = tomllib.load(fh)["H1"]
+    assert verdicts.evaluate_claim("H1", rule, reg)["verdict"] == verdicts.NOT_COMPUTED
 
 
 @pytest.mark.parametrize("n_money, verdict", [(6, verdicts.NOT_COMPUTED), (7, verdicts.SUPPORTED)])
-def test_h1b_needs_seven_of_the_ten_currencies(n_money, verdict):
-    """The floor in H1b's rule is the literal seven; one currency short of it leaves H1b without a verdict."""
+def test_h1_needs_seven_of_the_ten_currencies(n_money, verdict):
+    """The floor in H1's rule is the literal seven; one currency short of it leaves H1 without a verdict."""
     with RULES_PATH.open("rb") as fh:
-        rule = tomllib.load(fh)["H1b"]
+        rule = tomllib.load(fh)["H1"]
     assert rule["not_computed_if"] == "n_fiat_money < 7"
     reg = Registry()
     reg.put("n_fiat_money", n_money, "count", "F-money-growth-latest")
     reg.put("gap_m2", 3.0, "pp", "F-gap")
-    reg.put("h1b_gap_med", 2.0, "pp", "F-h1b-gap")
-    out = verdicts.evaluate_claim("H1b", rule, reg)
+    reg.put("h1_gap_med", 2.0, "pp", "F-h1-gap")
+    out = verdicts.evaluate_claim("H1", rule, reg)
     assert out["verdict"] == verdict
     if verdict == verdicts.NOT_COMPUTED:
         assert "fewer than seven" in out["null_reason"]

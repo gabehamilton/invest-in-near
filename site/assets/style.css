@@ -125,6 +125,9 @@ pre code { display: block; padding: 0.75rem 0.9rem; background: var(--wash); bor
 /* data-provided strings: look like body text, stay inside <code> for the number lint */
 code.raw { font: inherit; background: none; padding: 0; border-radius: 0; color: inherit; overflow-wrap: anywhere; }
 th code.raw { overflow-wrap: normal; }
+table.perp-sens code.raw { overflow-wrap: normal; }
+table.perp-sens td:nth-child(2) { min-width: 11rem; }
+table.perp-sens td:not(:nth-child(2)) { white-space: nowrap; }   /* the case labels read as phrases, not a few letters per line */
 q.claimed { quotes: "\201C" "\201D"; font-style: italic; }
 cite { font-style: normal; }
 .vh { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -261,7 +264,7 @@ td .num, .twin td { font-variant-numeric: tabular-nums; }
 .xstate[data-state="fail"] { text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.78rem; border: 1px solid var(--ink); border-radius: 4px; padding: 0 0.3rem; }
 .xstate[data-state="not run"], .xstate[data-state="withheld"] { color: var(--ink-2); font-weight: 500; }
 .ledger q.claimed { display: block; }
-/* hidden assumptions print the assumption; the sentence they hide in is secondary and muted */
+/* a hidden assumption prints the assumption; the sentence it hides in is secondary and muted */
 .assumption { display: block; }
 .assumption-k { font-weight: 600; }
 .hidden-in { display: block; margin-top: 0.25rem; font-size: 0.82rem; color: var(--ink-2); }
@@ -274,6 +277,8 @@ details.hidden-claims > summary { cursor: pointer; font-weight: 600; padding: 0.
 .registry tr[data-null] th code { color: var(--ink-2); }
 .registry .why { font-size: 0.78rem; color: var(--ink-2); }
 tr:target > * { background: var(--wash); }
+/* a linked row in a tall table lands below the table's sticky head, not under it */
+.table-wrap.tall tr[id] { scroll-margin-top: 3.75rem; }   /* room for the head when its labels wrap to two lines */
 @media (max-width: 48rem) {
   .ledger thead { display: none; }
   .ledger tr { display: block; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--grid); }
@@ -394,6 +399,8 @@ details.verdict[open] .verdict-more { text-decoration-style: solid; }
 .plot.multi .panel { height: calc(clamp(13rem, 32vw, 16rem) + var(--legend-rows, 0) * 15px); }
 .plot[data-form="bar"] .panel { height: calc(var(--rows, 5) * 2.75rem + 2.25rem); }
 .plot[data-form="dot-range"] .panel { height: calc(var(--rows, 10) * 1.75rem + 3rem); }
+/* keyed by series (c25, c26): each value label sits above its dot, so a row holds a label line too */
+.plot[data-form="dot-range"][data-key="series"] .panel { height: calc(var(--rows, 10) * 2.5rem + 3rem); }
 .plot:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
 .plot svg { display: block; overflow: visible; }
 html:not(.js) .plot, html:not(.js) .legend { display: none; }
@@ -542,6 +549,7 @@ a.endpoint { white-space: nowrap; }
 .formula:target, .rule-block:target, .src-block:target { outline: 2px solid var(--focus); outline-offset: 2px; }
 .used-by { font-size: 0.8rem; color: var(--ink-2); margin: 0; }
 #other-formulas { grid-column: 1 / -1; }
+#F-vol-compare { align-self: start; }   /* a short card beside a long one keeps its own height */
 .formula-index th[scope="row"] { white-space: nowrap; vertical-align: top; }
 .formula-index tr:target { outline: 2px solid var(--focus); outline-offset: -2px; }
 .rules { display: grid; gap: 0.75rem; }
@@ -572,7 +580,7 @@ a.endpoint { white-space: nowrap; }
 
 .site-foot { border-top: 1px solid var(--border); background: var(--surface); padding: 1.5rem 0 2rem; font-size: 0.85rem; color: var(--ink-2); }
 .site-foot p { max-width: 52rem; }
-.disclosure { margin-top: 0.5rem; }
+.disclaimer, .disclosure { margin-top: 0.5rem; }
 
 /* ------------------------------------------------------------------ accessibility modes */
 

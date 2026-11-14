@@ -1,0 +1,33 @@
+{
+  "columns": [
+    "time",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume_base",
+    "volume_quote",
+    "trades"
+  ],
+  "complete": true,
+  "description": "Hyperliquid NEAR perpetual candles (UTC hours, traded candles only); volume_base in NEAR, trades is the number of trades; the venue reports no quote volume",
+  "error": null,
+  "excluded": "1 unfinished candle(s) at fetch time",
+  "fetched_at": "2026-11-13T17:28:18+00:00",
+  "file": "data/raw/perps/near_perp_hyperliquid_hourly.csv",
+  "first_time": "2026-04-19T07:00:00Z",
+  "last_time": "2026-11-13T16:00:00Z",
+  "pages": 1,
+  "params": {
+    "coin": "NEAR",
+    "endTime": 1794590715121,
+    "interval": "1h",
+    "startTime": 0,
+    "type": "candleSnapshot"
+  },
+  "refresh": "the venue serves a rolling window only, so the file accumulates: fresh rows replace cached rows with the same key and cached rows older than the window are kept (rows_from_previous_file)",
+  "response_sha256": "4368224aeca238bd5b40dd071b0bdd8e6e000c696116e15d5ef572506cefc9d9",
+  "rows": 5002,
+  "rows_from_previous_file": 0,
+  "source_url": "https://api.hyperliquid.xyz/info"
+}

@@ -63,6 +63,20 @@ verified_against = "nearcore tag 1.20.0 (commit 09b978c15a170a1082eabe9f275030a9
 note = "From this protocol version an epoch's reward is max_inflation_rate x total supply x epoch duration / seconds per year, so each epoch's annualized mint in rpc/epoch_history.csv can be compared with max_inflation_rate (the c02 realized-mint check). Before it, the reward was computed from block counts."
 retrieved = "2026-11-10"
 
+[cb_us_derivatives_access]
+unit = "text"
+source = "https://help.coinbase.com/en/coinbase/derivatives/us-derivatives-intro"
+quote = "This article addresses our US-regulated derivatives offering which is available to residents of the US, Canada, and most countries in the European Economic Area (\"EEA\"). You can learn more about Coinbase's Derivatives products on the Derivatives help page. For US customers, derivatives balances are held with Coinbase Financial Markets (CFM), which is a CFTC registered futures commission merchant and a member of the National Futures Association."
+quote_access = "Access to the referenced financial products requires user eligibility, and may not be available in all jurisdictions."
+quote_requirements = "To trade derivatives contracts like futures, you must meet certain regulatory requirements."
+quote_address = "If you no longer have an eligible address, the futures order screen will no longer be available to you."
+quote_limits = "You have limits on the number of positions you can hold based on your income and net worth qualifications."
+source_overview = "https://help.coinbase.com/en/coinbase/derivatives/us-perpetual-futures-overview"
+quote_overview = "Coinbase Financial Markets (CFM) offers both short-dated futures and long-dated, perpetual-style futures."
+verified_against = "Wayback Machine captures of both pages, taken 2026-11-13 and re-read the same day (help.coinbase.com refuses scripted clients): https://web.archive.org/web/20261113032834/https://help.coinbase.com/en/coinbase/derivatives/us-derivatives-intro and https://web.archive.org/web/20261113032751/https://help.coinbase.com/en/coinbase/derivatives/us-perpetual-futures-overview"
+note = "US customers trade Coinbase Derivatives' perpetual-style futures, NEAR's among them, through Coinbase Financial Markets once Coinbase approves their application, from an eligible address, with position limits set by income and net worth; the US derivatives page adds \"Access to the referenced financial products requires user eligibility, and may not be available in all jurisdictions.\" Neither page names a US state as excluded."
+retrieved = "2026-11-13"
+
 # The desk simulation's scenario: chosen values, not facts any source reports. Each is labelled on the
 # page ("Scenario", "Benchmark", "Assumption") and read by pipeline/models/portfolio.py only.
 [desk_scenario]

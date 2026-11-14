@@ -21,8 +21,8 @@ by construction). If a `partly` expression exists and is false while neither oth
 have a gap: the claim is Not computed and says so.
 
 Tally (registered as n_supported, n_partly, n_refuted, n_untestable, n_not_computed, n_claims, plus
-n_claims_total, n_claims_stated, n_claims_hidden): counts stated claims and hidden assumptions only
-(kind "stated" or "hidden", the H ids). The H6_near reframe is reported beside them.
+n_claims_total, n_claims_stated, n_claims_hidden, and the text key tally_untestable, "some" or "none"): counts the
+stated and hidden claims only (kind "stated" or "hidden", the H ids). The H6_near reframe is reported beside them.
 n_claims = n_supported + n_partly + n_refuted (the claims that were testable and computed);
 n_claims_total = every H claim, so n_claims_total = n_claims + n_untestable + n_not_computed.
 
@@ -635,6 +635,9 @@ def run(reg: Registry, rules: dict) -> tuple[dict, dict]:
                        ("n_supported_stated", tally["supported_stated"]),
                        ("n_partly_stated", tally["partly_stated"])):
         reg.put(key, count, "count", "F-tally", source_files=files, inputs=tallied)
+    # whether any counted claim is Not testable, for copy that names that column only when it is filled
+    reg.put("tally_untestable", "some" if tally["not_testable"] else "none", "text", "F-tally", source_files=files,
+            inputs=tallied)
     verdicts["tally"] = tally
 
     # the Supported claim with the smallest margin in percentage points, so the page can name the thinnest point

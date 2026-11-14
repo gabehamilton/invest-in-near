@@ -59,8 +59,8 @@ from pipeline.chartspec import Chart, dump
 from pipeline.models import verdicts as verdict_model
 from pipeline.numbers import NUMERIC_UNITS, TEXT_UNITS, Registry, fmt, parse_spec
 
-MODEL_ORDER = ("supply", "staking", "holders", "macro", "market", "demand", "derivatives", "currencies", "money",
-               "sweep", "portfolio", "pay")
+MODEL_ORDER = ("supply", "staking", "holders", "macro", "advantage", "market", "demand", "derivatives", "currencies",
+               "money", "sweep", "portfolio", "pay", "volatility", "perps")
 MODEL_PACKAGE = "pipeline.models"
 
 # template, mode, outputs (relative to the output root)
@@ -1098,10 +1098,11 @@ def _value(numbers: dict, key: str) -> Any:
 def film_orbit(numbers: dict, c21: dict | None) -> dict | None:
     """The title's picture. One radial axis: radius is growth over twelve months. NEAR's supply growth is a blue ring,
     the US dollar's money growth an orange ring, and each of the most-traded currencies a body on its own spoke, in
-    order of its trading rank, clockwise from just past twelve o'clock. A body is hollow when its money grew more
-    slowly than NEAR's supply over the same twelve months (the sign of c21's gap column decides, not the pixels).
-    None when an input is missing, so the page falls back to the article."""
-    near_g, usd_g = _value(numbers, "g_365_at_m2"), _value(numbers, "m2_yoy")
+    order of its trading rank, clockwise from just past twelve o'clock. Each is its own latest year: NEAR's supply to
+    the latest chain sample (g_365), each currency's money to its latest month. A body is hollow when its money grew
+    more slowly than NEAR's supply (the sign of c21's gap column decides, not the pixels). None when an input is
+    missing, so the page falls back to the article."""
+    near_g, usd_g = _value(numbers, "g_365"), _value(numbers, "m2_yoy")
     table = (c21 or {}).get("table") or {}
     cols, rows = table.get("columns") or [], table.get("rows") or []
     need = ("code", "currency", "money_growth_latest_pct", "gap_pp")
@@ -1149,7 +1150,7 @@ def film_orbit(numbers: dict, c21: dict | None) -> dict | None:
     for deg in (135.0, 45.0, 225.0, 315.0):
         ux, uy = math.cos(math.radians(deg)), math.sin(math.radians(deg))
         near_cands.append((cx + ux * (r_near + G), cy + uy * (r_near + G), *_anchor_for(ux, uy), None))
-    disp = str((numbers["g_365_at_m2"].get("display") or ""))
+    disp = str((numbers["g_365"].get("display") or ""))
     fits = lambda n, lines: math.hypot(n * LABEL_CW / 2, 16 + lines * LABEL_LH) < r_near - 4   # noqa: E731
     near_lines = 2 if not fits(len("NEAR supply ") + len(disp), 1) and fits(max(len("NEAR supply"), len(disp)), 2) else 1
     if near_lines == 2:
@@ -1292,10 +1293,9 @@ def _month_span(numbers: dict, keys: list[str]) -> list[str] | None:
     return [have[0][1], have[-1][1] if have[-1][0] != have[0][0] else have[0][1]]
 
 
-# the axis sits on the orbit's centre line, leaving the zero line's two words room before the tick figures even
-# when the stage is scaled down at 720 px high
-LADDER = {"ax": 320.0, "y0": 66.0, "y1": 574.0, "row": 26.0, "swarm": 16.0, "lab": 34.0, "zero": 8.0}
-RANK_KEYS = ("hold_near_net", "hold_near_rank", "hold_n_ranked")
+# the axis sits on the orbit's centre line; the rates run up the page from zero at the foot of the column
+LADDER = {"ax": 320.0, "y0": 66.0, "y1": 574.0, "row": 26.0, "swarm": 16.0, "lab": 34.0, "base": 24.0}
+RANK_KEYS = ("y_lst_365", "pay_near_rank", "pay_n_ranked")
 
 
 def _dodge(want: list[float], row: float, lo: float, hi: float) -> list[float]:
@@ -1313,27 +1313,27 @@ def _dodge(want: list[float], row: float, lo: float, hi: float) -> list[float]:
 
 
 def _orbit_rank(numbers: dict, bodies: list[dict]) -> dict | None:
-    """The title's third beat: the orbit resolves into a ranked ladder. One value axis, up the page: one year's
-    change in a holder's share of the total (F-hold-net), staked NEAR against cash earning each currency's policy
-    rate. Zero is a labelled line (above it the share grows, below it shrinks). Each body has its dot at its exact
-    value (nudged sideways only where two dots would touch) and its label in one column, rows kept apart and in
-    rank order, with a hairline from dot to label. A currency without both figures is not placed and is listed.
-    None when NEAR's figure, its rank or every currency's figure is missing, so the beat is not rendered. Fills
-    b["rank"] on each body (None when it is not ranked)."""
+    """The title's third beat: the orbit resolves into a ranked ladder of the plain yearly rates holding pays, the
+    same rates the pay beat draws (F-pay-rank): staked NEAR's liquid-staking yield over the last year against each
+    currency's latest policy rate (the dollar's is fed funds now), with no other adjustment. One value axis, up the
+    page from zero to the top rate. Each body has its dot at its exact rate (nudged sideways only where two dots would
+    touch) and its label in one column, rows kept apart and in rank order, with a hairline from dot to label. A tie
+    puts the currency above NEAR, as pay_near_rank counts it. A currency with no policy rate is not placed and is
+    listed. None when NEAR's yield, its rank or every rate is missing, so the beat is not rendered. Fills b["rank"]
+    on each body (None when it is not ranked)."""
     L = LADDER
-    near = _value(numbers, "hold_near_net")
+    near = _value(numbers, "y_lst_365")
     if any(_value(numbers, k) is None for k in RANK_KEYS):
         return None
-    rows = [(None, float(near))] + [(b, float(v)) for b in bodies
-                                    if isinstance(v := _value(numbers, f"hold_{b['code'].lower()}_net"), (int, float))]
+    rows = [(None, float(near))] + [(b, float(b["pol"])) for b in bodies if b.get("pol") is not None]
     if len(rows) < 2:
         return None
-    rows.sort(key=lambda r: (-r[1], r[0] is not None, r[0]["i"] if r[0] else -1))
+    rows.sort(key=lambda r: (-r[1], r[0] is None, r[0]["i"] if r[0] else -1))
     vals = [v for _b, v in rows]
     span = max(max(vals), 0.0) - min(min(vals), 0.0)
     step = 1 if span <= 8 else 2 if span <= 16 else 5
     top = max(step, step * math.ceil(max(max(vals), 0.0) / step))
-    bot = min(-step, step * math.floor(min(min(vals), 0.0) / step))
+    bot = min(0, step * math.floor(min(min(vals), 0.0) / step))
     y = lambda v: L["y0"] + (top - v) / (top - bot) * (L["y1"] - L["y0"])   # noqa: E731
     ax, row = L["ax"], L["row"]
     dots: list[tuple[float, float]] = []
@@ -1344,11 +1344,11 @@ def _orbit_rank(numbers: dict, bodies: list[dict]) -> dict | None:
         dots.append((ax + dx, yy))
     lab_x = max(px for px, _py in dots) + L["lab"]
     labs = _dodge([py for _px, py in dots], row, L["y0"] - row / 2, L["y1"] + row / 2)
-    out, zero = [], y(0.0)
+    out = []
     for (b, v), (px, py), ly in zip(rows, dots, labs):
         place = {"x": _r1(px), "y": _r1(py), "label": _label((lab_x, ly, "start", "middle", None)),
                  "leader": {"x1": _r1(px + BODY_R), "y1": _r1(py), "x2": _r1(lab_x - 5), "y2": _r1(ly)},
-                 "key": f"hold_{b['code'].lower()}_net" if b else "hold_near_net"}
+                 "key": f"pol_{b['code'].lower()}_latest" if b else "y_lst_365"}
         if b:
             b["rank"] = place
         out.append(place)
@@ -1357,21 +1357,19 @@ def _orbit_rank(numbers: dict, bodies: list[dict]) -> dict | None:
         if id(b) not in ranked:
             b["rank"] = None
     ticks = [{"v": v, "y": _r1(y(v))} for v in range(bot, top + step, step)]
-    # the zero line is the reading rule: it runs from the left margin, under its two words, across the dot column,
-    # and stops short of the label column so it never reads as a leader; the words sit on the margin, away from the
-    # dots and from the tick figures by the axis
     rk = [b for b, _v in rows if b]
     return {
         "ax": _r1(ax), "y_top": _r1(y(top)), "y_bot": _r1(y(bot)), "ticks": ticks,
-        "zero": {"x1": _r1(L["zero"]), "x2": _r1(lab_x - 8), "y": _r1(zero)},
-        "up": _label((L["zero"], zero - 5, "start", "above", None)),
-        "down": _label((L["zero"], zero + 5, "start", "below", None)),
+        # zero is the foot of the scale: a short baseline from just left of the axis across the dot column, stopping
+        # short of the label column so it never reads as a leader
+        "zero": {"x1": _r1(ax - L["base"]), "x2": _r1(lab_x - 8), "y": _r1(y(0.0))},
         "near": next(p for p, (b, _v) in zip(out, rows) if b is None),
+        # where NEAR's row falls in the ladder's order, so the article lists every row in rank order
+        "near_i": next(i for i, (b, _v) in enumerate(rows) if b is None),
         "bodies": rk,
         "unranked": [b for b in bodies if id(b) not in ranked],
-        # the months behind the cash rows: each currency's policy rate, and the year its money growth ends
+        # the months of the rates ranked
         "months": _month_span(numbers, [f"pol_{b['code'].lower()}_month" for b in rk]),
-        "money_months": _month_span(numbers, [f"mon_{b['code'].lower()}_gm_month" for b in rk]),
     }
 
 

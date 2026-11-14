@@ -35,21 +35,57 @@ function q7(S, p) {
   return f + 1 >= n ? S[n - 1] : S[f] + (h - f) * (S[f + 1] - S[f]);
 }
 
-// F-sim-path: one u32 a day for every window, path-major, day-minor; G and X moment-matched
+// F-sim-rebal: powers by squaring and the day root by bisection, so no pow is needed (portfolio.pw, dayf)
+function pw(r, n) {
+  let out = 1, base = r;
+  while (n > 0) {
+    if (n % 2 === 1) out = out * base;
+    n = (n - n % 2) / 2;
+    if (n > 0) base = base * base;
+  }
+  return out;
+}
+function dayf(a, H) {
+  let lo = Math.min(a, 1), hi = Math.max(a, 1);
+  for (;;) {
+    const mid = (lo + hi) / 2;
+    if (mid <= lo || mid >= hi) return lo;
+    if (pw(mid, H) < a) lo = mid; else hi = mid;
+  }
+}
+// the periods between resets: every R days below the horizon, then the rest
+function periods(R, H) {
+  const ell = [];
+  let acc = 0;
+  for (let m = R; m < H; m = m + R) { ell.push(R); acc = acc + R; }
+  ell.push(H - acc);
+  return ell;
+}
+
+// F-sim-path: one u32 a day for every window, path-major, day-minor; G and X moment-matched. Each period's own
+// raw products of a~ and b~ are kept at p·N + i, and the matching folds into the day factors kG and kX
 function simulate(P) {
-  const W = P.windows, N = P.paths, nw = W.length, s = seedState(P.seed);
-  const out = W.map(() => ({ G: new Float64Array(N), X: new Float64Array(N), H: new Uint8Array(N) }));
-  const g = new Float64Array(nw), x = new Float64Array(nw), h = new Uint8Array(nw);
+  const W = P.windows, N = P.paths, nw = W.length, s = seedState(P.seed), ell = periods(P.rebal_days, P.horizon);
+  const np = ell.length, out = W.map(() => ({ G: new Float64Array(N), X: new Float64Array(N), H: new Uint8Array(N),
+    gq: new Float64Array(np * N), xq: new Float64Array(np * N), ell }));
+  const g = new Float64Array(nw), x = new Float64Array(nw), q = new Float64Array(nw), y = new Float64Array(nw);
+  const h = new Uint8Array(nw);
   for (let i = 0; i < N; i++) {
     g.fill(1); x.fill(1); h.fill(0);
-    for (let day = 0; day < P.horizon; day++) {
-      const r = next(s);
-      for (let w = 0; w < nw; w++) {
-        const j = Math.floor(r * W[w].a.length / P32);
-        g[w] *= W[w].a[j];
-        x[w] *= W[w].b[j];
-        if (g[w] <= P.half) h[w] = 1;
+    for (let p = 0; p < np; p++) {
+      q.fill(1); y.fill(1);
+      for (let day = 0; day < ell[p]; day++) {
+        const r = next(s);
+        for (let w = 0; w < nw; w++) {
+          const j = Math.floor(r * W[w].a.length / P32), a = W[w].a[j], b = W[w].b[j];
+          g[w] *= a;
+          x[w] *= b;
+          q[w] *= a;
+          y[w] *= b;
+          if (g[w] <= P.half) h[w] = 1;
+        }
       }
+      for (let w = 0; w < nw; w++) { out[w].gq[p * N + i] = q[w]; out[w].xq[p * N + i] = y[w]; }
     }
     for (let w = 0; w < nw; w++) { out[w].G[i] = g[w]; out[w].X[i] = x[w]; out[w].H[i] = h[w]; }
   }
@@ -57,6 +93,8 @@ function simulate(P) {
     const mg = mean(o.G), mx = mean(o.X);
     for (let i = 0; i < N; i++) { o.G[i] = o.G[i] / mg; o.X[i] = o.X[i] / mx; }
     o.Gs = Float64Array.from(o.G).sort();
+    o.kG = dayf(1 / mg, P.horizon);
+    o.kX = dayf(1 / mx, P.horizon);
     return o;
   });
 }
@@ -86,6 +124,69 @@ function units(sim, st, R) {
     m[i] = (1 + rb + c) / ((1 + ky) * G[i]) - 1;
   }
   return [u.sort(), m.sort()];
+}
+
+// F-sim-rebal: the deterministic period factors (with the window's kG and kX when a simulation is given)
+function factors(st, R, H, ell, sim) {
+  const [ru, eurF, y] = legs(st, R), nearF = (1 + st.mu) * (1 + st.k * y);
+  const dN = dayf(nearF, H), dU = dayf(1 + ru, H), dE = dayf(eurF, H);
+  return ell.map((l) => [pw(dN, l) * (sim ? pw(sim.kG, l) : 1), pw(dU, l), pw(dE, l) * (sim ? pw(sim.kX, l) : 1)]);
+}
+// one year per unit of V: [book, benchmark], its turnover left in `turn`; g, x the period products (null: one);
+// reset to the share w at each period's end but the last when `reb` (times one is exact, as in portfolio.book)
+let turn = 0;
+function year(F, w, s, g, x, n, i, reb) {
+  const oms = 1 - s, last = F.length - 1;
+  let N = w, U = (1 - w) * s, E = (1 - w) * oms, bU = s, bE = oms, T = 0;
+  for (let p = 0; p <= last; p++) {
+    const [a, u, e] = F[p], gp = g ? g[p * n + i] : 1, xp = g ? x[p * n + i] : 1;
+    N = N * a * gp;
+    U = U * u;
+    E = E * e * xp;
+    bU = bU * u;
+    bE = bE * e * xp;
+    if (reb && p < last) {
+      const M = N + U + E, dd = N - w * M;
+      N = w * M;
+      U = U + s * dd;
+      E = E + oms * dd;
+      T = T + Math.abs(dd);
+    }
+  }
+  turn = T;
+  return [N + U + E, bU + bE];
+}
+// the reset year of every path, sorted, with the mean turnover, the exact book and the three break-evens
+function resets(sim, st, R, P, h, cu) {
+  const H = P.horizon, ell = sim.ell, n = sim.G.length, w = st.w, u = new Float64Array(n);
+  const unit = (F, i) => { const [M, K] = year(F, w, st.s, sim.gq, sim.xq, n, i, true); return (M - K - h * turn) / w - st.c; };
+  let F = factors(st, R, H, ell, sim), sumT = 0;
+  for (let i = 0; i < n; i++) { u[i] = unit(F, i); sumT += turn; }
+  const Tbar = sumT / n, F0 = factors(st, R, H, ell, null);
+  const [M0, K0] = year(F0, w, st.s, null, null, 1, 0, true), [Mh, Kh] = year(F0, w, st.s, null, null, 1, 0, false);
+  const Ereb = M0 - K0, at = (mu) => Object.assign({}, st, { mu });
+  // the mean break-even: bisection over the exact book, the turnover held at the state's
+  let lo = P.mu.lo, hi = P.mu.hi, beMean = hi;
+  for (;;) {
+    const mid = (lo + hi) / 2;
+    if (mid <= lo || mid >= hi) { beMean = hi; break; }
+    if (year(factors(at(mid), R, H, ell, null), w, st.s, null, null, 1, 0, true)[0] - K0 - w * st.c - h * Tbar < 0) lo = mid;
+    else hi = mid;
+  }
+  // the median break-even: the N/2-th smallest per-path break-even, re-evaluating only the paths still undecided
+  let und = Array.from(u, (_, i) => i), pos = 0;
+  const half = n / 2;
+  lo = P.mu.lo;
+  hi = P.mu.hi;
+  for (;;) {
+    const mid = (lo + hi) / 2;
+    if (mid <= lo || mid >= hi) break;
+    F = factors(at(mid), R, H, ell, sim);
+    const up = [], down = [];
+    for (const i of und) (unit(F, i) > 0 ? up : down).push(i);
+    if (pos + up.length >= half) { hi = mid; und = up; } else { lo = mid; und = down; pos = pos + up.length; }
+  }
+  return { S: u.sort(), Tbar, Ereb, Ebh: Mh - Kh, beMean, beMedian: hi, beCost: (Ereb - w * cu / P.bp) / (w + Tbar / 2) };
 }
 function distribution(S, M, T) {
   const n = S.length, worst = Math.floor(n / T.es_every), deep = Math.floor(n / T.es_deep_every), dots = [];
@@ -151,43 +252,56 @@ function makeFmt(F) {
 }
 const direction = (v) => (v > 0 ? 'ahead' : v < 0 ? 'behind' : 'level');
 const rise = (v) => (v > 0 ? 'rise' : v < 0 ? 'fall' : 'level');
-const CONTROLS = ['w', 's', 'mu', 'k', 'win', 'venue', 'p', 'rt', 'cu'];
+const CONTROLS = ['w', 'rb', 's', 'mu', 'k', 'win', 'venue', 'p', 'rt', 'cu'];
 const DYN = { 'usd*': ['usd', 'usd'], 'pct*': ['pctstep', 'pp'], 'count*': ['countstep', 'count'] };
 
-// portfolio.outcomes, state_of and modes
+// portfolio.outcomes, state_of and modes: both strategies at every state; the sim_* figures follow the active one
 function outcomes(sims, P, ctrl) {
-  const pct = P.fmt.pct, T = Object.assign({ pct }, P.tail), R = P.rates, V = P.V, L = P.liq;
+  const pct = P.fmt.pct, T = Object.assign({ pct }, P.tail), R = P.rates, V = P.V, L = P.liq, rb = ctrl.rb === 1;
   const st = { w: ctrl.w, s: ctrl.s, mu: ctrl.mu === 'own' ? ctrl.own : P.mu[ctrl.mu], k: ctrl.k,
     c: (ctrl.rt + ctrl.cu) / P.bp, p: ctrl.p, win: ctrl.win, venue: ctrl.venue, usd: 'effr', eur: 'flat', y: 'y' };
-  const sim = sims[st.win], cf = closed(st, R, V), [S, M] = units(sim, st, R);
-  const dist = distribution(S, M, T), part = cf.part, day = P.windows[st.win].day;
+  const sim = sims[st.win], cf = closed(st, R, V), [S, M] = units(sim, st, R), h = ctrl.rt / (2 * P.bp);
+  const held = distribution(S, M, T), part = cf.part, day = P.windows[st.win].day;
+  // at a zero share the resets trade nothing: the held units stand for both
+  const r = st.w > 0 ? resets(sim, st, R, P, h, ctrl.cu) : null, reb = r ? distribution(r.S, r.S, T) : held;
+  const edge = r ? V * (r.Ereb - r.Ebh) : 0, Tbar = r ? r.Tbar : 0, tc = V * h * Tbar;
+  const dist = rb ? reb : held, be = rb && r ? r : { beMean: cf.beMean, beMedian: held.beMedian, beCost: cf.beCost };
   const vol = st.venue === 'all' ? L.cb + L.bn : L.cb, volShort = st.venue === 'all' ? L.cbs + L.bns : L.cbs;
   let half = 0;
   for (let i = 0; i < sim.H.length; i++) half += sim.H[i];
   const raw = {
     sim_share: pct * st.w, sim_near_usd: part, sim_cash_interest_usd: cf.interest,
     sim_split_usd: pct * st.s, sim_split_eur: pct * (1 - st.s), sim_mu: pct * st.mu, sim_participation: pct * st.p,
-    sim_mean_usd: cf.mean, sim_carry_usd: cf.carry, sim_carry_euro_usd: cf.euro, sim_price_usd: cf.price,
-    sim_cost_usd: cf.cost, sim_median_usd: part * dist.median, sim_p05_usd: part * dist.p05,
-    sim_p95_usd: part * dist.p95, sim_es95_usd: part * dist.es95,
+    sim_mean_usd: rb ? cf.mean + edge - tc : cf.mean, sim_carry_usd: cf.carry, sim_carry_euro_usd: cf.euro,
+    sim_price_usd: cf.price, sim_cost_usd: rb ? cf.cost - tc : cf.cost, sim_median_usd: part * dist.median,
+    sim_p05_usd: part * dist.p05, sim_p95_usd: part * dist.p95, sim_es95_usd: part * dist.es95,
     sim_median_price: pct * ((1 + st.mu) * q7(sim.Gs, T.mid) - 1),
     sim_p_beat_n: dist.ahead, sim_p_behind_n: T.dots - dist.ahead, sim_p_beat_r: dist.pBeat,
-    sim_p_half: pct * half / S.length, sim_be_mu_mean: pct * cf.beMean, sim_be_mu_median: pct * dist.beMedian,
-    sim_be_cost: pct * cf.beCost, sim_es_interest_years: cf.interest > 0 ? part * dist.es95 / cf.interest : 0,
+    sim_p_half: pct * half / S.length, sim_be_mu_mean: pct * be.beMean, sim_be_mu_median: pct * be.beMedian,
+    sim_be_cost: pct * be.beCost, sim_es_interest_years: cf.interest > 0 ? part * dist.es95 / cf.interest : 0,
     sim_es_desk_pct: pct * st.w * dist.es95, sim_exit_days: part / vol, sim_exit_days_p: part / (st.p * vol),
     sim_exit_days_short: part / volShort, sim_nslp_cover: part > 0 ? pct * L.nslp / part : 0,
     sim_lst_share: pct * part / L.lst, sim_day_swing_usd: part * P.sigma_d, sim_var1d99_usd: part * day.var99,
-    sim_es1d975_usd: part * day.es975,
+    sim_es1d975_usd: part * day.es975, sim_reb_edge_usd: edge, sim_reb_turnover_usd: V * Tbar,
   };
+  for (const [k, x] of [['held', held], ['reb', reb]]) {
+    Object.assign(raw, { ['sim_' + k + '_median_usd']: part * x.median, ['sim_' + k + '_p95_usd']: part * x.p95,
+      ['sim_' + k + '_es95_usd']: part * x.es95, ['sim_' + k + '_p_beat_r']: x.pBeat });
+  }
+  raw.sim_held_be_mu_median = pct * held.beMedian;
+  raw.sim_reb_be_mu_median = pct * (r ? r.beMedian : held.beMedian);
   for (const [key, muKey, usd, eur, s] of P.bracket) {
     raw[key] = closed(Object.assign({}, st, { mu: muKey ? P.mu[muKey] : st.mu, usd: usd || st.usd,
       eur: eur || st.eur, s: s == null ? st.s : s }), R, V).mean;
   }
   const sp = P.spread[st.win], scale = Math.abs(part * cf.nearF);
   const need = { median: scale * sp.median, p05: scale * sp.p05, p95: scale * sp.p95, es95: scale * sp.es95,
-    be_median: sp.be_median, price: Math.abs(1 + st.mu) * sp.price, p_beat: sp.p_beat, p_half: sp.p_half };
+    be_median: sp.be_median, price: Math.abs(1 + st.mu) * sp.price, p_beat: sp.p_beat, p_half: sp.p_half,
+    r_median: scale * sp.r_median, r_p05: scale * sp.r_p05, r_p95: scale * sp.r_p95, r_es95: scale * sp.r_es95,
+    r_turnover: scale * sp.r_turnover, r_p_beat: sp.r_p_beat, r_be_median: sp.r_be_median,
+    r_cost: h * scale * sp.r_turnover };
   const X = makeFmt(P.fmt), spec = {}, d = {}, val = {};
-  for (const [k, [kind, arg]] of Object.entries(P.specs)) {
+  for (const [k, [kind, arg]] of Object.entries(Object.assign({}, P.specs, rb ? P.specs_rb : {}))) {
     const dyn = DYN[kind], lad = dyn && P.steps[dyn[1]];
     spec[k] = dyn ? [dyn[0], lad.find((s) => s > need[arg]) || lad[lad.length - 1]] : [kind, arg];
   }
@@ -199,8 +313,9 @@ function outcomes(sims, P, ctrl) {
     sim_mu_mode: ctrl.mu, sim_stake_mode: st.k ? 'staked' : 'unstaked', sim_cost_mode: st.c === 0 ? 'none' : 'entered',
     sim_window_mode: st.win === 0 ? 'year' : 'short', sim_venue_mode: st.venue === 'cb' ? 'coinbase' : 'both',
     sim_changed: changed ? 'yes' : 'no', sim_split_basis: P.basis.split, sim_estr_basis: P.basis.estr,
+    sim_strategy_mode: rb ? 'rebalance' : 'hold',
   });
-  return { raw, spec, d, S, dots: dist.dots.map((v) => part * v), X };
+  return { raw, spec, d, S: rb && r ? r.S : S, dots: dist.dots.map((v) => part * v), X };
 }
 
 // copy: the `when` grammar of thesis/copy.toml; a figure prints a leading minus as U+2212
@@ -361,6 +476,7 @@ function mount(host, P, sims) {
   const block = (tag, cls) => rest.insertBefore(el(tag, cls), end);
   const head = attrs(el('p', 'lead sim-headline'), { 'aria-live': 'polite' });
   rest.prepend(head);
+  head.after(put(null, 'p', 'sim-mode', 'sim_mode_line'));
   for (const [key, label, text, sub] of P.page.tiles) {
     const li = $('.sim-tile[data-key="' + key + '"]', rest);
     if (!li) continue;
@@ -370,6 +486,8 @@ function mount(host, P, sims) {
     put(li, 'p', 'sim-tile-t', text);
     if (sub) put(li, 'p', 'sim-tile-s', sub);
   }
+  const tiles = $('.sim-tiles', rest);   // the other strategy, beside the tiles
+  if (tiles && P.page.compare) tiles.after(put(null, 'p', 'sim-compare', P.page.compare));
   const strip = block('div', 'sim-strip');   // the bracket strip (closed form)
   put(strip, 'p', null, 'sim_strip_intro');
   const cells = el('ul', null, strip);
@@ -408,12 +526,15 @@ function mount(host, P, sims) {
   const [fw, wR] = field(form, 'sim_ctl_share', 'range', 0, P.share.max_bp, P.share.step_bp);
   const ticks = el('datalist', null, fw);
   ticks.id = wR.id + 't';
-  for (const v of [P.share.w_b, P.share.w_one_day]) el('option', null, ticks).value = bp(v);
+  for (const v of [P.share.w_b, P.share.w_b_reb, P.share.w_one_day]) if (v != null) el('option', null, ticks).value = bp(v);
   wR.setAttribute('list', ticks.id);
   const wN = attrs(input(fw, 'number', 0, bpPct(P.share.max_bp), bpPct(P.share.step_bp)), { 'aria-label': say('sim_ctl_share') });
   const wO = el('output', null, fw), wZ = txt(fw, 'small', null, 'sim_ctl_share_zero');
   txt(fw, 'small', null, 'sim_ctl_tick_budget');
+  if (P.share.w_b_reb != null) txt(fw, 'small', null, 'sim_ctl_tick_budget_reb');
   txt(fw, 'small', null, 'sim_ctl_tick_oneday');
+  const rbR = radios(form, 'rb', [['1', 'rb_on'], ['0', 'rb_off']]);   // the strategy: reset, or held
+  chip($('legend', rbR[0].parentNode.parentNode), 'rb');
   const [fs, sR] = field(form, 'sim_ctl_split', 'range', 0, pct, P.split_step);
   const sO = put(fs, 'output', null, 'sim_ctl_split_out');
   txt(fs, 'small', null, 'sim_ctl_split_hint');
@@ -452,7 +573,7 @@ function mount(host, P, sims) {
   const left = block('div', 'sim-left');
   txt(left, 'h3', 'sub', 'sim_left_h');
   const ul = el('ul', null, left);
-  for (const k of P.page.left) txt(ul, 'li', null, k);
+  for (const k of P.page.left) put(ul, 'li', null, k);
 
   // state and controls
   const num = (i, dflt) => { const v = parseFloat(i.value); return Number.isFinite(v) ? v : dflt; };
@@ -466,7 +587,7 @@ function mount(host, P, sims) {
     set(rt, ctrl.rt || '');
     set(cu, ctrl.cu || '');
     set(pR, Math.round(ctrl.p * pct));
-    for (const [rs, v] of [[muR, ctrl.mu], [kR, ctrl.k], [winR, ctrl.win], [vR, ctrl.venue]]) {
+    for (const [rs, v] of [[rbR, ctrl.rb], [muR, ctrl.mu], [kR, ctrl.k], [winR, ctrl.win], [vR, ctrl.venue]]) {
       for (const r of rs) r.checked = r.value === String(v);
     }
   };
@@ -475,11 +596,12 @@ function mount(host, P, sims) {
     ctrl.s = num(sR, 0) / pct;
     ctrl.mu = src !== own ? one(muR) : own.value === '' ? P.default.mu : 'own';
     if (ctrl.mu === 'own') ctrl.own = Math.min(P.mu.hi, Math.max(P.mu.lo, num(own, 0) / pct));
+    ctrl.rb = +one(rbR);
     ctrl.k = +one(kR);
     ctrl.win = +one(winR);
     ctrl.venue = one(vR);
-    ctrl.rt = Math.max(0, num(rt, 0));
-    ctrl.cu = Math.max(0, num(cu, 0));
+    ctrl.rt = Math.min(U.cost_max, Math.max(0, num(rt, 0)));   // the fields' own range, typed or not
+    ctrl.cu = Math.min(U.cost_max, Math.max(0, num(cu, 0)));
     ctrl.p = Math.max(U.part[0], num(pR, U.part[0])) / pct;
   };
   let settle = 0;
@@ -499,7 +621,7 @@ function mount(host, P, sims) {
     empty.hidden = ctrl.rt + ctrl.cu !== 0;
     const over = {};   // marks beyond the own-drift range
     for (const [k, v] of [['sim_mu_thesis_m2', P.mu.thesis], ['sim_be_mu_mean', O.raw.sim_be_mu_mean / pct],
-      ['sim_be_mu_median', O.raw.sim_be_mu_median / pct]]) if (v < P.mu.lo || v > P.mu.hi) over[k] = say('sim_ctl_mu_off');
+      ['sim_be_mu_median', O.raw.sim_be_mu_median / pct]]) if (v < P.mu.lo || v >= P.mu.hi) over[k] = say('sim_ctl_mu_off');
     fill(muM, 'sim_ctl_mu_marks', over);
     redraw(!first);
     readDot(cur);

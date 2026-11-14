@@ -1,6 +1,6 @@
 """NEAR staking yield against fed funds: liquid-staking yield, the protocol formula, spreads and the yield grid.
 
-LST rates, staked share, ceiling, US rates; charts c01, c10, c12.
+LST rates, staked share, ceiling, US rates; charts c01, c10.
 
 - F-lst: y = (P_end/P_start)^(365.25/Δd) - 1 on stNEAR (meta-pool.near get_st_near_price) and LiNEAR
   (linear-protocol.near ft_price); y_lst is their mean where both exist, else the one that does.
@@ -18,13 +18,12 @@ LST rates, staked share, ceiling, US rates; charts c01, c10, c12.
 from __future__ import annotations
 
 import statistics
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, timedelta
 
 from pipeline.chartspec import Chart, Series
 from pipeline.models import load
-from pipeline.models.formulas import (add_months, correlation, ffcomp, mean_between, pct,
-                                      quarter_label, quarter_start, yoy)
+from pipeline.models.formulas import add_months, ffcomp, mean_between, pct, yoy
 from pipeline.models import supply
 from pipeline.models.params import param
 from pipeline.models.supply import (FIX, GAP_DAYS, RPC_SOURCE, WINDOW_DAYS, Samples, as_of, block_queries,
@@ -35,9 +34,7 @@ from pipeline.numbers import Registry
 
 # --- parameters (thresholds and scenario inputs, not output figures) --------------------------------------
 # author-chosen parameters: thesis/rules.toml [params] (pinned to the rule literals by tests/test_params.py)
-BAND_PP = param("band_pp")      # c12: |spread_q| <= BAND_PP counts as "in balance" (the zone the hypothesis implies)
 S_HYPO = param("s_hypo")        # c10: hypothetical staked share column (tripwire T6 fires above it)
-H4_SD_PP = param("h4_sd_pp")    # H4 supported needs spread_q_sd_rule below this; the c12 title switches on it
 SHORT_DAYS = 90        # y_lst_90, spread_adj_90 and the c01 trailing yield
 MERGE_DAYS = 30        # c01: annotations closer than this merge into one label
 LABEL_MAX = 28         # chart annotation labels stay short; the full statement is in the sentence
@@ -50,8 +47,6 @@ class Window:
     r1: dict
     y: float | None = None
     ff: float | None = None
-    dff_mean: float | None = None
-    label: str = ""
 
     @property
     def spread_pp(self) -> float | None:
@@ -73,9 +68,6 @@ class StakingModel:
     y90: Window | None
     adj365: Window | None                    # like-for-like window (ends where DFF ends)
     adj90: Window | None
-    quarters: list[Window] = field(default_factory=list)
-    missing_q: list[str] = field(default_factory=list)
-    qtd: Window | None = None
     end: dict | None = None                  # where every trailing window ends (see the module docstring)
 
 
@@ -86,6 +78,12 @@ def _trailing(smp: Samples, end: dict | None, days: int, col: str = "lst") -> Wi
     if r0 is None or r0["time"] >= end["time"]:
         return None
     return Window(r0, end)
+
+
+def trailing_spread(smp: Samples, end: date, days: int, dff: dict) -> Window | None:
+    """The like-for-like window of `days` that ends at the LST sample nearest `end` (Samples.edge), filled with the
+    LST yield and DFF compounded over exactly its two sample dates; None when either edge has no sample."""
+    return _fill(_trailing(smp, smp.edge(end, "lst"), days), dff)
 
 
 def _dff_end_row(smp: Samples, dff_end: date | None) -> dict | None:
@@ -101,9 +99,6 @@ def _fill(w: Window | None, dff: dict) -> Window | None:
         return None
     w.y = lst_yield(w.r0, w.r1)
     w.ff = ffcomp(dff, w.r0["date"], w.r1["date"])
-    w.dff_mean = mean_between(sorted(dff.items()), w.r0["date"], w.r1["date"])
-    if w.dff_mean is not None:
-        w.dff_mean /= 100
     return w
 
 
@@ -126,27 +121,6 @@ def build_model() -> StakingModel:
             w.y = lst_yield(w.r0, w.r1)
     m.adj365 = _fill(_trailing(smp, cover, WINDOW_DAYS), dff)
     m.adj90 = _fill(_trailing(smp, cover, SHORT_DAYS), dff)
-
-    if latest is not None:
-        qs = quarter_start(m.lst_start)
-        started = False
-        while add_months(qs, 3) <= latest["date"]:
-            qe = add_months(qs, 3)
-            r0, r1 = smp.edge(qs, "lst"), smp.edge(qe, "lst")
-            w = _fill(Window(r0, r1, label=quarter_label(qs)), dff) if r0 and r1 and r0["time"] < r1["time"] \
-                else None
-            if w is not None and w.y is not None and w.ff is not None:
-                m.quarters.append(w)
-                started = True
-            elif started:
-                m.missing_q.append(quarter_label(qs))
-            qs = qe
-        qs = quarter_start(latest["date"])
-        r0 = smp.edge(qs, "lst")
-        end = cover if cover is not None and cover["date"] > qs else None
-        if r0 is not None and end is not None and r0["time"] < end["time"]:
-            m.qtd = _fill(Window(r0, end, label=quarter_label(qs) + " QTD"), dff)
-
     return m
 
 
@@ -266,53 +240,8 @@ def compute(reg: Registry) -> None:
     put(reg, "spread_naive_365", naive, "pp", "F-spread-naive", sorted(set(files + m.effr_files)),
         ["y_lst_365", "effr_mean_365"], "needs both y_lst_365 and effr_mean_365")
 
-    # quarterly spread (c12): H4 reads only quarters under the issuance rule now in force
-    qs = m.quarters
-    q_reason = no_lst if m.latest is None else "no complete quarter has LST samples at both edges and DFF"
-    # the band is a registered parameter, so the page prints it through the registry and the label names the key
-    reg.put("band_pp", BAND_PP, "pp", "P-band_pp", source_files=["thesis/rules.toml"],
-            inputs=["thesis/rules.toml [params] band_pp: the c12 in-balance band around zero"], signed=False)
-    cut = val(reg, "cut_date")
-    rule_qs = rule_quarters(m, cut)
-    if cut is None:
-        rule_reason = "cut_date is not registered (no change of issuance rule found in the samples)"
-    else:
-        rule_reason = q_reason if not qs else f"no complete quarter starts on or after {cut}"
-    r_spreads = [w.spread_pp for w in rule_qs]
-    r_inputs = ([f"{len(rule_qs)} complete quarters starting on or after cut_date {cut}: "
-                 + ", ".join(w.label for w in rule_qs)] if rule_qs else [f"no complete quarter starts on or after {cut}"])
-    reg.put("n_q_rule", len(rule_qs) if cut is not None else None, "count", "F-spread-q", source_files=rate_files,
-            inputs=r_inputs, null_reason=None if cut is not None else rule_reason)
-    reg.put("spread_q_sd_rule", statistics.stdev(r_spreads) if len(r_spreads) >= 2 else None, "pp", "F-spread-q",
-            source_files=rate_files, inputs=r_inputs, signed=False,
-            null_reason=None if len(r_spreads) >= 2 else
-            (rule_reason if not r_spreads else "a sample sd needs at least two quarters"))
-    r_levels = correlation([w.y for w in rule_qs], [w.dff_mean for w in rule_qs]) if rule_qs else None
-    put(reg, "corr_levels_rule", r_levels, "ratio", "F-corr", rate_files,
-        r_inputs + ["Pearson(quarterly LST yield, quarterly mean DFF)"],
-        rule_reason if not rule_qs else "Pearson needs at least three quarters with varying values")
-    tar = load.fred("DFEDTARU")
-    if rule_qs:
-        span = [v for d, v in tar.non_null() if rule_qs[0].r0["date"] <= d < rule_qs[-1].r1["date"]]
-        r_range = round((max(span) - min(span)) * 100, 6) if span else None
-    else:
-        r_range = None
-    put(reg, "fed_range_q_bp_rule", r_range, "count", "D7-range", tar.files,
-        [f"max - min DFEDTARU over [{rule_qs[0].r0['date']}, {rule_qs[-1].r1['date']}), in basis points"]
-        if rule_qs else [], rule_reason if not rule_qs else "DFEDTARU has no observations over the quarters",
-        decimals=0)
-
     # c10 grid cells
     _compute_sensitivity(reg, m)
-
-
-def rule_quarters(m: StakingModel, cut: str | None) -> list[Window]:
-    """The complete quarters H4 reads: those whose start sample is on or after cut_date, the latest
-    max_inflation_rate change (supply registers cut_date first)."""
-    if cut is None:
-        return []
-    cut_d = date.fromisoformat(cut)
-    return [w for w in m.quarters if w.r0["date"] >= cut_d]
 
 
 def c10_cell(frac: float | None, i_pct: float | None, s_pct: float | None, h: float | None) -> float | None:
@@ -372,7 +301,7 @@ def _compute_sensitivity(reg: Registry, m: StakingModel) -> None:
 
 def charts(reg: Registry) -> list[Chart]:
     m = build_model()
-    return [two_rates(reg, m), yield_sensitivity(reg, m), spread_quarterly(reg, m)]
+    return [two_rates(reg, m), yield_sensitivity(reg, m)]
 
 
 def fed_turns(since: date) -> tuple[list[tuple[date, int]], list[str]]:
@@ -417,7 +346,7 @@ def two_rates(reg: Registry, m: StakingModel) -> Chart:
     turns, tar_files = fed_turns(CHART_START)
     files = sorted(set(m.files + m.effr_files + cpi.files + tar_files + cfiles))
     chart = Chart(
-        id="c01", section="thesis", priority="lead", claims=["H3", "H4"], title="", sentence="",
+        id="c01", section="thesis", priority="lead", claims=["H3"], title="", sentence="",
         form="small-multiples",
         sources=[RPC_SOURCE + ": meta-pool.near get_st_near_price, linear-protocol.near ft_price, validators, "
                  "EXPERIMENTAL_protocol_config, block", fred_source("EFFR", "CPIAUCSL", "DFEDTARU")],
@@ -429,8 +358,9 @@ def two_rates(reg: Registry, m: StakingModel) -> Chart:
         panels=[{"id": "earn", "label": "What you earn", "series_ids": ["lst_90", "formula", "effr"]},
                 {"id": "inflation", "label": "What inflation takes", "series_ids": ["g_365", "cpi_yoy"]}])
     # magnitudes print unsigned ({key:abs}); the direction words are registry text keys chosen by sign
-    # the gap is a trailing-year figure as of the CPI month, so the clause names that month (past tense)
-    near_clause = "over the year to {cpi_month} its supply grew {gap_cpi:abs} {gap_cpi_dir} than US prices"
+    # the gap sets NEAR's latest year (to the latest chain sample) against CPI's latest year (to its month); the
+    # caveat names both windows
+    near_clause = "over the latest year its supply grew {gap_cpi:abs} {gap_cpi_dir} than US prices"
     lead = "In the last ninety days NEAR's staking rate ran {spread_adj_90:abs} {spread_adj_90_dir} fed funds"
     lead_y = "Over the last year NEAR's staking rate ran {spread_adj_365:abs} {spread_adj_365_dir} fed funds"
     # the trailing-year lead stands in while the ninety-day window has no edge
@@ -447,8 +377,8 @@ def two_rates(reg: Registry, m: StakingModel) -> Chart:
         "(blue) against US consumer prices (orange).")
     # the one thing that trips a reader: the two right-hand lines end on different dates
     chart.caveat_template = pick(reg, [
-        "On the right, NEAR's line ends at the latest chain sample ({latest_rpc_date}) and CPI's at {cpi_month}, "
-        "so the title compares the same month: NEAR {g_365_at_cpi} against CPI {cpi_yoy}.",
+        "On the right, NEAR's line ends at the latest chain sample ({latest_rpc_date}) and CPI's at {cpi_month}; the "
+        "title sets each one's latest year side by side: NEAR {g_365} against CPI {cpi_yoy}.",
         "",
     ])
     chart.notes_templates = pick_notes(reg, [
@@ -606,74 +536,4 @@ def yield_sensitivity(reg: Registry, m: StakingModel) -> Chart:
                              "fix_command": FIX}
     elif any(c["value"] is None for c in grid.values()) or sep is None:
         chart.status = "partial"
-    return chart
-
-
-def spread_quarterly(reg: Registry, m: StakingModel) -> Chart:
-    """c12: liquid-staking yield minus compounded fed funds, per quarter, over the quarters H4 reads (quarter start
-    on or after cut_date)."""
-    tar = load.fred("DFEDTARU")
-    files = sorted(set(m.files + m.dff_files + tar.files))
-    chart = Chart(
-        id="c12", section="A2", priority="lead", claims=["H4"], title="", sentence="", form="diverging-bar",
-        sources=[RPC_SOURCE + ": meta-pool.near get_st_near_price, linear-protocol.near ft_price",
-                 fred_source("DFF", "DFEDTARU")],
-        queries=lst_queries(m.smp) + [fred_query("DFF"), fred_query("DFEDTARU")],
-        table={"columns": [], "rows": []}, code_ref="pipeline/models/staking.py::spread_quarterly",
-        formula_ids=["F-lst", "F-ffcomp", "F-spread-q", "F-corr"], eyebrow="A2 · tests H4",
-        x={"type": "category"}, y={"unit": "pp"}, verdicts=["H4"], as_of=as_of(files))
-    sd = val(reg, "spread_q_sd_rule")
-    chart.title_template = pick(reg, [
-        *(["Under the issuance rule in force since {cut_date}, the staking-minus-fed-funds spread varied with a "
-           "standard deviation of {spread_q_sd_rule} over {n_q_rule} full quarters."]
-          if sd is not None and sd < H4_SD_PP else []),
-        "Under the issuance rule in force since {cut_date}, the staking-minus-fed-funds spread has {n_q_rule} full "
-        "quarters, with a standard deviation of {spread_q_sd_rule}.",
-        "Liquid-staking yield minus compounded fed funds, by quarter, under the issuance rule now in force.",
-    ])
-    chart.sentence_template = ("Each column is one quarter's liquid-staking yield minus that quarter's compounded fed "
-                               "funds return; the gray band is where the two rates would be in balance.")
-    chart.notes_templates = pick_notes(reg, [
-        "The in-balance band is within {band_pp} of zero.",
-        "The two rates' quarterly levels correlate at {corr_levels_rule}.",
-        "The Fed's target ceiling moved {fed_range_q_bp_rule} basis points across these quarters.",
-    ])
-    cut = val(reg, "cut_date")
-    quarters = rule_quarters(m, cut)
-    cut_d = date.fromisoformat(cut) if cut else None
-    missing = [q for q in m.missing_q if cut_d is not None
-               and date(int(q[:4]), 3 * (int(q[5]) - 1) + 1, 1) >= cut_d]
-    rows = []
-    for w in quarters:
-        rows.append([w.label, w.r0["date"].isoformat(), w.r1["date"].isoformat(),
-                     round(days_between(w.r0, w.r1), 3), r4(pct(w.y)), r4(pct(w.ff)), r4(w.spread_pp),
-                     r4(pct(w.dff_mean)), abs(w.spread_pp) <= BAND_PP, "in stats"])
-    for label in missing:
-        rows.append([label, None, None, None, None, None, None, None, None, "missing: no sample near an edge"])
-    if m.qtd and m.qtd.spread_pp is not None:
-        w = m.qtd
-        rows.append([w.label, w.r0["date"].isoformat(), w.r1["date"].isoformat(),
-                     round(days_between(w.r0, w.r1), 3), r4(pct(w.y)), r4(pct(w.ff)), r4(w.spread_pp),
-                     r4(pct(w.dff_mean)), abs(w.spread_pp) <= BAND_PP, "quarter to date, excluded"])
-    chart.table = {"columns": ["quarter", "from_sample", "to_sample", "days", "lst_yield_pct", "ffcomp_pct",
-                               "spread_pp", "dff_mean_pct", "in_band", "included"], "rows": rows}
-    chart.series = [Series("spread_q", "Liquid-staking yield minus fed funds", "near",
-                           [[w.label, r4(w.spread_pp)] for w in quarters], role="diverging", unit="pp")]
-    if m.qtd and m.qtd.spread_pp is not None:
-        chart.series.append(Series("qtd", "Quarter to date (excluded from statistics)", "context",
-                                   [[m.qtd.label, r4(m.qtd.spread_pp)]], role="context", unit="pp"))
-    chart.bands = [{"axis": "y", "from": -BAND_PP, "to": BAND_PP,
-                    "label": "in-balance band the hypothesis implies"}]
-    chart.reference_lines = [{"y": 0, "label": "staking yield equals fed funds"}]
-    chart.coverage = {"first": quarters[0].label if quarters else None,
-                      "last": quarters[-1].label if quarters else None, "n": len(quarters), "gaps": missing}
-    chart.resolve(reg)
-    if not quarters:
-        chart.status = "unavailable"
-        chart.empty_state = {"reason": "No complete quarter under the issuance rule now in force has liquid-staking "
-                                       "prices at both edges",
-                             "needs": "rpc/history_samples.csv LST prices and fred/DFF.csv", "fix_command": FIX}
-    elif missing:
-        chart.status = "partial"
-        chart.status_banner = "Some quarters lack a sample near an edge and are listed in the table, not drawn."
     return chart

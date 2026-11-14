@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -43,7 +44,7 @@ process.stdin.on('data', (c) => { raw += c; }).on('end', () => {
   const sims = S.simulate(P);
   out.gs = sims.map((s) => hash(s.Gs));
   out.half = sims.map((s) => s.H.reduce((a, b) => a + b, 0));
-  out.states = job.states.map((c) => { const O = S.outcomes(sims, P, c); return { d: O.d, s: hash(O.S), dots: Array.from(O.dots) }; });
+  out.states = job.states.map((c) => { const O = S.outcomes(sims, P, c); return { d: O.d, s: hash(O.S), dots: Array.from(O.dots), raw: O.raw, spec: O.spec }; });
   out.copy = job.copy.map(([c, name]) => S.parts(P, S.outcomes(sims, P, c), name).join(''));
   process.stdout.write(JSON.stringify(out));
 });
@@ -72,10 +73,17 @@ def python_side(P: dict, sims: list[dict], inp: pf.Inputs, states: list[dict]) -
     out = []
     for c in states:
         st = pf.state_of(c, P)
-        S, _ = pf.units(sims[st.win], st, inp.rates)
-        ev = pf.evaluate(sims, inp, st, P["spread"], pf.cfg_payload(P))
-        out.append({"d": pf.outcomes(sims, inp, c, P), "s": tw.digest(S), "dots": ev["dots"]})
+        ev = pf.evaluate(sims, inp, st, P["spread"], pf.cfg_payload(P))   # S: the active sorted u (reset or held)
+        out.append({"d": pf.outcomes(sims, inp, c, P), "s": tw.digest(ev["S"]), "dots": ev["dots"], "raw": ev["raw"],
+                    "spec": ev["spec"]})
     return out
+
+
+def as_json(v):
+    """A value as it crosses JSON from node: a non-finite double arrives as null, a tuple as a list."""
+    if isinstance(v, float) and not math.isfinite(v):
+        return None
+    return json.loads(json.dumps(v))
 
 
 def synthetic(P: dict) -> dict:
@@ -100,6 +108,13 @@ def compare(P: dict, sims: list[dict], inp: pf.Inputs, got: dict, states: list[d
         diff = {k: (js["d"].get(k), v) for k, v in py["d"].items() if js["d"].get(k) != v}
         assert not diff, f"{c}: {diff}"
         assert set(js["d"]) == set(py["d"])
+        # the raw doubles behind the displays, bit for bit: a coarse display step cannot hide a drift in the order of
+        # the operations (the exact mean, the edge, the turnover and the break-evens)
+        raw = {k: (js["raw"].get(k), v) for k, v in py["raw"].items() if js["raw"].get(k) != as_json(v)}
+        assert not raw, f"{c}: raw {raw}"
+        assert set(js["raw"]) == set(py["raw"])
+        spec = {k: (js["spec"].get(k), v) for k, v in py["spec"].items() if js["spec"].get(k) != as_json(v)}
+        assert not spec, f"{c}: spec {spec}"
 
 
 @needs_node

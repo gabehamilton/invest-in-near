@@ -1,28 +1,18 @@
 {
  "H1": {
-  "binding_condition": "g_365 > 0",
-  "margin": "2.48 pp",
-  "verdict": "Refuted"
- },
- "H10": {
-  "binding_condition": "burn_share_365 < 10",
-  "margin": "8.49 pp",
-  "verdict": "Refuted"
- },
- "H12": {
-  "binding_condition": "staker_share_365 × nonstaker_365 < 0 and |staker_share_365 - nonstaker_365| ≥ 0.1",
-  "margin": "3.93 pp",
-  "verdict": "Refuted"
- },
- "H1b": {
-  "binding_condition": "gap_m2 > 0 and h1b_gap_med > 0",
-  "margin": "3.04 pp",
+  "binding_condition": "gap_m2 > 0 and h1_gap_med > 0",
+  "margin": "3.23 pp",
   "verdict": "Supported"
  },
- "H2": {
+ "H10": {
   "binding_condition": "neither the Supported nor the Refuted rule holds",
   "margin": null,
   "verdict": "Partly"
+ },
+ "H2": {
+  "binding_condition": "h2_gap > 0",
+  "margin": "1.69 pp",
+  "verdict": "Supported"
  },
  "H3": {
   "binding_condition": "spread_adj_365 > 0 and spread_adj_365 ≤ 1.0",
@@ -30,9 +20,9 @@
   "verdict": "Supported"
  },
  "H4": {
-  "binding_condition": "n_q_rule < 8",
-  "margin": "5",
-  "verdict": "Not testable"
+  "binding_condition": "adv_share_le0 ≤ 40",
+  "margin": "40.0 pp",
+  "verdict": "Supported"
  },
  "H5": {
   "binding_condition": "neither the Supported nor the Refuted rule holds",
@@ -55,9 +45,9 @@
   "verdict": "Supported"
  },
  "H8": {
-  "binding_condition": "n_venues_with_near_options = 0",
-  "margin": "0",
-  "verdict": "Not testable"
+  "binding_condition": "neither the Supported nor the Refuted rule holds",
+  "margin": null,
+  "verdict": "Partly"
  },
  "H9": {
   "binding_condition": "pct_within_2pp_1y < 20",
@@ -68,7 +58,6 @@
   "claims": 10,
   "counted": [
    "H1",
-   "H1b",
    "H2",
    "H3",
    "H4",
@@ -76,18 +65,17 @@
    "H6",
    "H7",
    "H8",
-   "H9",
    "H10",
-   "H12"
+   "H9"
   ],
-  "decided_hidden": 3,
-  "decided_stated": 7,
+  "decided_hidden": 1,
+  "decided_stated": 9,
   "not_computed": 0,
-  "not_testable": 2,
-  "partly": 2,
-  "refuted": 5,
-  "supported": 3,
+  "not_testable": 0,
+  "partly": 3,
+  "refuted": 2,
+  "supported": 5,
   "thinnest_supported_id": "H3",
-  "total": 12
+  "total": 10
  }
 }

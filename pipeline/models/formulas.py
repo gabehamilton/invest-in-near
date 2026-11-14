@@ -33,10 +33,6 @@ def quarter_start(d: date) -> date:
     return date(d.year, 3 * ((d.month - 1) // 3) + 1, 1)
 
 
-def quarter_label(d: date) -> str:
-    return f"{d.year}Q{(d.month - 1) // 3 + 1}"
-
-
 # --- sampling --------------------------------------------------------------
 
 def nearest(points: list[tuple[date, float | None]], target: date, max_days: int = 7):
@@ -143,15 +139,6 @@ def max_drawdown(points):
         if worst is None or dd < worst[0]:
             worst = (dd, peak_d, d)
     return worst
-
-
-def correlation(xs: list[float], ys: list[float]) -> float | None:
-    if len(xs) < 3 or len(xs) != len(ys):
-        return None
-    try:
-        return statistics.correlation(xs, ys)
-    except statistics.StatisticsError:
-        return None
 
 
 def pct(x: float | None) -> float | None:
