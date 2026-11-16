@@ -1,0 +1,24 @@
+{
+  "blank_rows": 0,
+  "columns": [
+    "date",
+    "value"
+  ],
+  "description": "M2 money stock, monthly, SA, billions of US dollars",
+  "fetch_day_utc": "2026-11-11",
+  "fetched_at": "2026-11-11T22:58:39+00:00",
+  "file": "data/raw/fred/M2SL.csv",
+  "first_date": "1959-01-01",
+  "http_last_modified": "Tue, 27 Oct 2026 17:01:34 GMT",
+  "last_date": "2026-09-01",
+  "last_observed_date": "2026-09-01",
+  "missing_markers": [
+    ".",
+    ""
+  ],
+  "refresh": "full history re-downloaded every run (FRED revises past values; vintage_date is ignored here)",
+  "rows": 813,
+  "rows_after_fetch_date": 0,
+  "series_id": "M2SL",
+  "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=M2SL"
+}

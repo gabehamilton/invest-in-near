@@ -1,0 +1,37 @@
+{
+  "columns": [
+    "height",
+    "date",
+    "protocol_version",
+    "max_inflation_rate",
+    "burnt_gas_reward"
+  ],
+  "description": "Tracked protocol parameters read at every history_samples target height (00:00 UTC samples) plus the latest final block; the cache behind rpc/protocol_changes.csv.",
+  "endpoints": {
+    "history_heights": [
+      "https://archival-rpc.mainnet.fastnear.com",
+      "https://archival-rpc.mainnet.near.org"
+    ],
+    "tip": [
+      "https://rpc.mainnet.fastnear.com",
+      "https://rpc.mainnet.near.org"
+    ]
+  },
+  "fetched_at": "2026-11-11T23:02:37+00:00",
+  "file": "data/raw/rpc/protocol_config_samples.csv",
+  "incremental_rule": "Rows for history target heights are never re-read; the tip row is replaced each run (its config is the one the run already read for the snapshot). A failed read leaves no row (see protocol_changes.meta.json run.failed) and is retried next run.",
+  "methods": {
+    "burnt_gas_reward": "EXPERIMENTAL_protocol_config runtime_config.transaction_costs.burnt_gas_reward as a decimal",
+    "max_inflation_rate": "EXPERIMENTAL_protocol_config max_inflation_rate as a decimal",
+    "protocol_version": "EXPERIMENTAL_protocol_config {block_id: height}"
+  },
+  "rows": 77,
+  "sampling": "One row per history_samples target date (1st of each month plus 2020-10-15, 2025-10-29, 2025-11-15, at that row's height: the last block with header.timestamp <= 00:00 UTC) plus one row at the tip (the latest final block of this run, dated by its UTC timestamp).",
+  "source_url": "https://archival-rpc.mainnet.fastnear.com",
+  "tip_height": 224129519,
+  "units": {
+    "burnt_gas_reward": "dimensionless exact decimal ([numerator, denominator] divided; a fraction, not percent)",
+    "max_inflation_rate": "dimensionless exact decimal ([numerator, denominator] divided; a fraction, not percent)",
+    "protocol_version": "integer protocol version"
+  }
+}

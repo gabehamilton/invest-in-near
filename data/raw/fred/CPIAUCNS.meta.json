@@ -1,0 +1,24 @@
+{
+  "blank_rows": 1,
+  "columns": [
+    "date",
+    "value"
+  ],
+  "description": "CPI for all urban consumers, all items, US city average, monthly, not seasonally adjusted, index 1982-1984=100 (cross-check X4 against BIS, which publishes unadjusted CPI)",
+  "fetch_day_utc": "2026-11-11",
+  "fetched_at": "2026-11-11T22:58:35+00:00",
+  "file": "data/raw/fred/CPIAUCNS.csv",
+  "first_date": "1913-01-01",
+  "http_last_modified": "Tue, 10 Nov 2026 14:12:50 GMT",
+  "last_date": "2026-10-01",
+  "last_observed_date": "2026-10-01",
+  "missing_markers": [
+    ".",
+    ""
+  ],
+  "refresh": "full history re-downloaded every run (FRED revises past values; vintage_date is ignored here)",
+  "rows": 1366,
+  "rows_after_fetch_date": 0,
+  "series_id": "CPIAUCNS",
+  "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCNS"
+}

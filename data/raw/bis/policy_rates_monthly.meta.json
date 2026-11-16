@@ -1,0 +1,170 @@
+{
+  "areas_requested": [
+    "US",
+    "XM",
+    "GB",
+    "JP",
+    "CH",
+    "CA",
+    "AU",
+    "TR",
+    "BR",
+    "IN",
+    "AR"
+  ],
+  "areas_without_data": [],
+  "columns": [
+    "area",
+    "period",
+    "value"
+  ],
+  "coverage": {
+    "AR": {
+      "first_period": "2015-01",
+      "last_period": "2025-06",
+      "rows": 126
+    },
+    "AU": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "BR": {
+      "first_period": "2015-01",
+      "last_period": "2026-10",
+      "rows": 142
+    },
+    "CA": {
+      "first_period": "2015-01",
+      "last_period": "2026-10",
+      "rows": 142
+    },
+    "CH": {
+      "first_period": "2015-01",
+      "last_period": "2026-10",
+      "rows": 142
+    },
+    "GB": {
+      "first_period": "2015-01",
+      "last_period": "2026-10",
+      "rows": 142
+    },
+    "IN": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "JP": {
+      "first_period": "2016-09",
+      "last_period": "2026-10",
+      "rows": 122
+    },
+    "TR": {
+      "first_period": "2015-01",
+      "last_period": "2026-10",
+      "rows": 142
+    },
+    "US": {
+      "first_period": "2015-01",
+      "last_period": "2026-10",
+      "rows": 142
+    },
+    "XM": {
+      "first_period": "2015-01",
+      "last_period": "2026-10",
+      "rows": 142
+    }
+  },
+  "description": "Central bank policy rates, monthly, end of period, percent per annum (BIS WS_CBPOL)",
+  "dropped_nan": [],
+  "fetched_at": "2026-11-11T22:58:45+00:00",
+  "file": "data/raw/bis/policy_rates_monthly.csv",
+  "flow": "WS_CBPOL",
+  "key": "M.US+XM+GB+JP+CH+CA+AU+TR+BR+IN+AR",
+  "params": {
+    "format": "csv",
+    "startPeriod": "2015-01"
+  },
+  "refresh": "full re-download from 2015-01 every run (BIS revises recent periods)",
+  "rows": 1524,
+  "series_attributes": {
+    "AR": {
+      "COMPILATION": "From 10 July 2025 onwards: no policy rate adopted; from 22 July 2024 to 9 July 2025: liquidity absorption rate for treasury bills; from 18 December 2023 to 21 July 2024: Overnight Reverse Repos Interest Rate; from 6 January 2022 to 17 December 2023: 28-day Liquidity Bills (LELIQ) interest rate; from 21 January 2020 to 5 January 2022: weighted average interest rate of minimum term LELIQ issued at the last auction process; from 1 October 2018 to 20 January 2020, average interest rate of the accepted offers for the liquidity bills; from 8 August 2018 to 30 September 2018: 7 days liquidity bills interest rate; from 2 January 2017 to 7 August 2018, median of the repo rate corridor; from 16 December 2015 to 1 January 2017: interest rate in BCRA bills (LEBACs), 35 days LEBAC auction; from 29 Jan 2014 to 15 Dec 2015: CB issues, 3 months; from 11 Sep 2009 to 28 Jan 2014:7-day reverse repo operations; before 10 Sep 2009, refer to https://data.bis.org/topics/CBPOL",
+      "SOURCE_REF": "Central Bank of Argentina",
+      "TITLE": "Central bank policy rates - Argentina - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "AU": {
+      "COMPILATION": "From 2 Aug 1990 onwards: cash rate target; from 23 Jan 1990 to 1 Aug 1990: middle of the cash rate target range; from 7 Apr 1976 to 22 Jan 1990: interbank overnight cash rate.",
+      "SOURCE_REF": "Reserve Bank of Australia",
+      "TITLE": "Central bank policy rates - Australia - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "BR": {
+      "COMPILATION": "From 5 Mar 1999 onwards Central Bank target, money market (SELIC) overnight rate; from 1 Jul 1996 to 4 Mar 1999: Central Bank official rediscount rate; from 4 Jun 1986 to 30 Jun 1996: official market intervention rate, representative rate.",
+      "SOURCE_REF": "Central Bank of Brazil",
+      "TITLE": "Central bank policy rates - Brazil - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "CA": {
+      "COMPILATION": "From 1 Jun 1994 onwards: Central Bank target, overnight rate; from 27 Jul 1960 to 31 May 1994: official bank rate.",
+      "SOURCE_REF": "Bank of Canada",
+      "TITLE": "Central bank policy rates - Canada - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "CH": {
+      "COMPILATION": "From 13 June 2019 onwards SNB Policy rate; From 1 Jan 2000 to 12 June 2019 mid-point of the SNB target range; from 1 Jan 1946 to 31 Dec 1999: discount rate.",
+      "SOURCE_REF": "Swiss National Bank",
+      "TITLE": "Central bank policy rates - Switzerland - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "GB": {
+      "COMPILATION": "From 3 Aug 2006 onwards: official bank rate; from 6 May 1997 to 2 Aug 2006: repo rate; from 20 Aug 1981 to 5 May 1997: minimum Bank of England Band 1 dealing rate; from 16 Oct 1972 to 19 Aug 1981: minimum lending rate; from 1 Jan 1946 to 15 Oct 1972: bank rate.",
+      "SOURCE_REF": "Bank of England",
+      "TITLE": "Central bank policy rates - United Kingdom - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "IN": {
+      "COMPILATION": "From 3 Apr 2001 onwards: official repo overnight rate; from 1 Jan 1946 to 2 Apr 2001: oank rate.",
+      "SOURCE_REF": "Reserve Bank of India",
+      "TITLE": "Central bank policy rates - India - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "JP": {
+      "COMPILATION": "From 24 Sep 2026: the BOJ encourages the uncollateralized overnight call rate to remain at around 1.25 percent; From 17 Jun 2026 to 23 Sep 2026: the BOJ encourages the uncollateralized overnight call rate to remain at around 1.00 percent; From 22 Dec 2025 to 16 Jun 2026: the BOJ encourages the uncollateralized overnight call rate to remain at around 0.75 percent; From 27 Jan 2025 to 21 Dec 2025: the BOJ encourages the uncollateralized overnight call rate to remain at around 0.50 percent; From 1 Aug 2024 to 26 Jan 2025: the BOJ encouraged the UOCR to remain at around 0.25% ; From 21 Mar 2024 to 31 July: the BOJ encouraged the UOCR to remain at around 0 to 0.1 %; from 21 Sep 2016 to 20 Mar 2024: the BOJ set the guideline for market operations which specifies a short-term policy interest rate at minus 0.1% and a target level of 10-year JGB yields at around 0%. Short-term policy interest rate; from 4 Apr 2013 to 20 Sep 2016: no policy rate; from 5 Oct 2010 to 3 Apr 2013: the BOJ encouraged the UOCR to remain at around 0 to 0.1%; from 19 Dec 2008 to 4 Oct 2010: the BOJ encouraged the UOCR to remain at around 0. %; from 31 Oct 2008 to 18 Dec 2008: the BOJ encouraged the UOCR to remain at around 0.3%; before 30 Oct 2008, refer to https://data.bis.org/topics/CBPOL",
+      "SOURCE_REF": "Bank of Japan",
+      "TITLE": "Central bank policy rates - Japan - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "TR": {
+      "COMPILATION": "From 20 May 2010 onwards: 1 week official repo rate; from 20 Feb 2002 to 19 May 2010: Central Bank overnight borrowing rate.",
+      "SOURCE_REF": "Central Bank of the Republic of Turkey",
+      "TITLE": "Central bank policy rates - T\u00fcrkiye - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "US": {
+      "COMPILATION": "From 19 Dec 1985 onwards: mid-point of the Federal Reserve target rate; from 1 Jul 1954 to 18 Dec 1985: US Fed Funds effective rate.",
+      "SOURCE_REF": "US Federal Reserve System",
+      "TITLE": "Central bank policy rates - United States - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    },
+    "XM": {
+      "COMPILATION": "From 18 Sep 2024 onwards: official central bank steering rate is the deposit facility rate, fixed rate; from 15 Oct 2008 to 17 Sep 2024: official central bank liquidity providing, main refinancing operations, fixed rate; from 28 Jun 2000 to 14 Oct 2008: official central bank liquidity providing, main refinancing operations, minimum bid rate; from 5 Jan 1999 to 27 Jun 2000: official central bank liquidity providing, main refinancing operations, fixed rate.",
+      "SOURCE_REF": "European Central Bank",
+      "TITLE": "Central bank policy rates - Euro area - Monthly - End of period",
+      "UNIT_MEASURE": "368",
+      "UNIT_MULT": "0"
+    }
+  },
+  "source_url": "https://stats.bis.org/api/v2/data/dataflow/BIS/WS_CBPOL/1.0/M.US+XM+GB+JP+CH+CA+AU+TR+BR+IN+AR?format=csv&startPeriod=2015-01"
+}

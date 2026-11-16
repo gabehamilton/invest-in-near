@@ -1,0 +1,65 @@
+{
+  "columns": [
+    "date",
+    "height",
+    "block_time_utc",
+    "epoch_id",
+    "total_supply_near",
+    "validator_stake_near",
+    "n_validators",
+    "stake_epoch_start_height",
+    "staked_ratio",
+    "stnear_price",
+    "linear_price",
+    "treasury_near",
+    "protocol_version",
+    "max_inflation_rate"
+  ],
+  "description": "NEAR mainnet state sampled at 00:00 UTC on the 1st of each month since 2020-11-01, plus 2020-10-15, 2025-10-29, 2025-11-15 and the latest final block (archival JSON-RPC).",
+  "endpoints": {
+    "history": [
+      "https://archival-rpc.mainnet.fastnear.com",
+      "https://archival-rpc.mainnet.near.org"
+    ],
+    "latest_row": [
+      "https://rpc.mainnet.fastnear.com",
+      "https://rpc.mainnet.near.org"
+    ]
+  },
+  "fetched_at": "2026-11-11T23:01:51+00:00",
+  "file": "data/raw/rpc/history_samples.csv",
+  "incremental_rule": "Target-date rows are cached in this CSV and never re-fetched; only the latest-final-block row is replaced each run. A row is written only after every call for it returned data or a definitive does-not-exist error, so transient failures are retried on the next run.",
+  "latest_row": {
+    "date": "2026-11-11",
+    "height": 224129519
+  },
+  "methods": {
+    "linear_price": "linear-protocol.near ft_price (empty before the contract existed)",
+    "protocol_version": "EXPERIMENTAL_protocol_config {block_id: height}",
+    "stnear_price": "meta-pool.near get_st_near_price (empty before the contract existed)",
+    "total_supply_near": "block header total_supply",
+    "treasury_near": "view_account treasury.near amount + locked",
+    "validator_stake_near": "sum(current_validators.stake) from `validators` {block_id: header.epoch_id}; epoch_id = hash of the last block of epoch N-2, so stake lags the sample by ~2 epochs (stake_epoch_start_height shows which epoch). Empty where the node answers UNKNOWN_EPOCH (early mainnet)."
+  },
+  "rows": 77,
+  "run": {
+    "cached_reused": 76,
+    "failed": {},
+    "fetched": [],
+    "rpc": {
+      "archival": {},
+      "latest": {
+        "calls": 7
+      }
+    },
+    "targets": 76
+  },
+  "sampling": "Row = last block with header.timestamp_nanosec <= 00:00:00 UTC of `date`, found by interpolation search on block timestamps (bisection fallback), skipping heights with no block. The latest row is the latest final block; its `date` is that block's UTC date. It is omitted (latest_row null, run.latest_omitted says why) when that date is itself a sampling date, so `date` is unique.",
+  "source_url": "https://archival-rpc.mainnet.fastnear.com",
+  "units": {
+    "*_near": "NEAR (yocto / 1e24, exact decimal)",
+    "max_inflation_rate": "EXPERIMENTAL_protocol_config max_inflation_rate as a decimal",
+    "staked_ratio": "validator_stake_near / total_supply_near",
+    "stnear_price / linear_price": "NEAR per token"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "description": "Which venues list options on NEAR, one row per venue; source_url is the space-separated endpoint of each venue in row order; null has_near_options means the venue could not be queried from this machine (error is the response body as received)",
+  "fetched_at": "2026-11-11T23:00:00+00:00",
+  "file": "data/raw/market/options_venues.json",
+  "rows": 5,
+  "source_url": "https://www.deribit.com/api/v2/public/get_instruments?currency=any&kind=option https://www.okx.com/api/v5/public/underlying?instType=OPTION https://api.aevo.xyz/markets?instrument_type=OPTION https://api.bybit.com/v5/market/instruments-info?category=option&baseCoin=NEAR https://eapi.binance.com/eapi/v1/exchangeInfo"
+}

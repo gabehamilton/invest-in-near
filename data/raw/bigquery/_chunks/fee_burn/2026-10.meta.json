@@ -1,0 +1,53 @@
+{
+  "columns": [
+    "block_date",
+    "gross_fee_burn_near",
+    "gas_burnt_tgas"
+  ],
+  "data_through": "2026-11-10",
+  "dates": [
+    "2026-10-15",
+    "2026-10-28",
+    "2026-10-29",
+    "2026-10-30",
+    "2026-10-31"
+  ],
+  "description": "Month chunk 2026-10 of sql/fee_burn.sql",
+  "fetched_at": "2026-11-11T23:13:07+00:00",
+  "file": "data/raw/bigquery/_chunks/fee_burn/2026-10.csv",
+  "jobs": [
+    {
+      "bytes_billed": 365953024,
+      "bytes_processed": 365932200,
+      "cache_hit": false,
+      "end_date": "2026-10-15",
+      "job_id": "4967f15d-4209-479f-8f70-1c81c1dc6560",
+      "rows": 1,
+      "start_date": "2026-10-15"
+    },
+    {
+      "bytes_billed": 379584512,
+      "bytes_processed": 379371408,
+      "cache_hit": false,
+      "end_date": "2026-10-31",
+      "job_id": "cfcb5967-5088-4708-87a4-970f74baf27b",
+      "rows": 4,
+      "start_date": "2026-10-28"
+    }
+  ],
+  "month": "2026-10",
+  "query": "fee_burn",
+  "ranges": [
+    [
+      "2026-10-15",
+      "2026-10-15"
+    ],
+    [
+      "2026-10-28",
+      "2026-10-31"
+    ]
+  ],
+  "rows": 5,
+  "sql_file": "sql/fee_burn.sql",
+  "sql_fingerprint": "bf421d94f063097ed2dab6bb6c9c8a24e1e96c94707b8e25d6146c20f8cdae2a"
+}

@@ -1,0 +1,81 @@
+{
+ "H1": {
+  "binding_condition": "gap_m2 > 0 and h1_gap_med > 0",
+  "margin": "3.23 pp",
+  "verdict": "Supported"
+ },
+ "H10": {
+  "binding_condition": "neither the Supported nor the Refuted rule holds",
+  "margin": null,
+  "verdict": "Partly"
+ },
+ "H2": {
+  "binding_condition": "h2_gap > 0",
+  "margin": "1.69 pp",
+  "verdict": "Supported"
+ },
+ "H3": {
+  "binding_condition": "spread_adj_365 > 0 and spread_adj_365 ≤ 1.0",
+  "margin": "0.32 pp",
+  "verdict": "Supported"
+ },
+ "H4": {
+  "binding_condition": "adv_share_le0 ≤ 40",
+  "margin": "40.0 pp",
+  "verdict": "Supported"
+ },
+ "H5": {
+  "binding_condition": "neither the Supported nor the Refuted rule holds",
+  "margin": null,
+  "verdict": "Partly"
+ },
+ "H6": {
+  "binding_condition": "h6_critical_failed ≥ 1",
+  "margin": "1",
+  "verdict": "Refuted"
+ },
+ "H6_near": {
+  "binding_condition": "h6n_rows13_pass = 2 and h6n_row2_fail = 0",
+  "margin": "0",
+  "verdict": "Supported"
+ },
+ "H7": {
+  "binding_condition": "rv_365_near ≥ 50 and rv_90_near ≥ 50",
+  "margin": "53.3 pp",
+  "verdict": "Supported"
+ },
+ "H8": {
+  "binding_condition": "neither the Supported nor the Refuted rule holds",
+  "margin": null,
+  "verdict": "Partly"
+ },
+ "H9": {
+  "binding_condition": "pct_within_2pp_1y < 20",
+  "margin": "16.2 pp",
+  "verdict": "Refuted"
+ },
+ "tally": {
+  "claims": 10,
+  "counted": [
+   "H1",
+   "H2",
+   "H3",
+   "H4",
+   "H5",
+   "H6",
+   "H7",
+   "H8",
+   "H10",
+   "H9"
+  ],
+  "decided_hidden": 1,
+  "decided_stated": 9,
+  "not_computed": 0,
+  "not_testable": 0,
+  "partly": 3,
+  "refuted": 2,
+  "supported": 5,
+  "thinnest_supported_id": "H3",
+  "total": 10
+ }
+}

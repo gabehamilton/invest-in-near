@@ -1,0 +1,29 @@
+{
+  "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume_base",
+    "volume_quote",
+    "trades"
+  ],
+  "complete": true,
+  "description": "Kraken Derivatives PF_NEARUSD daily trade candles (UTC days); volume_base in contracts of 1 NEAR; the venue reports no quote volume or trade count",
+  "error": null,
+  "excluded": "unfinished candle for 2026-11-13 (UTC)",
+  "fetched_at": "2026-11-13T17:28:19+00:00",
+  "file": "data/raw/perps/near_perp_kraken_daily.csv",
+  "first_date": "2022-06-13",
+  "last_date": "2026-11-12",
+  "pages": 1,
+  "params": {
+    "from": 1500000000
+  },
+  "refresh": "full history re-downloaded every run; on a mid-run HTTP error the fetched rows replace matching cached rows and the rest of the cached file is kept (meta complete=false)",
+  "response_sha256": "9785c0978a0e547420a0de36540c04231130f50e1c559eb09a1cd42a0e2ddb2a",
+  "rows": 1614,
+  "rows_from_previous_file": 0,
+  "source_url": "https://futures.kraken.com/api/charts/v1/trade/PF_NEARUSD/1d"
+}

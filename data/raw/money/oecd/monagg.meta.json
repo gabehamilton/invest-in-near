@@ -1,0 +1,111 @@
+{
+  "adjustment_codes": {
+    "N": "not adjusted (as labelled by OECD)",
+    "Y": "calendar and seasonally adjusted (as labelled by OECD)"
+  },
+  "areas_requested": [
+    "USA",
+    "EA20",
+    "JPN",
+    "GBR",
+    "CHN",
+    "CHE",
+    "AUS",
+    "CAN"
+  ],
+  "columns": [
+    "area",
+    "adjustment",
+    "period",
+    "value"
+  ],
+  "coverage": {
+    "AUS.N": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "AUS.Y": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "CAN.N": {
+      "first_period": "2015-01",
+      "last_period": "2026-07",
+      "rows": 139
+    },
+    "CAN.Y": {
+      "first_period": "2015-01",
+      "last_period": "2026-07",
+      "rows": 139
+    },
+    "CHE.N": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "CHN.N": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "EA20.N": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "EA20.Y": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "GBR.N": {
+      "first_period": "2015-01",
+      "last_period": "2026-08",
+      "rows": 140
+    },
+    "GBR.Y": {
+      "first_period": "2015-01",
+      "last_period": "2026-08",
+      "rows": 140
+    },
+    "JPN.N": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "JPN.Y": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "USA.N": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    },
+    "USA.Y": {
+      "first_period": "2015-01",
+      "last_period": "2026-09",
+      "rows": 141
+    }
+  },
+  "description": "OECD monetary aggregates: headline broad money per area, a mirror of the national series used for cross-check X9",
+  "fetched_at": "2026-11-11T22:59:45+00:00",
+  "file": "data/raw/money/oecd/monagg.csv",
+  "first_date": "2015-01-01",
+  "frequency": "monthly",
+  "last_date": "2026-09-01",
+  "last_observed_date": "2026-09-01",
+  "method": "OECD SDMX DF_MONAGG (SDMX-CSV), broad money MABM in national currency (XDC), millions",
+  "notes": [
+    "OECD's ADJUSTMENT flag is swapped for EA20 in research (Y equals the ECB's unadjusted series); compare like with like against the national series.",
+    "OECD's aggregate per area: USA M2, EA20 M3, JPN M3, GBR wider than M4, CHN M2, CHE M3, AUS M3 (not RBA broad money), CAN M3 (not M2++)."
+  ],
+  "refresh": "history from 2015-01 re-downloaded every run; a failed fetch keeps the previous file",
+  "response_sha256": "620b7e1e627cf8ce85e9e449e8deba2224da65c07db4ca56f4fc8c20fd6bb28e",
+  "rows": 1968,
+  "source_url": "https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_MONAGG,4.0/USA+EA20+JPN+GBR+CHN+CHE+AUS+CAN.M.MABM.XDC.....?startPeriod=2015-01",
+  "units": "national currency million (USA USD, EA20 EUR, JPN JPY, GBR GBP, CHN CNY, CHE CHF, AUS AUD, CAN CAD)"
+}

@@ -1,0 +1,67 @@
+{
+  "columns": [
+    "block_date",
+    "eod_supply_near",
+    "minted_near",
+    "burnt_near",
+    "epoch_boundaries"
+  ],
+  "data_through": "2026-11-10",
+  "dates": [
+    "2021-09-01",
+    "2021-09-02",
+    "2021-09-03",
+    "2021-09-04",
+    "2021-09-05",
+    "2021-09-06",
+    "2021-09-07",
+    "2021-09-08",
+    "2021-09-09",
+    "2021-09-10",
+    "2021-09-11",
+    "2021-09-12",
+    "2021-09-13",
+    "2021-09-14",
+    "2021-09-15",
+    "2021-09-16",
+    "2021-09-17",
+    "2021-09-18",
+    "2021-09-19",
+    "2021-09-20",
+    "2021-09-21",
+    "2021-09-22",
+    "2021-09-23",
+    "2021-09-24",
+    "2021-09-25",
+    "2021-09-26",
+    "2021-09-27",
+    "2021-09-28",
+    "2021-09-29",
+    "2021-09-30"
+  ],
+  "description": "Month chunk 2021-09 of sql/daily_supply_flows.sql",
+  "fetched_at": "2026-11-11T23:06:19+00:00",
+  "file": "data/raw/bigquery/_chunks/daily_supply_flows/2021-09.csv",
+  "jobs": [
+    {
+      "bytes_billed": 59768832,
+      "bytes_processed": 59699856,
+      "cache_hit": false,
+      "end_date": "2021-09-30",
+      "job_id": "f160798c-1aaa-4e8c-949a-a1dbdf56ad86",
+      "rows": 30,
+      "start_date": "2021-09-01"
+    }
+  ],
+  "month": "2021-09",
+  "query": "daily_supply_flows",
+  "ranges": [
+    [
+      "2021-09-01",
+      "2021-09-30"
+    ]
+  ],
+  "rows": 30,
+  "sql_file": "sql/daily_supply_flows.sql",
+  "sql_fingerprint": "6428a47e32017c681c296868809241c019914997c36bc407baaa4229a46cd5c9"
+}

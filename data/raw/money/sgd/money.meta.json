@@ -1,0 +1,37 @@
+{
+  "aggregate": "M2",
+  "basis": "stock at the end of the month",
+  "blank_rows": 0,
+  "columns": [
+    "period",
+    "value"
+  ],
+  "currency": "SGD",
+  "description": "Money supply M2, end of period (MAS, via SingStat Table Builder)",
+  "fetched_at": "2026-11-11T22:59:39+00:00",
+  "field": "money",
+  "file": "data/raw/money/sgd/money.csv",
+  "first_date": "2021-07-01",
+  "first_period": "2021-07",
+  "frequency": "monthly",
+  "last_date": "2026-09-01",
+  "last_observed_date": "2026-09-01",
+  "latest_period": "2026-09",
+  "method": "SingStat Table Builder API (JSON, keyless)",
+  "notes": [
+    "Series break 2021-07: since then the series covers Singapore-dollar activity only, and this table starts there."
+  ],
+  "publication_date": "30/10/2026",
+  "publisher": "Department of Statistics Singapore (data from the Monetary Authority of Singapore for money)",
+  "refresh": "history from 2015-01 re-downloaded every run; a failed fetch keeps the previous file",
+  "response_sha256": "c41c9a8b3b0565b9d8013195f3892d6dcc6d77163bd52cc0d28b758085dfdc69",
+  "role": "primary",
+  "rows": 63,
+  "seasonal_adjustment": "not seasonally adjusted",
+  "series_id": "M701111/M2",
+  "singstat_datasource": "MONETARY AUTHORITY OF SINGAPORE",
+  "singstat_title": "Money Supply (End Of Period), Monthly",
+  "source_url": "https://tablebuilder.singstat.gov.sg/api/table/tabledata/M701111",
+  "units": "SGD million",
+  "units_published": "Million Dollars"
+}

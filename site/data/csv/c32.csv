@@ -1,0 +1,15 @@
+measure,value,basis
+"Days to sell on Coinbase at a whole median day's volume, last year",3.1 days,measured ratio
+"Days to sell on Coinbase at a whole median day's volume, last ninety days",0.7 days,measured ratio
+Days to sell on Coinbase at 10% of each day's volume,31 days,assumption (scenario)
+"Days to sell on Coinbase and Binance at a whole median day's volume, last year",0.6 days,measured ratio; Binance trades against USDT and is closed to US persons
+"Days to sell on Coinbase and Binance at a whole median day's volume, last ninety days",0.2 days,measured ratio
+Days to sell on Coinbase and Binance at 10% of each day's volume,6 days,assumption (scenario)
+"Median daily volume, Coinbase, last year",$6.0 million,measured
+"Median daily volume, Coinbase, last ninety days",$26.6 million,measured
+"Median daily volume, Binance (USDT), last year",$27.3 million,measured
+"Median daily volume, Binance (USDT), last ninety days",$88.1 million,measured
+Instant-exit pool as a share of the NEAR part,1.5%,measured; the pool charges a fee that rises as it drains
+Unbonding before unstaked NEAR can move,21.0 h to 28.0 h,measured
+NEAR part as a share of the liquid-staking market (at most: rNEAR is unpriced),15.0%,measured
+Liquid-staking token depth on exchanges,not measured,no approved source

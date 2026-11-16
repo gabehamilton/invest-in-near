@@ -1,0 +1,7 @@
+{
+  "description": "The NEAR perpetual as each venue describes it at fetch time: contract record (leverage, margin tiers, funding parameters) and live context (funding, open interest, mark, index); one entry per venue, numbers with a fraction kept as the published text",
+  "fetched_at": "2026-11-13T17:28:30+00:00",
+  "file": "data/raw/perps/near_perp_terms.json",
+  "rows": 2,
+  "source_url": "https://api.hyperliquid.xyz/info https://futures.kraken.com/derivatives/api/v3/instruments https://futures.kraken.com/derivatives/api/v3/tickers/PF_NEARUSD"
+}

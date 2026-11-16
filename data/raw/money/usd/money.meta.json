@@ -1,0 +1,34 @@
+{
+  "aggregate": "M2",
+  "basis": "monthly average of daily levels",
+  "blank_rows": 0,
+  "columns": [
+    "period",
+    "value"
+  ],
+  "currency": "USD",
+  "description": "M2 money stock (Federal Reserve H.6), monthly average of daily figures",
+  "fetched_at": "2026-11-11T22:58:47+00:00",
+  "field": "money",
+  "file": "data/raw/money/usd/money.csv",
+  "first_date": "2015-01-01",
+  "first_period": "2015-01",
+  "frequency": "monthly",
+  "http_last_modified": "Tue, 27 Oct 2026 17:01:34 GMT",
+  "last_date": "2026-09-01",
+  "last_observed_date": "2026-09-01",
+  "latest_period": "2026-09",
+  "method": "FRED graph CSV (keyless), one request per series",
+  "notes": [
+    "Same series as data/raw/fred/M2SL.csv (FRED mirror of H.6)."
+  ],
+  "publisher": "Federal Reserve Bank of St. Louis (FRED), mirroring the original publisher",
+  "refresh": "history from 2015-01 re-downloaded every run; a failed fetch keeps the previous file",
+  "response_sha256": "626dcc3e6eb180613a0e7ac648de289c10fa2a73a42f674e98296a58430d5a84",
+  "role": "primary",
+  "rows": 141,
+  "seasonal_adjustment": "seasonally adjusted",
+  "series_id": "M2SL",
+  "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=M2SL",
+  "units": "USD billion"
+}

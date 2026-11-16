@@ -1,0 +1,69 @@
+{
+  "checked_at": "2026-11-11T22:59:56+00:00",
+  "venues": [
+    {
+      "endpoint": "https://www.deribit.com/api/v2/public/get_instruments?currency=any&kind=option",
+      "error": null,
+      "has_near_options": false,
+      "http_status": 200,
+      "ok": true,
+      "option_underlyings": [
+        "AVAX",
+        "BTC",
+        "ETH",
+        "HYPE",
+        "SOL",
+        "TRX",
+        "XRP"
+      ],
+      "venue": "Deribit"
+    },
+    {
+      "endpoint": "https://www.okx.com/api/v5/public/underlying?instType=OPTION",
+      "error": null,
+      "has_near_options": false,
+      "http_status": 200,
+      "ok": true,
+      "option_underlyings": [
+        "BTC-USD",
+        "ETH-USD",
+        "HYPE-USD",
+        "SOL-USD",
+        "XAU-USD"
+      ],
+      "venue": "OKX"
+    },
+    {
+      "endpoint": "https://api.aevo.xyz/markets?instrument_type=OPTION",
+      "error": null,
+      "has_near_options": false,
+      "http_status": 200,
+      "ok": true,
+      "option_underlyings": [
+        "BTC",
+        "ETH",
+        "HYPE",
+        "SOL"
+      ],
+      "venue": "Aevo"
+    },
+    {
+      "endpoint": "https://api.bybit.com/v5/market/instruments-info?category=option&baseCoin=NEAR",
+      "error": "{\n    error:The Amazon CloudFront distribution is configured to block access from your country\n}",
+      "has_near_options": null,
+      "http_status": 403,
+      "ok": false,
+      "option_underlyings": null,
+      "venue": "Bybit"
+    },
+    {
+      "endpoint": "https://eapi.binance.com/eapi/v1/exchangeInfo",
+      "error": "{\n  \"code\": 0,\n  \"msg\": \"Service unavailable from a restricted location according to 'b. Eligibility' in https://www.binance.com/en/terms. Please contact customer service if you believe you received this message in error.\"\n}",
+      "has_near_options": null,
+      "http_status": 451,
+      "ok": false,
+      "option_underlyings": null,
+      "venue": "Binance"
+    }
+  ]
+}

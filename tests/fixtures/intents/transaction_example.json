@@ -1,0 +1,40 @@
+{
+  "_note": "The example object of GET /api/v0/transactions from https://explorer.near-intents.org/api/v0/openapi.yaml (spec example values, not live data). Tests derive fake variations from it; nothing here is written to data/raw.",
+  "example": {
+    "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+    "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+    "depositAddress": "GDJ4JZXZELZD737NVFORH4PSSQDWFDZTKW3AIDKHYQG23ZXBPDGGQBJK",
+    "depositMemo": "12345",
+    "depositAddressAndMemo": "GDJ4JZXZELZD737NVFORH4PSSQDWFDZTKW3AIDKHYQG23ZXBPDGGQBJK_12345",
+    "recipient": "somebody.near",
+    "status": "SUCCESS",
+    "createdAt": "2025-12-31T12:00:00.000Z",
+    "createdAtTimestamp": 1767182400,
+    "intentHashes": "GnGk38hvi92tTWDYMMS8CWYnVT4fixmfBrnqSErCDMTu",
+    "referral": "some-referral",
+    "amountInFormatted": "22.130108",
+    "amountOutFormatted": "22.113697",
+    "appFees": [
+      {"fee": 50, "recipient": "some.near"},
+      {"fee": 5, "recipient": "somebody.near"}
+    ],
+    "nearTxHashes": [
+      "6XqqDwoaopgg39QsEiFGs9HfwP2Vum9tCCyqHDYXWBBH",
+      "EVcgKukwf38XsYcgvkEgiMPWR7qwLfLK5rsVtjgctPBn"
+    ],
+    "originChainTxHashes": ["0x9bcff372aee89b648c922b850573b22387c31d693079f5e37cd255814e2d615a"],
+    "destinationChainTxHashes": ["0x9bcff372aee89b648c922b850573b22387c31d693079f5e37cd255814e2d615a"],
+    "amountIn": "22130108",
+    "amountInUsd": "22.1272",
+    "amountOut": "22113697",
+    "amountOutUsd": "22.1108",
+    "refundTo": "somebody.near",
+    "senders": ["0x1234567890abcdef1234567890abcdef12345678"],
+    "refundReason": "AMOUNT_MORE_THAN_BALANCE",
+    "refundFee": "1000",
+    "refundFeeFormatted": "0.001",
+    "depositType": "ORIGIN_CHAIN",
+    "recipientType": "DESTINATION_CHAIN",
+    "refundType": "ORIGIN_CHAIN"
+  }
+}

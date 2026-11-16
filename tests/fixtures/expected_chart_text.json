@@ -1,0 +1,190 @@
+{
+ "c01": {
+  "caveat": "On the right, NEAR's line ends at the latest chain sample (2026-11-10) and CPI's at 2026-09; the title sets each one's latest year side by side: NEAR 2.48% against CPI 3.72%.",
+  "notes": [
+   "BLS published no CPI for 2025-10 during the federal shutdown, so that month and the same month a year later are blank.",
+   "Markers show the issuance ceiling cut, where the Fed turned to hiking or cutting, and where liquid-staking data starts (2022-04-01).",
+   "The formula line uses validator stake, which lags the sampled block by about two epochs.",
+   "The fed funds line is the monthly average of the effective rate."
+  ],
+  "sentence": "Left, what you earn: liquid staking over trailing ninety days (blue), the protocol formula before fees (gray) and fed funds (orange); right, what inflation takes: NEAR supply growth over the trailing year (blue) against US consumer prices (orange).",
+  "title": "In the last ninety days NEAR's staking rate ran 0.38 pp above fed funds; over the latest year its supply grew 1.23 pp slower than US prices."
+ },
+ "c02": {
+  "caveat": "The gray line compounds the nominal ceiling as it mints, so a full year at today's 2.50% allows 2.53%; growth of 2.48% sits below both.",
+  "notes": [
+   "Samples are monthly until 2022-04-04, weekly until 2025-10-06 and daily since, so the line grows denser to the right.",
+   "The gray line switches rate at the exact block of each ceiling change.",
+   "Over the last year the 1,201 epochs minted at the ceiling with a median gap of -0.008 pp, from -0.410 pp to -0.001 pp."
+  ],
+  "sentence": "Blue is how much NEAR's supply grew over the trailing year at each sample date; gray is the most the issuance ceiling allowed over the same window.",
+  "title": "NEAR's supply grew 2.48% over the last year, against an issuance ceiling of 2.50%."
+ },
+ "c03": {
+  "caveat": "",
+  "notes": [],
+  "sentence": "For each period, the upward bar is how much a liquid staker's fraction of all NEAR grew per year, and the downward bar is how much an unstaked holder's shrank; 55.6% of supply is unstaked today.",
+  "title": "Inflation is a transfer: over the last year stakers' share of all NEAR grew 1.61% and non-stakers' shrank 2.42%."
+ },
+ "c05": {
+  "caveat": "",
+  "notes": [
+   "Over the trailing year the protocol minted 88,303 NEAR a day and burned 1,337 NEAR.",
+   "The one-epoch-a-month sample read 1.52% over the same year, from 13 epochs; the exact figure replaces it.",
+   "The upper bound comes from supply alone and counts rewards left unminted by offline validators as burn, so the true share cannot exceed it; over the trailing year it is 2.00%.",
+   "The developer gas rebate ended at block 223,012,337 on 2026-11-04, so from then the whole gas fee burns; before, part of it went to the called contract.",
+   "The axis is scaled to the columns rather than to all of issuance."
+  ],
+  "sentence": "Each column is NEAR burned as a share of NEAR minted in that period; supply stops growing only when burn reaches all of issuance.",
+  "title": "Fees burned 1.51% of the NEAR minted in the last year."
+ },
+ "c06": {
+  "caveat": "Volume measures usage of the network, not value that accrues to the token.",
+  "notes": [
+   "DefiLlama's figures come from a Dune table maintained by NEAR.",
+   "The latest 3 days are provisional and may be revised.",
+   "Month to date: $1.31 billion through 2026-11-10.",
+   "Fees over the last year: $54.0 million.",
+   "From 2026-10-27, one-click API swaps settle confidentially on the NEAR Private Shard (NEAR Intents documentation)."
+  ],
+  "sentence": "Each column is one month of swap volume routed through NEAR Intents, as reported by DefiLlama.",
+  "title": "NEAR Intents settled $3.76 billion in the last thirty days; the last ninety days were 1.84× the ninety days before."
+ },
+ "c07": {
+  "caveat": "Consecutive windows share most of their days, so the points are not independent years.",
+  "notes": [
+   "Windows end each Monday, plus the latest sample.",
+   "The axis stops at a total loss, the most a dollar can lose."
+  ],
+  "sentence": "Each point is what a dollar held in staked NEAR for the year before that date returned in dollars; of the windows that ended in the last year it landed within two percentage points of fed funds in 3.77%.",
+  "title": "Of the 53 weekly one-year windows that ended in the last year, a dollar in stNEAR beat a dollar at fed funds in 20.8%."
+ },
+ "c08": {
+  "caveat": "",
+  "notes": [],
+  "sentence": "Staking ran 0.32 pp above fed funds over the year, about 0.06× a single typical day's move (5.41%); on 93.4% of days in the last year NEAR moved more than that whole annual gap.",
+  "title": "The staking edge over fed funds is smaller than one ordinary day's price move."
+ },
+ "c09": {
+  "caveat": "The title compares trailing-year volatility (103.3% for NEAR, 44.0% for bitcoin, 5.48% for the euro), so the lines' end values differ from it.",
+  "notes": [
+   "The median one-month reading for NEAR since listing is 105.5%.",
+   "Volatility is the annualized standard deviation of daily log returns."
+  ],
+  "sentence": "Each line is the price volatility of NEAR, bitcoin or the euro against the dollar over the trailing ninety days.",
+  "title": "NEAR's price is 2.35× as volatile as bitcoin's and 18.8× the euro's."
+ },
+ "c11": {
+  "caveat": "NEAR supply is a quantity of tokens while consumer prices are a price index, so only the money-supply panel compares like with like.",
+  "notes": [
+   "NEAR's supply grew slower than US money in 17 of 60 months, in 2021-10 to 2022-06 and 2026-02 to 2026-09.",
+   "US data run to 2026-09 for consumer prices, 2026-09 for the money supply and 2026-09 for PCE.",
+   "BLS published no consumer prices for 2025-10 (federal shutdown), so the CPI and core panels have no value for that month and no year-over-year change a year later.",
+   "The title sets NEAR's supply growth over the year to 2026-11-10, 2.48%, against each US figure over the year to its latest month; month by month, the lines compare the same twelve months."
+  ],
+  "sentence": "In each panel blue is NEAR supply growth over the trailing year and orange is one US measure's year-over-year change.",
+  "title": "Over the year to 2026-11-10, NEAR's supply grew 3.23 pp slower than the US money supply, 1.23 pp slower than CPI and 0.08 pp slower than core CPI, each over the year to 2026-09."
+ },
+ "c13": {
+  "caveat": "NEAR's left reading is a different kind of measure, staking yield minus supply growth, and the United States sits at zero on the right by construction.",
+  "notes": [
+   "The gray bars show each gap's five-year range as context; the comparison in the title uses today's readings only.",
+   "Argentina is excluded: BIS reports no Argentine policy rate after 2025-06.",
+   "Australia CPI is quarterly."
+  ],
+  "sentence": "Each dot is a currency's rate gap today, its policy rate minus its own inflation on the left and minus the US rate on the right, and the gray bar is how far that gap swung over five years.",
+  "title": "Against 10 economies, NEAR's rate gap today is wider than the median on rate minus own inflation (1.65 pp against 0.85 pp) and narrower on rate minus US rate (0.44 pp against 1.38 pp)."
+ },
+ "c14": {
+  "caveat": "",
+  "notes": [],
+  "sentence": "Rows list what a broker sweep must provide under SEC rules, next to what staked NEAR measured on each test, once as a dollar vehicle and once for balances already held in NEAR.",
+  "title": "NEAR fails the sweep-account tests that decide the verdict: principal stability and the legal-vehicle rule; same-day cash is only partial."
+ },
+ "c15": {
+  "caveat": "",
+  "notes": [
+   "The unchecked venues refused requests from a US network.",
+   "Where options exist, one-month implied minus realized volatility averaged +8.38 pp for bitcoin and +4.57 pp for ether (a proxy, not NEAR).",
+   "No options venue I could check lists NEAR, so the claim that NEAR's volatility can be sold is tested on a perpetual instead."
+  ],
+  "sentence": "The table lists which derivatives venues offer options, on what, and whether NEAR is one.",
+  "title": "0 of the 3 options venues I could check list NEAR options; 2 more could not be checked."
+ },
+ "c16": {
+  "caveat": "",
+  "notes": [],
+  "sentence": "The line is BigQuery's end-of-day total supply minus the RPC sample taken at the last block of the same UTC day; the gray band marks days after 2026-11-10, where BigQuery has no data.",
+  "title": "BigQuery and NEAR RPC agree on total supply to within 0.00 NEAR on 639 matched days; BigQuery has blocks through 2026-11-10."
+ },
+ "c21": {
+  "caveat": "",
+  "notes": [
+   "Each currency's money growth over its latest year is set against NEAR's supply growth over the year to 2026-11-10; the median of those gaps is +2.31 pp, the figure the supply claim tests.",
+   "Broad money includes deposits created by bank lending; NEAR's supply is issued by protocol only, so it is nearer to base money.",
+   "The dollar's money grew 5.71% on FRED's broad US money series."
+  ],
+  "sentence": "NEAR's supply grew 2.48% over the year to 2026-11-10 (the line), against a median 4.79% for the major currencies' money, each over its own latest year to its latest month; this is supply only, not demand.",
+  "title": "NEAR's supply grew more slowly than the major currencies' money over the past year"
+ },
+ "c23": {
+  "caveat": "The window's consumer-price base, 2025-11, follows a month the shutdown left unpublished, so prices may include some catch-up: from 2025-09, the last level published before the cut, they ran 3.76% a year, a gap of +1.28 pp.",
+  "notes": [
+   "Single months swing widely once annualized, so the verdict reads the whole window from 2025-12-01 to 2026-11-01, not the bars.",
+   "NEAR's supply grew more slowly in 8 of the 11 months with both readings.",
+   "Consumer prices are the seasonally adjusted CPI-U, a monthly average, so each month's reading is centred about half a month before NEAR's month-boundary samples.",
+   "Months without a reading, because the month before has no published consumer-price level: 2025-11 (CPI for 2025-10 not published).",
+   "From the first sample after 2025-10-29 to the latest, NEAR's supply grew 2.48% a year."
+  ],
+  "sentence": "Each bar is one month's US consumer-price inflation minus NEAR's supply growth over the same month, both annualized; above zero, NEAR's supply grew more slowly.",
+  "title": "Since the issuance ceiling cut, NEAR's supply grew 2.48% a year, 1.69 pp slower than US consumer prices (4.17%)."
+ },
+ "c24": {
+  "caveat": "NEAR's dollar price is not part of this advantage, and a month counts after the cut when its year ends after 2025-10-29, so the first months after it still hold mostly earlier issuance.",
+  "notes": [
+   "Months whose year ends before the cut: 31, averaging +2.10 pp; after it: 11, averaging +1.70 pp.",
+   "The prices part averaged -1.86 pp before and -0.52 pp after; the staking part +3.96 pp and +2.22 pp.",
+   "Months with no published US consumer-price reading have no advantage and stay blank: 2025-10 (CPI not published), 2026-10 (no year-ago CPI).",
+   "Each month reads a trailing year, so neighbouring months overlap and the 42 months span only 4 separate years.",
+   "No counted month's year yet lies wholly after the cut; the first such month is 2026-10."
+  ],
+  "sentence": "The blue line is the advantage, the sum of the other two: US consumer-price inflation minus NEAR's supply growth (orange), and liquid-staking yield minus compounded fed funds (green, dashed), each over the year to the month's end.",
+  "title": "NEAR's advantage over the dollar stayed above zero in all 42 months, across 4 separate years ending before and after the issuance ceiling cut."
+ },
+ "c25": {
+  "caveat": "Even with no pattern in prices, selling on a rise only moves gains between years, so a strategy shows capture only by beating the shuffles, and the ladder counts only when both venues agree, because Hyperliquid's record holds 3 separate years.",
+  "notes": [
+   "The shuffles cut NEAR's daily moves into blocks of 30 days and keep every move, the whole trend and each window's staking and fed funds; only the order of the blocks changes, and the band leaves out the highest and lowest 2.5% of them.",
+   "Selling into rallies sells at the next close after NEAR first closes 25% above cost, else at the year's end; it sold in 68.3% of the windows.",
+   "Against selling at the start and holding dollars at fed funds, selling into rallies averaged +1.94 pp, against +9.17 pp in the shuffles.",
+   "Rebalancing holds the desk's NEAR share, 3.7%, and resets it every 30 days; its row is per unit of NEAR held at the start.",
+   "Rebalancing's growth over buy-and-hold averaged +0.07 pp of the book, against +0.22 pp in the shuffles; theory puts a ceiling of +1.78 pp on it, which buy-and-hold partly earns too.",
+   "The perp ladder keeps the NEAR staked and sells 10% of the stake short at the close after each 10% rise, at most 50%, buying each slice back after a 10% fall; its rows include funding, fees, slippage and the interest forgone on collateral.",
+   "On Hyperliquid the ladder covers 741 overlapping windows from 2023-11-01 and beat 97.2% of the shuffles; over those windows NEAR's price changed -12.8% on average, and any strategy that gives up a rise ranks high on a span whose rallies sit at its edges.",
+   "On Binance it covers 1,317 overlapping windows from 2022-03-24, nearly the windows of the other two strategies.",
+   "Staking accrues while NEAR is held, and dollars from a sale earn compounded fed funds to the year's end.",
+   "The windows overlap: 1,328 start days from 2022-03-24 to 2025-11-10 span 4 separate years, and every shuffle has the same overlap.",
+   "NEAR's price changed 37.6% over the average window and -33.6% over the typical one; the shuffles keep that trend."
+  ],
+  "sentence": "Each row is a strategy's average gain over a year across its overlapping one-year windows, in percentage points (pp) of the starting NEAR stake, against holding NEAR: the blue dot is NEAR's real history, the gray ring and bar the average and middle band of 1,000 shuffled histories of NEAR's own daily moves.",
+  "title": "Selling into rallies beat 35.7% of NEAR's shuffled histories, rebalancing 33.6%, and the perp ladder 97.2% on Hyperliquid and 46.9% on Binance, inside what chance gives, so no capture shows."
+ },
+ "c26": {
+  "caveat": "Hyperliquid and Binance are reported to exclude US persons, and Coinbase's US-regulated NEAR perpetual, listed 2026-02-28, is too new to test; the windows overlap, so Hyperliquid's record is 3 separate years and Binance's 4.",
+  "notes": [
+   "The perp ladder keeps the NEAR staked and sells 10% of the stake short at the close after each 10% rise, at most 50%, buying each slice back after a 10% fall.",
+   "The short that never trades sells 25% of the stake at the start and buys it back at the end, with the same dollars on the venue; it collected +4.99 pp a year in funding on Hyperliquid against the ladder's +7.84 pp, so most of the funding is paid to any short.",
+   "Funding is set by each venue's formula. Between 2025-11-12 and 2026-10-30, Hyperliquid paid shorts 10.92% a year and Binance 3.91%; Hyperliquid's formula adds a fixed interest term, and its rate sat exactly at that term in 77.6% of hours, the hours the perpetual traded close to the spot price. Shorts paid in 7.5% of Hyperliquid's hours, 26.3% of Binance's settlements and 55.6% of Kraken's hours.",
+   "Against holding, the ladder averaged +16.88 pp on Hyperliquid and -16.23 pp on Binance, with a worst window of -200.85 pp; the claim that patient holders capture NEAR's volatility tests that against shuffled histories.",
+   "Staked NEAR cannot be posted on the venue, so dollars worth the most the ladder can be short sit there; after rises they are topped up, because that value grows and to cover losses on the short, with transfers taking 3 days. At the worst, the dollars sent less those brought home reached 476% of the stake's starting value on Hyperliquid and 746% on Binance. 0 windows on Hyperliquid and 0 on Binance were liquidated at a 5% maintenance margin on both venues, half the initial margin at Hyperliquid's 10× maximum leverage; the closest call left equity at 2.72× the maintenance level on Hyperliquid and 2.07× on Binance. The table shows thinner collateral and slower transfers.",
+   "A redraw picks blocks of 30 days with replacement, so it can leave out the richest months; each day keeps its price move, its high and its funding together. Redrawing breaks NEAR's longer swings, which by itself moves the average to -17.82 pp on Hyperliquid, so the redraws are centred on the real result and show only how far it moves with the months drawn.",
+   "Hyperliquid's NEAR perpetual held about $137 million of open positions at the snapshot. near.com says it routes perpetual trades to Hyperliquid; its own market list and fees are not in this data.",
+   "Fees use Hyperliquid's published base taker rate, 0.045%, on both venues, and every trade fills 0.10% against the holder; the table shows wider fills and a fill one close later.",
+   "Hyperliquid's terms are reported to count US persons among its Restricted Persons, and Binance's futures to exclude them; neither was read first-hand here. Kraken's instrument record lists only non-US platforms for its NEAR perpetual.",
+   "Coinbase Derivatives has listed a US-regulated NEAR perpetual-style future since 2026-02-28, 500 NEAR a contract and margined in dollars, which US customers trade through Coinbase Financial Markets; it held about $7.54 million of open positions at the snapshot. Coinbase's help pages, read 2026-11-13, say access needs an approved application and an eligible address and may not be available in every jurisdiction; they name no US state as excluded. An approved US holder can run the ladder there, but its 259 days of daily bars fall short of a one-year window, so neither claim reads it.",
+   "Coinbase's margin for a NEAR short is 56.2% of its value overnight and 20.0% intraday. The ladder keeps dollars worth 1.00× the most it can be short on the venue, which covers both; with no top-up, though, a short backed by dollars equal to its value meets the overnight margin after a rise of about 28%."
+  ],
+  "sentence": "Each row is a venue: the blue dot is the ladder's result against a short of 25% of the stake held all year, in percentage points (pp) of the starting stake a year on NEAR's real history, after funding, fees, slippage, interest and liquidation; the bar is the middle band of 1,000 redrawn histories, centred on the dot.",
+  "title": "Against a short that never trades, selling NEAR's swings made +11.02 pp a year on Hyperliquid and -6.91 pp on Binance; redrawn months put zero inside both ranges, and Binance's worst year was -99.20 pp."
+ }
+}

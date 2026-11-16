@@ -1,0 +1,1640 @@
+{
+  "block_hash": "E7kAqMF3UPiSYE9yj7pPqJdZv8pXqcEJ93MwVWQJAKpr",
+  "block_time_utc": "2026-11-11T23:01:42.997647+00:00",
+  "current_validators": [
+    {
+      "account_id": "astro-stakers.poolv1.near",
+      "stake_near": 33158202.3303352
+    },
+    {
+      "account_id": "figment.poolv1.near",
+      "stake_near": 28648104.743649676
+    },
+    {
+      "account_id": "ledgerbyfigment.poolv1.near",
+      "stake_near": 23213915.20793375
+    },
+    {
+      "account_id": "staked.poolv1.near",
+      "stake_near": 21244326.084131867
+    },
+    {
+      "account_id": "binancenode1.poolv1.near",
+      "stake_near": 20151318.80005931
+    },
+    {
+      "account_id": "sumerian.poolv1.near",
+      "stake_near": 18792357.754610416
+    },
+    {
+      "account_id": "zavodil.poolv1.near",
+      "stake_near": 17830472.37853349
+    },
+    {
+      "account_id": "liver.pool.near",
+      "stake_near": 16290882.326417428
+    },
+    {
+      "account_id": "cnear-1.poolv1.near",
+      "stake_near": 15908003.354494618
+    },
+    {
+      "account_id": "cnear-3.poolv1.near",
+      "stake_near": 15896336.085117768
+    },
+    {
+      "account_id": "cnear-2.poolv1.near",
+      "stake_near": 15894884.438734302
+    },
+    {
+      "account_id": "bitwise_2.poolv1.near",
+      "stake_near": 15759210.817387175
+    },
+    {
+      "account_id": "bitwise_1.poolv1.near",
+      "stake_near": 14052091.985073056
+    },
+    {
+      "account_id": "svrn-ai.poolv1.near",
+      "stake_near": 12083903.96329292
+    },
+    {
+      "account_id": "svrn.pool.near",
+      "stake_near": 12051762.727276225
+    },
+    {
+      "account_id": "kiln-1.poolv1.near",
+      "stake_near": 12050203.25067593
+    },
+    {
+      "account_id": "epic.poolv1.near",
+      "stake_near": 11815032.33047928
+    },
+    {
+      "account_id": "svrn-luganodes.pool.near",
+      "stake_near": 11408788.02923232
+    },
+    {
+      "account_id": "nearvana.poolv1.near",
+      "stake_near": 10467956.26504413
+    },
+    {
+      "account_id": "stake1.poolv1.near",
+      "stake_near": 10446129.472957432
+    },
+    {
+      "account_id": "svrn_bitwise.poolv1.near",
+      "stake_near": 10420178.29929462
+    },
+    {
+      "account_id": "metapool01.pool.near",
+      "stake_near": 10362015.492703719
+    },
+    {
+      "account_id": "p2p-org.poolv1.near",
+      "stake_near": 7990743.412160275
+    },
+    {
+      "account_id": "dragonfly.poolv1.near",
+      "stake_near": 7937445.695150974
+    },
+    {
+      "account_id": "allnodes.poolv1.near",
+      "stake_near": 6920910.055929011
+    },
+    {
+      "account_id": "macrodatarefinement.poolv1.near",
+      "stake_near": 6722247.776625892
+    },
+    {
+      "account_id": "bisontrails.poolv1.near",
+      "stake_near": 6604905.379313856
+    },
+    {
+      "account_id": "aca87218e28c41f5a693dee3dff12238.poolv1.near",
+      "stake_near": 6380092.14379256
+    },
+    {
+      "account_id": "silentnodes.pool.near",
+      "stake_near": 6067310.604532665
+    },
+    {
+      "account_id": "svrn-twinstake.poolv1.near",
+      "stake_near": 6019545.108232273
+    },
+    {
+      "account_id": "d1.poolv1.near",
+      "stake_near": 5937559.022510385
+    },
+    {
+      "account_id": "legends.poolv1.near",
+      "stake_near": 4951386.372065587
+    },
+    {
+      "account_id": "lst-pool.near",
+      "stake_near": 4774243.944151201
+    },
+    {
+      "account_id": "stakin.poolv1.near",
+      "stake_near": 4648915.012863238
+    },
+    {
+      "account_id": "northernlights.poolv1.near",
+      "stake_near": 4586040.679575357
+    },
+    {
+      "account_id": "republic.poolv1.near",
+      "stake_near": 4317662.36226159
+    },
+    {
+      "account_id": "okx-earn.poolv1.near",
+      "stake_near": 4221673.011155655
+    },
+    {
+      "account_id": "rekt.poolv1.near",
+      "stake_near": 3799200.1116239484
+    },
+    {
+      "account_id": "ni.poolv1.near",
+      "stake_near": 3555709.537539456
+    },
+    {
+      "account_id": "everstake.poolv1.near",
+      "stake_near": 3391521.8277237085
+    },
+    {
+      "account_id": "gtnode-0.poolv1.near",
+      "stake_near": 3321719.463449624
+    },
+    {
+      "account_id": "nearfans.poolv1.near",
+      "stake_near": 3128181.3251572805
+    },
+    {
+      "account_id": "nearone.pool.near",
+      "stake_near": 2929439.3420892768
+    },
+    {
+      "account_id": "x.poolv1.near",
+      "stake_near": 2803069.1524496633
+    },
+    {
+      "account_id": "here.poolv1.near",
+      "stake_near": 2665213.1865345445
+    },
+    {
+      "account_id": "bitcoinsuisse.poolv1.near",
+      "stake_near": 2374481.3239268214
+    },
+    {
+      "account_id": "twinstake.poolv1.near",
+      "stake_near": 2303825.242576439
+    },
+    {
+      "account_id": "lux.poolv1.near",
+      "stake_near": 2270000.9821047247
+    },
+    {
+      "account_id": "anonymous.poolv1.near",
+      "stake_near": 2255504.264387687
+    },
+    {
+      "account_id": "erm.poolv1.near",
+      "stake_near": 2253556.665833797
+    },
+    {
+      "account_id": "blockdaemon.poolv1.near",
+      "stake_near": 2145216.9027396855
+    },
+    {
+      "account_id": "dsrvlabs.poolv1.near",
+      "stake_near": 2143187.085965298
+    },
+    {
+      "account_id": "npro.poolv1.near",
+      "stake_near": 2069614.7050247886
+    },
+    {
+      "account_id": "moonlet.poolv1.near",
+      "stake_near": 2066610.4382235478
+    },
+    {
+      "account_id": "cryptium.poolv1.near",
+      "stake_near": 2049655.3586066437
+    },
+    {
+      "account_id": "buildlinks.poolv1.near",
+      "stake_near": 2039402.8918232955
+    },
+    {
+      "account_id": "baziliknear.poolv1.near",
+      "stake_near": 2020300.2667502908
+    },
+    {
+      "account_id": "sofarsonear.poolv1.near",
+      "stake_near": 1999714.6066367396
+    },
+    {
+      "account_id": "chorusone.poolv1.near",
+      "stake_near": 1940517.605323469
+    },
+    {
+      "account_id": "stakesabai.poolv1.near",
+      "stake_near": 1931227.3647281
+    },
+    {
+      "account_id": "meteor.poolv1.near",
+      "stake_near": 1901769.9303270793
+    },
+    {
+      "account_id": "autostake.poolv1.near",
+      "stake_near": 1786170.8359490752
+    },
+    {
+      "account_id": "falcon.pool.near",
+      "stake_near": 1780161.7881116008
+    },
+    {
+      "account_id": "openshards.poolv1.near",
+      "stake_near": 1615451.2089481538
+    },
+    {
+      "account_id": "lunanova.poolv1.near",
+      "stake_near": 1576627.3108188221
+    },
+    {
+      "account_id": "trust-nodes.poolv1.near",
+      "stake_near": 1561221.9972142878
+    },
+    {
+      "account_id": "kiln.poolv1.near",
+      "stake_near": 1510827.8958159394
+    },
+    {
+      "account_id": "qbit.poolv1.near",
+      "stake_near": 1484780.8513163086
+    },
+    {
+      "account_id": "nearai.pool.near",
+      "stake_near": 1449443.7723287987
+    },
+    {
+      "account_id": "eno-blockdaemon0.pool.near",
+      "stake_near": 1407511.9694239243
+    },
+    {
+      "account_id": "hb436_pool.poolv1.near",
+      "stake_near": 1378879.1446634042
+    },
+    {
+      "account_id": "masternode24.poolv1.near",
+      "stake_near": 1283600.8828969535
+    },
+    {
+      "account_id": "stardust.poolv1.near",
+      "stake_near": 1241605.4667637006
+    },
+    {
+      "account_id": "luganodes.pool.near",
+      "stake_near": 1224446.7619148248
+    },
+    {
+      "account_id": "brea.poolv1.near",
+      "stake_near": 1199890.84001034
+    },
+    {
+      "account_id": "avado.poolv1.near",
+      "stake_near": 1172853.6165423952
+    },
+    {
+      "account_id": "01node.poolv1.near",
+      "stake_near": 1114978.282988866
+    },
+    {
+      "account_id": "bisontrails2.poolv1.near",
+      "stake_near": 1109630.5875420533
+    },
+    {
+      "account_id": "stakely_io.poolv1.near",
+      "stake_near": 1084141.4803169505
+    },
+    {
+      "account_id": "dexagon.poolv1.near",
+      "stake_near": 1073258.0732713426
+    },
+    {
+      "account_id": "staking4all.poolv1.near",
+      "stake_near": 1063144.0005592946
+    },
+    {
+      "account_id": "lavenderfive.poolv1.near",
+      "stake_near": 1024316.4218454445
+    },
+    {
+      "account_id": "atomic-nodes.poolv1.near",
+      "stake_near": 1021953.8320749442
+    },
+    {
+      "account_id": "polkachu.poolv1.near",
+      "stake_near": 930023.3408226795
+    },
+    {
+      "account_id": "smart-stake.poolv1.near",
+      "stake_near": 920815.266822277
+    },
+    {
+      "account_id": "northstakenear.poolv1.near",
+      "stake_near": 909468.4610347957
+    },
+    {
+      "account_id": "namdokmai.poolv1.near",
+      "stake_near": 861874.1794838436
+    },
+    {
+      "account_id": "hapi.poolv1.near",
+      "stake_near": 855108.4249566626
+    },
+    {
+      "account_id": "near-prime.poolv1.near",
+      "stake_near": 833276.9865176865
+    },
+    {
+      "account_id": "nodeasy.poolv1.near",
+      "stake_near": 829297.7057745245
+    },
+    {
+      "account_id": "optimusvalidatornetwork.poolv1.near",
+      "stake_near": 798544.1519975754
+    },
+    {
+      "account_id": "near-prime-public.poolv1.near",
+      "stake_near": 770859.1524795417
+    },
+    {
+      "account_id": "rhea-validator.poolv1.near",
+      "stake_near": 764794.1227951118
+    },
+    {
+      "account_id": "p2pstaking.poolv1.near",
+      "stake_near": 747880.9904551707
+    },
+    {
+      "account_id": "hashquark.poolv1.near",
+      "stake_near": 705027.9628627127
+    },
+    {
+      "account_id": "fresh.poolv1.near",
+      "stake_near": 692936.3995573419
+    },
+    {
+      "account_id": "pangdao.poolv1.near",
+      "stake_near": 678489.5879451578
+    },
+    {
+      "account_id": "wackazong.poolv1.near",
+      "stake_near": 674489.1649183532
+    },
+    {
+      "account_id": "getblockio.poolv1.near",
+      "stake_near": 657351.0651739171
+    },
+    {
+      "account_id": "pathrocknetwork.poolv1.near",
+      "stake_near": 636312.8246536436
+    },
+    {
+      "account_id": "galactic.poolv1.near",
+      "stake_near": 621695.9729138089
+    },
+    {
+      "account_id": "link.poolv1.near",
+      "stake_near": 608522.3538665809
+    },
+    {
+      "account_id": "appload.poolv1.near",
+      "stake_near": 584603.9749556537
+    },
+    {
+      "account_id": "pandateam.poolv1.near",
+      "stake_near": 544446.7535170009
+    },
+    {
+      "account_id": "colossus.poolv1.near",
+      "stake_near": 521177.2044928163
+    },
+    {
+      "account_id": "aurora.pool.near",
+      "stake_near": 511368.8001768114
+    },
+    {
+      "account_id": "cryptoblossom.poolv1.near",
+      "stake_near": 502298.2063079908
+    },
+    {
+      "account_id": "cryptostake.poolv1.near",
+      "stake_near": 501122.4275016027
+    },
+    {
+      "account_id": "shurik.poolv1.near",
+      "stake_near": 491700.99861076043
+    },
+    {
+      "account_id": "gfi-validator.poolv1.near",
+      "stake_near": 478988.3662047081
+    },
+    {
+      "account_id": "thecoding.pool.near",
+      "stake_near": 473713.3997580657
+    },
+    {
+      "account_id": "bee1stake.poolv1.near",
+      "stake_near": 447617.90184951166
+    },
+    {
+      "account_id": "oharanodes.poolv1.near",
+      "stake_near": 437168.93140935013
+    },
+    {
+      "account_id": "grassets.poolv1.near",
+      "stake_near": 430691.373082445
+    },
+    {
+      "account_id": "avb.poolv1.near",
+      "stake_near": 429111.90985968267
+    },
+    {
+      "account_id": "monresearch.poolv1.near",
+      "stake_near": 413945.15097954054
+    },
+    {
+      "account_id": "stakecapitalgroup.poolv1.near",
+      "stake_near": 404004.38765537174
+    },
+    {
+      "account_id": "piertwopool.poolv1.near",
+      "stake_near": 402169.66632504243
+    },
+    {
+      "account_id": "pinrocks.poolv1.near",
+      "stake_near": 397001.15820603113
+    },
+    {
+      "account_id": "cryptocrew.poolv1.near",
+      "stake_near": 393735.2621222199
+    },
+    {
+      "account_id": "oe.poolv1.near",
+      "stake_near": 393728.8063933006
+    },
+    {
+      "account_id": "cryptogarik.poolv1.near",
+      "stake_near": 383628.77176778816
+    },
+    {
+      "account_id": "2pilot.poolv1.near",
+      "stake_near": 383070.0880788288
+    },
+    {
+      "account_id": "alphanodes.poolv1.near",
+      "stake_near": 380370.76278130896
+    },
+    {
+      "account_id": "ursamajor.poolv1.near",
+      "stake_near": 364932.2556983212
+    },
+    {
+      "account_id": "rockxv2.poolv1.near",
+      "stake_near": 348182.6263751982
+    },
+    {
+      "account_id": "stakecito.poolv1.near",
+      "stake_near": 338881.280322061
+    },
+    {
+      "account_id": "cunum.poolv1.near",
+      "stake_near": 336007.150692579
+    },
+    {
+      "account_id": "stakerrash.poolv1.near",
+      "stake_near": 334349.007716849
+    },
+    {
+      "account_id": "shitzuapes-nf.pool.near",
+      "stake_near": 320130.39774050424
+    },
+    {
+      "account_id": "saxemberg.poolv1.near",
+      "stake_near": 317108.10772754357
+    },
+    {
+      "account_id": "caribnode.pool.near",
+      "stake_near": 316696.80863718264
+    },
+    {
+      "account_id": "taxistake.poolv1.near",
+      "stake_near": 314659.1932046327
+    },
+    {
+      "account_id": "sharpdarts.poolv1.near",
+      "stake_near": 313441.8119787371
+    },
+    {
+      "account_id": "welldonestake.poolv1.near",
+      "stake_near": 311803.7120471564
+    },
+    {
+      "account_id": "city-node-1.pool.near",
+      "stake_near": 302814.2948990315
+    },
+    {
+      "account_id": "lovali.poolv1.near",
+      "stake_near": 302328.070060954
+    },
+    {
+      "account_id": "buildnear.poolv1.near",
+      "stake_near": 301869.5130502036
+    },
+    {
+      "account_id": "incrypted.poolv1.near",
+      "stake_near": 301061.3499708498
+    },
+    {
+      "account_id": "ttt.poolv1.near",
+      "stake_near": 300583.66794072994
+    },
+    {
+      "account_id": "city-node-4.pool.near",
+      "stake_near": 300446.72929370025
+    },
+    {
+      "account_id": "city-node-2.pool.near",
+      "stake_near": 300341.6959857894
+    },
+    {
+      "account_id": "city-node-3.pool.near",
+      "stake_near": 300257.71552450454
+    },
+    {
+      "account_id": "staking-power.poolv1.near",
+      "stake_near": 300033.75165257417
+    },
+    {
+      "account_id": "g20.poolv1.near",
+      "stake_near": 298056.506400292
+    },
+    {
+      "account_id": "epochrunner.poolv1.near",
+      "stake_near": 291644.12030449393
+    },
+    {
+      "account_id": "intear.pool.near",
+      "stake_near": 288682.8102784586
+    },
+    {
+      "account_id": "sweat_validator_res_2.poolv1.near",
+      "stake_near": 287631.47950503184
+    },
+    {
+      "account_id": "node_jkt.pool.near",
+      "stake_near": 287536.8982763639
+    },
+    {
+      "account_id": "minion.poolv1.near",
+      "stake_near": 282797.38811185694
+    },
+    {
+      "account_id": "gfs-ventures.poolv1.near",
+      "stake_near": 278467.56478644424
+    },
+    {
+      "account_id": "n0ok.poolv1.near",
+      "stake_near": 278179.98314251105
+    },
+    {
+      "account_id": "spectrum.poolv1.near",
+      "stake_near": 276361.75118724763
+    },
+    {
+      "account_id": "nodosigiloso.pool.near",
+      "stake_near": 272192.5913257368
+    },
+    {
+      "account_id": "snsmln.poolv1.near",
+      "stake_near": 261420.46658772216
+    },
+    {
+      "account_id": "abahmane.poolv1.near",
+      "stake_near": 253021.8574447873
+    },
+    {
+      "account_id": "stardust.pool.near",
+      "stake_near": 248394.42357516524
+    },
+    {
+      "account_id": "consensus_finoa_00.poolv1.near",
+      "stake_near": 247650.99904921924
+    },
+    {
+      "account_id": "nodeshub.pool.near",
+      "stake_near": 245811.8401983429
+    },
+    {
+      "account_id": "near.poolv1.near",
+      "stake_near": 238829.1561338385
+    },
+    {
+      "account_id": "letsnode.poolv1.near",
+      "stake_near": 236212.0889684784
+    },
+    {
+      "account_id": "nearvietnamhub.poolv1.near",
+      "stake_near": 229470.0586235812
+    },
+    {
+      "account_id": "manexus.pool.near",
+      "stake_near": 226648.83580619266
+    },
+    {
+      "account_id": "owa.poolv1.near",
+      "stake_near": 223673.1335576477
+    },
+    {
+      "account_id": "nearstar.poolv1.near",
+      "stake_near": 220277.42328727964
+    },
+    {
+      "account_id": "genesislab.poolv1.near",
+      "stake_near": 216231.21682704883
+    },
+    {
+      "account_id": "sweat_validator_res.poolv1.near",
+      "stake_near": 210216.42020809502
+    },
+    {
+      "account_id": "originstake.poolv1.near",
+      "stake_near": 208706.84712256578
+    },
+    {
+      "account_id": "frontlinedefi.pool.near",
+      "stake_near": 206019.3974028139
+    },
+    {
+      "account_id": "digitalizados.pool.near",
+      "stake_near": 196436.55450917
+    },
+    {
+      "account_id": "camelandgoat.pool.near",
+      "stake_near": 192787.28064873035
+    },
+    {
+      "account_id": "encapsulate.pool.near",
+      "stake_near": 188533.08445574305
+    },
+    {
+      "account_id": "meria-staking.poolv1.near",
+      "stake_near": 182643.56391551072
+    },
+    {
+      "account_id": "senseinode.poolv1.near",
+      "stake_near": 178887.76376971704
+    },
+    {
+      "account_id": "dteamtech.pool.near",
+      "stake_near": 160668.24164347522
+    },
+    {
+      "account_id": "deutschetelekom.poolv1.near",
+      "stake_near": 155969.95054477712
+    },
+    {
+      "account_id": "spacenode.pool.near",
+      "stake_near": 147414.47007495674
+    },
+    {
+      "account_id": "lionstake.poolv1.near",
+      "stake_near": 143579.73725944659
+    },
+    {
+      "account_id": "idtcn4.poolv1.near",
+      "stake_near": 142223.944098627
+    },
+    {
+      "account_id": "stakinghub.pool.near",
+      "stake_near": 136212.33143283878
+    },
+    {
+      "account_id": "shitzu.pool.near",
+      "stake_near": 129141.12112259548
+    },
+    {
+      "account_id": "readylayerone_staking.poolv1.near",
+      "stake_near": 120944.33110985805
+    },
+    {
+      "account_id": "pairpoint.poolv1.near",
+      "stake_near": 119725.93265257878
+    },
+    {
+      "account_id": "consensus_finoa_01.poolv1.near",
+      "stake_near": 115400.60405463823
+    },
+    {
+      "account_id": "stakesstone.poolv1.near",
+      "stake_near": 115215.80313367989
+    },
+    {
+      "account_id": "pingpay.pool.near",
+      "stake_near": 112594.44977188385
+    },
+    {
+      "account_id": "artemis.pool.near",
+      "stake_near": 101838.83964492462
+    },
+    {
+      "account_id": "accomplice.poolv1.near",
+      "stake_near": 96342.4672698519
+    },
+    {
+      "account_id": "smartnode.poolv1.near",
+      "stake_near": 94048.87219824435
+    },
+    {
+      "account_id": "swissstar.poolv1.near",
+      "stake_near": 92266.8626578452
+    },
+    {
+      "account_id": "kiso_pool.pool.near",
+      "stake_near": 91482.74851228549
+    },
+    {
+      "account_id": "ou812.poolv1.near",
+      "stake_near": 89668.46814446464
+    },
+    {
+      "account_id": "nodoethlima.pool.near",
+      "stake_near": 88431.750802147
+    },
+    {
+      "account_id": "nightly-pool.pool.near",
+      "stake_near": 86801.31183131973
+    },
+    {
+      "account_id": "davaymne.poolv1.near",
+      "stake_near": 86496.52388311716
+    },
+    {
+      "account_id": "near-fans.poolv1.near",
+      "stake_near": 86157.12226471044
+    },
+    {
+      "account_id": "binancestaking.poolv1.near",
+      "stake_near": 84831.55795454826
+    },
+    {
+      "account_id": "jagon.poolv1.near",
+      "stake_near": 82527.54918096212
+    },
+    {
+      "account_id": "nansen.poolv1.near",
+      "stake_near": 80950.74851603922
+    },
+    {
+      "account_id": "yanshekki.pool.near",
+      "stake_near": 80129.06956509066
+    },
+    {
+      "account_id": "svarog.poolv1.near",
+      "stake_near": 78823.14170742674
+    },
+    {
+      "account_id": "stakecraft.poolv1.near",
+      "stake_near": 76776.20180474137
+    },
+    {
+      "account_id": "vitalpoint.pool.near",
+      "stake_near": 72606.76796980144
+    },
+    {
+      "account_id": "axianetwork.pool.near",
+      "stake_near": 71548.3747347305
+    },
+    {
+      "account_id": "nearuaguild.poolv1.near",
+      "stake_near": 69182.56113733041
+    },
+    {
+      "account_id": "stakeflow.poolv1.near",
+      "stake_near": 66956.8013274105
+    },
+    {
+      "account_id": "neardevgov.poolv1.near",
+      "stake_near": 66695.33377748936
+    },
+    {
+      "account_id": "doubletop.poolv1.near",
+      "stake_near": 66453.5928464226
+    },
+    {
+      "account_id": "prophet.poolv1.near",
+      "stake_near": 65105.4971061582
+    },
+    {
+      "account_id": "agrestus.poolv1.near",
+      "stake_near": 61263.6849311179
+    },
+    {
+      "account_id": "takeshi7.pool.near",
+      "stake_near": 60509.50430520906
+    },
+    {
+      "account_id": "itrocket.poolv1.near",
+      "stake_near": 56972.886400453666
+    },
+    {
+      "account_id": "cosmicvalidator.poolv1.near",
+      "stake_near": 55370.1991156463
+    },
+    {
+      "account_id": "criptoplebada.pool.near",
+      "stake_near": 54877.77910610092
+    },
+    {
+      "account_id": "lanceprotocol.pool.near",
+      "stake_near": 51580.542728544766
+    },
+    {
+      "account_id": "encipher.poolv1.near",
+      "stake_near": 51418.47693426299
+    },
+    {
+      "account_id": "meduza.poolv1.near",
+      "stake_near": 51227.71471548517
+    },
+    {
+      "account_id": "keystake.pool.near",
+      "stake_near": 51006.2911218014
+    },
+    {
+      "account_id": "web3edu.pool.near",
+      "stake_near": 50708.59205830091
+    },
+    {
+      "account_id": "gruberx.poolv1.near",
+      "stake_near": 50421.09553079123
+    },
+    {
+      "account_id": "finoa.poolv1.near",
+      "stake_near": 48493.564651247514
+    },
+    {
+      "account_id": "chuy.poolv1.near",
+      "stake_near": 47613.82155958387
+    },
+    {
+      "account_id": "pho-crypto.pool.near",
+      "stake_near": 47534.40337638996
+    },
+    {
+      "account_id": "calimero.pool.near",
+      "stake_near": 47426.13518332196
+    },
+    {
+      "account_id": "stakesaurus.pool.near",
+      "stake_near": 45584.679450130636
+    },
+    {
+      "account_id": "endorphinestake.pool.near",
+      "stake_near": 44940.249444960675
+    },
+    {
+      "account_id": "generatusueldo.pool.near",
+      "stake_near": 44113.03435884458
+    },
+    {
+      "account_id": "ultravioletadao.pool.near",
+      "stake_near": 43224.185622790515
+    },
+    {
+      "account_id": "clau_web3.pool.near",
+      "stake_near": 42590.325459240645
+    },
+    {
+      "account_id": "frutero.pool.near",
+      "stake_near": 42294.90046998965
+    },
+    {
+      "account_id": "synclub.poolv1.near",
+      "stake_near": 41976.933296990996
+    },
+    {
+      "account_id": "dustinhuynh.pool.near",
+      "stake_near": 41842.20824122872
+    },
+    {
+      "account_id": "flarebank.pool.near",
+      "stake_near": 41775.64770964853
+    },
+    {
+      "account_id": "snoopfear.poolv1.near",
+      "stake_near": 41439.38262655046
+    },
+    {
+      "account_id": "fish.poolv1.near",
+      "stake_near": 41207.73776296219
+    },
+    {
+      "account_id": "pumpopoly.poolv1.near",
+      "stake_near": 41179.257547872454
+    },
+    {
+      "account_id": "suryayoga.pool.near",
+      "stake_near": 41152.470220449584
+    },
+    {
+      "account_id": "imtroyphung.pool.near",
+      "stake_near": 41087.32881638905
+    },
+    {
+      "account_id": "tme.pool.near",
+      "stake_near": 41078.02071825195
+    },
+    {
+      "account_id": "realtuantv.pool.near",
+      "stake_near": 40624.04466320426
+    },
+    {
+      "account_id": "arterianodes.pool.near",
+      "stake_near": 40557.56310795667
+    },
+    {
+      "account_id": "sparklenode.pool.near",
+      "stake_near": 40383.73761359414
+    },
+    {
+      "account_id": "nearlove.pool.near",
+      "stake_near": 40369.56852936595
+    },
+    {
+      "account_id": "asmolianin.pool.near",
+      "stake_near": 40280.715413040074
+    },
+    {
+      "account_id": "block-pro.poolv1.near",
+      "stake_near": 40270.72256365973
+    },
+    {
+      "account_id": "poolarize.pool.near",
+      "stake_near": 40264.46513354271
+    },
+    {
+      "account_id": "stakeup.poolv1.near",
+      "stake_near": 40243.7443537976
+    },
+    {
+      "account_id": "herdaomx.pool.near",
+      "stake_near": 40241.8749699909
+    },
+    {
+      "account_id": "kcdappnode.pool.near",
+      "stake_near": 40232.31422083688
+    },
+    {
+      "account_id": "nearbus.pool.near",
+      "stake_near": 40230.35107934225
+    },
+    {
+      "account_id": "moko.pool.near",
+      "stake_near": 40210.31115131015
+    },
+    {
+      "account_id": "vyquocvu.pool.near",
+      "stake_near": 40207.385116044024
+    },
+    {
+      "account_id": "griff.pool.near",
+      "stake_near": 40206.673822365665
+    },
+    {
+      "account_id": "cygnus.pool.near",
+      "stake_near": 40203.79676155645
+    },
+    {
+      "account_id": "zklatitudzero.pool.near",
+      "stake_near": 40181.0107514229
+    },
+    {
+      "account_id": "zolanear.pool.near",
+      "stake_near": 40178.53803940154
+    },
+    {
+      "account_id": "waveslatam.pool.near",
+      "stake_near": 40175.59878604367
+    },
+    {
+      "account_id": "el3m3nt.pool.near",
+      "stake_near": 40165.88922947819
+    },
+    {
+      "account_id": "zenith.pool.near",
+      "stake_near": 40155.79113414761
+    },
+    {
+      "account_id": "gabrululu.pool.near",
+      "stake_near": 40152.93066379765
+    },
+    {
+      "account_id": "axol.pool.near",
+      "stake_near": 40152.90191541805
+    },
+    {
+      "account_id": "perfect-nodes.pool.near",
+      "stake_near": 40151.5710647206
+    },
+    {
+      "account_id": "metatarz.pool.near",
+      "stake_near": 40150.26607150254
+    },
+    {
+      "account_id": "posthuman.poolv1.near",
+      "stake_near": 40146.61211064951
+    },
+    {
+      "account_id": "secrypto.pool.near",
+      "stake_near": 40142.12428079165
+    },
+    {
+      "account_id": "nodevalidaorarif.pool.near",
+      "stake_near": 40141.323663110146
+    },
+    {
+      "account_id": "bonynode.poolv1.near",
+      "stake_near": 40137.76773688219
+    },
+    {
+      "account_id": "nodevalidatorswimax.pool.near",
+      "stake_near": 40134.72833415305
+    },
+    {
+      "account_id": "tothemoon.pool.near",
+      "stake_near": 40133.98613488495
+    },
+    {
+      "account_id": "nodefleet.poolv1.near",
+      "stake_near": 40130.24789710281
+    },
+    {
+      "account_id": "paradise.pool.near",
+      "stake_near": 40117.21851108289
+    },
+    {
+      "account_id": "descilatam.pool.near",
+      "stake_near": 40115.42236316324
+    },
+    {
+      "account_id": "arkila.pool.near",
+      "stake_near": 40113.07195384996
+    },
+    {
+      "account_id": "frogling.pool.near",
+      "stake_near": 40111.918605949875
+    },
+    {
+      "account_id": "hightower.pool.near",
+      "stake_near": 40109.28064237475
+    },
+    {
+      "account_id": "stefco.pool.near",
+      "stake_near": 40105.795269464325
+    },
+    {
+      "account_id": "droo.pool.near",
+      "stake_near": 40102.88280874742
+    },
+    {
+      "account_id": "kaitenkenbu.pool.near",
+      "stake_near": 40101.501476074736
+    },
+    {
+      "account_id": "noders.poolv1.near",
+      "stake_near": 40061.081468158976
+    },
+    {
+      "account_id": "owlstakev2.pool.near",
+      "stake_near": 40053.98433937197
+    },
+    {
+      "account_id": "madwisp.poolv1.near",
+      "stake_near": 40039.746291585565
+    },
+    {
+      "account_id": "orpheus.pool.near",
+      "stake_near": 40039.68913809025
+    },
+    {
+      "account_id": "conqueror.poolv1.near",
+      "stake_near": 40037.87125501188
+    },
+    {
+      "account_id": "zeycanode.pool.near",
+      "stake_near": 40037.12090399048
+    },
+    {
+      "account_id": "krews.pool.near",
+      "stake_near": 40033.32726132869
+    },
+    {
+      "account_id": "medium-rare.pool.near",
+      "stake_near": 40028.574583729926
+    },
+    {
+      "account_id": "chainflow.pool.near",
+      "stake_near": 40028.458990489264
+    },
+    {
+      "account_id": "onnode.pool.near",
+      "stake_near": 40028.01971305006
+    },
+    {
+      "account_id": "wilbur.pool.near",
+      "stake_near": 40027.2328378882
+    },
+    {
+      "account_id": "seewhy.pool.near",
+      "stake_near": 40026.95626612316
+    },
+    {
+      "account_id": "paleogarci.pool.near",
+      "stake_near": 40022.56185326775
+    },
+    {
+      "account_id": "tortugastaking.pool.near",
+      "stake_near": 40022.50660120117
+    },
+    {
+      "account_id": "orion.pool.near",
+      "stake_near": 40022.38671127332
+    },
+    {
+      "account_id": "thacsithinh.pool.near",
+      "stake_near": 40022.03342806849
+    },
+    {
+      "account_id": "latam-pool.pool.near",
+      "stake_near": 40020.5464519784
+    },
+    {
+      "account_id": "thedomain.pool.near",
+      "stake_near": 40020.01504647685
+    },
+    {
+      "account_id": "chop.pool.near",
+      "stake_near": 40018.48005757412
+    },
+    {
+      "account_id": "ryo.pool.near",
+      "stake_near": 40018.45986540139
+    },
+    {
+      "account_id": "darkfiber.pool.near",
+      "stake_near": 40017.24535334568
+    },
+    {
+      "account_id": "zionnode.pool.near",
+      "stake_near": 40017.24530751661
+    },
+    {
+      "account_id": "archer.pool.near",
+      "stake_near": 40015.980386987976
+    },
+    {
+      "account_id": "nodestake.pool.near",
+      "stake_near": 40015.34292231914
+    },
+    {
+      "account_id": "chilldao.pool.near",
+      "stake_near": 40014.963131794604
+    },
+    {
+      "account_id": "plasma.pool.near",
+      "stake_near": 40014.940620979025
+    },
+    {
+      "account_id": "decentra.pool.near",
+      "stake_near": 40014.72958435098
+    },
+    {
+      "account_id": "fliskodappnode.pool.near",
+      "stake_near": 40014.68607879346
+    },
+    {
+      "account_id": "ismail09.pool.near",
+      "stake_near": 40014.3377247034
+    },
+    {
+      "account_id": "lemuria.pool.near",
+      "stake_near": 40013.707615123654
+    },
+    {
+      "account_id": "00aboo203.pool.near",
+      "stake_near": 40013.52151995321
+    },
+    {
+      "account_id": "volk.pool.near",
+      "stake_near": 40013.298478968856
+    },
+    {
+      "account_id": "sqrnode.pool.near",
+      "stake_near": 40012.90231966075
+    },
+    {
+      "account_id": "arubencastillog.pool.near",
+      "stake_near": 40012.510662567896
+    },
+    {
+      "account_id": "kristian_diary.pool.near",
+      "stake_near": 40012.349799073716
+    },
+    {
+      "account_id": "nerdlabs.pool.near",
+      "stake_near": 40012.30077950068
+    },
+    {
+      "account_id": "rashid.pool.near",
+      "stake_near": 40012.166571386035
+    },
+    {
+      "account_id": "arcis.pool.near",
+      "stake_near": 40012.089329070244
+    },
+    {
+      "account_id": "gmal22.pool.near",
+      "stake_near": 40011.901343641584
+    },
+    {
+      "account_id": "nova-consortium.pool.near",
+      "stake_near": 40011.74155586448
+    },
+    {
+      "account_id": "medo198926.pool.near",
+      "stake_near": 40010.60933220456
+    },
+    {
+      "account_id": "zool.pool.near",
+      "stake_near": 40010.331942005905
+    },
+    {
+      "account_id": "lospinosdefi.pool.near",
+      "stake_near": 40010.31314947065
+    },
+    {
+      "account_id": "lantern.pool.near",
+      "stake_near": 40009.304126879135
+    },
+    {
+      "account_id": "zenzenode.pool.near",
+      "stake_near": 40008.00581150263
+    },
+    {
+      "account_id": "henym.pool.near",
+      "stake_near": 40007.99995781116
+    },
+    {
+      "account_id": "staker-rene.pool.near",
+      "stake_near": 40007.44192206934
+    },
+    {
+      "account_id": "pojokripto.pool.near",
+      "stake_near": 40006.996851568016
+    },
+    {
+      "account_id": "magnavoxodyssey.pool.near",
+      "stake_near": 38914.384838990474
+    },
+    {
+      "account_id": "mexa-staking.poolv1.near",
+      "stake_near": 37141.70606260153
+    },
+    {
+      "account_id": "simplystaking.poolv1.near",
+      "stake_near": 35107.043456616746
+    },
+    {
+      "account_id": "croutondigital.pool.near",
+      "stake_near": 28854.511658971627
+    },
+    {
+      "account_id": "profit.poolv1.near",
+      "stake_near": 25145.637295978137
+    },
+    {
+      "account_id": "solidstate.poolv1.near",
+      "stake_near": 19741.763574297882
+    },
+    {
+      "account_id": "wyvernomics.pool.near",
+      "stake_near": 19226.179671340495
+    },
+    {
+      "account_id": "frensvalidator.poolv1.near",
+      "stake_near": 14930.506635518936
+    },
+    {
+      "account_id": "foundry.poolv1.near",
+      "stake_near": 12349.84981303491
+    },
+    {
+      "account_id": "restake.poolv1.near",
+      "stake_near": 11497.021320818594
+    },
+    {
+      "account_id": "stingray.poolv1.near",
+      "stake_near": 11344.796311676644
+    },
+    {
+      "account_id": "r1m.pool.near",
+      "stake_near": 11000.452793115901
+    },
+    {
+      "account_id": "ishak.pool.near",
+      "stake_near": 11000.000076262377
+    },
+    {
+      "account_id": "said.pool.near",
+      "stake_near": 11000.00003705604
+    }
+  ],
+  "epoch_length": 43200,
+  "ft_supplies": [
+    {
+      "contract": "usdt.tether-token.near",
+      "decimals": 6,
+      "symbol": "USDt",
+      "total_supply": 525944120.793709,
+      "total_supply_raw": "525944120793709"
+    },
+    {
+      "contract": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "decimals": 6,
+      "symbol": "USDC",
+      "total_supply": 78831552.502947,
+      "total_supply_raw": "78831552502947"
+    },
+    {
+      "contract": "a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.factory.bridge.near",
+      "decimals": 6,
+      "symbol": "USDC.e",
+      "total_supply": 14557495.669082,
+      "total_supply_raw": "14557495669082"
+    },
+    {
+      "contract": "dac17f958d2ee523a2206206994597c13d831ec7.factory.bridge.near",
+      "decimals": 6,
+      "symbol": "USDT.e",
+      "total_supply": 3857884.964488,
+      "total_supply_raw": "3857884964488"
+    },
+    {
+      "contract": "meta-pool.near",
+      "decimals": 24,
+      "symbol": "STNEAR",
+      "total_supply": 14260533.835529003,
+      "total_supply_raw": "14260533835529003738347977042115"
+    },
+    {
+      "contract": "linear-protocol.near",
+      "decimals": 24,
+      "symbol": "LINEAR",
+      "total_supply": 8924125.59245864,
+      "total_supply_raw": "8924125592458639349924447163996"
+    },
+    {
+      "contract": "lst.rhealab.near",
+      "decimals": 24,
+      "symbol": "rNEAR",
+      "total_supply": 17595262.063545525,
+      "total_supply_raw": "17595262063545523878443757083113"
+    },
+    {
+      "contract": "v2-nearx.stader-labs.near",
+      "decimals": 24,
+      "symbol": "NearX",
+      "total_supply": 40873.28872182823,
+      "total_supply_raw": "40873288721828226385225114217"
+    }
+  ],
+  "gas_price": 100000000,
+  "height": 224129519,
+  "last_epoch_boundary": {
+    "annualized_mint_rate": 0.024919762386832,
+    "block_time_utc": "2026-11-11T16:54:00.554023+00:00",
+    "epoch_seconds": 25306.196141863,
+    "height": 224092337,
+    "minted_near": 26224.445352627758,
+    "supply_before_near": 1311421054.2748911
+  },
+  "lst": {
+    "linear_price": 1.4308081373871933,
+    "metapool_state": {
+      "accounts_count": 21021,
+      "env_epoch_height": 4960,
+      "nslp_current_discount_bp": 55,
+      "nslp_liquidity_near": 75887.280913323,
+      "nslp_max_discount_bp": 500,
+      "nslp_min_discount_bp": 30,
+      "nslp_target_near": 80000.0,
+      "staking_pools_count": 586,
+      "stnear_supply": 14260533.835529003,
+      "total_actually_staked_near": 21387075.624073595,
+      "total_for_staking_near": 21601646.081212584,
+      "total_unstaked_and_waiting_near": 214569.45838899008
+    },
+    "stnear_price": 1.5147852338734875
+  },
+  "max_inflation_rate": 0.025,
+  "pool_fees": [
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.01,
+      "fee_numerator": 1,
+      "pool": "astro-stakers.poolv1.near",
+      "stake_near": 33158202.3303352
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.1,
+      "fee_numerator": 10,
+      "pool": "figment.poolv1.near",
+      "stake_near": 28648104.743649676
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.05,
+      "fee_numerator": 5,
+      "pool": "ledgerbyfigment.poolv1.near",
+      "stake_near": 23213915.20793375
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.1,
+      "fee_numerator": 10,
+      "pool": "staked.poolv1.near",
+      "stake_near": 21244326.084131867
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.05,
+      "fee_numerator": 5,
+      "pool": "binancenode1.poolv1.near",
+      "stake_near": 20151318.80005931
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.15,
+      "fee_numerator": 15,
+      "pool": "sumerian.poolv1.near",
+      "stake_near": 18792357.754610416
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.01,
+      "fee_numerator": 1,
+      "pool": "zavodil.poolv1.near",
+      "stake_near": 17830472.37853349
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.01,
+      "fee_numerator": 1,
+      "pool": "liver.pool.near",
+      "stake_near": 16290882.326417428
+    },
+    {
+      "fee_denominator": 10000,
+      "fee_fraction": 1.0,
+      "fee_numerator": 10000,
+      "pool": "cnear-1.poolv1.near",
+      "stake_near": 15908003.354494618
+    },
+    {
+      "fee_denominator": 10000,
+      "fee_fraction": 1.0,
+      "fee_numerator": 10000,
+      "pool": "cnear-3.poolv1.near",
+      "stake_near": 15896336.085117768
+    },
+    {
+      "fee_denominator": 10000,
+      "fee_fraction": 1.0,
+      "fee_numerator": 10000,
+      "pool": "cnear-2.poolv1.near",
+      "stake_near": 15894884.438734302
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.03,
+      "fee_numerator": 3,
+      "pool": "bitwise_2.poolv1.near",
+      "stake_near": 15759210.817387175
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.05,
+      "fee_numerator": 5,
+      "pool": "bitwise_1.poolv1.near",
+      "stake_near": 14052091.985073056
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 1.0,
+      "fee_numerator": 100,
+      "pool": "svrn-ai.poolv1.near",
+      "stake_near": 12083903.96329292
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 1.0,
+      "fee_numerator": 100,
+      "pool": "svrn.pool.near",
+      "stake_near": 12051762.727276225
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.05,
+      "fee_numerator": 5,
+      "pool": "kiln-1.poolv1.near",
+      "stake_near": 12050203.25067593
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.01,
+      "fee_numerator": 1,
+      "pool": "epic.poolv1.near",
+      "stake_near": 11815032.33047928
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 1.0,
+      "fee_numerator": 100,
+      "pool": "svrn-luganodes.pool.near",
+      "stake_near": 11408788.02923232
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.03,
+      "fee_numerator": 3,
+      "pool": "nearvana.poolv1.near",
+      "stake_near": 10467956.26504413
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.03,
+      "fee_numerator": 3,
+      "pool": "stake1.poolv1.near",
+      "stake_near": 10446129.472957432
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 1.0,
+      "fee_numerator": 100,
+      "pool": "svrn_bitwise.poolv1.near",
+      "stake_near": 10420178.29929462
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.2,
+      "fee_numerator": 20,
+      "pool": "metapool01.pool.near",
+      "stake_near": 10362015.492703719
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.07,
+      "fee_numerator": 7,
+      "pool": "p2p-org.poolv1.near",
+      "stake_near": 7990743.412160275
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.05,
+      "fee_numerator": 5,
+      "pool": "dragonfly.poolv1.near",
+      "stake_near": 7937445.695150974
+    },
+    {
+      "fee_denominator": 100,
+      "fee_fraction": 0.0,
+      "fee_numerator": 0,
+      "pool": "allnodes.poolv1.near",
+      "stake_near": 6920910.055929011
+    }
+  ],
+  "protocol_reward_rate_rpc": [
+    0,
+    1
+  ],
+  "protocol_treasury_account": "treasury.near",
+  "protocol_version": 88,
+  "staked_ratio": 0.44317859258391,
+  "total_stake_near": 581205250.0375491,
+  "total_supply_near": 1311447032.3326943
+}

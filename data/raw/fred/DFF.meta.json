@@ -1,0 +1,24 @@
+{
+  "blank_rows": 0,
+  "columns": [
+    "date",
+    "value"
+  ],
+  "description": "Federal funds effective rate, daily including weekends, percent",
+  "fetch_day_utc": "2026-11-11",
+  "fetched_at": "2026-11-11T22:58:26+00:00",
+  "file": "data/raw/fred/DFF.csv",
+  "first_date": "1954-07-01",
+  "http_last_modified": "Tue, 10 Nov 2026 21:16:33 GMT",
+  "last_date": "2026-11-09",
+  "last_observed_date": "2026-11-09",
+  "missing_markers": [
+    ".",
+    ""
+  ],
+  "refresh": "full history re-downloaded every run (FRED revises past values; vintage_date is ignored here)",
+  "rows": 26430,
+  "rows_after_fetch_date": 0,
+  "series_id": "DFF",
+  "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF"
+}

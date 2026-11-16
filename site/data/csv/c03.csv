@@ -1,0 +1,7 @@
+window,from_sample,to_sample,days,lst_yield_pct,supply_growth_pct,staker_share_change_pct,nonstaker_share_change_pct,note
+LST launch to end-2022,2022-04-01,2023-01-01,275.0,10.5618,5.0678,5.229,-4.8233,
+2023,2023-01-01,2024-01-01,365.0,8.9125,5.0261,3.7005,-4.7855,
+2024,2024-01-01,2025-01-01,366.0,8.4193,4.9344,3.321,-4.7024,
+2025 to the ceiling cut,2025-01-01,2025-10-29,301.0,8.6376,5.0157,3.4489,-4.7761,
+Since the ceiling cut,2025-10-29,2026-11-10,377.0,4.1343,2.4859,1.6084,-2.4256,
+Trailing year,2025-11-10,2026-11-10,365.0,4.129,2.4825,1.6066,-2.4223,"trailing, not a window"

@@ -1,0 +1,965 @@
+{
+ "full": {
+  "adv_mean_after": {
+   "display": "+1.70 pp",
+   "formula_id": "F-adv",
+   "inputs": [
+    "cut_date 2025-10-29",
+    "months 2023-03..2026-09, closed by the samples on 2023-04-01..2026-10-01",
+    "side: the month's closing sample is after cut_date 2025-10-29"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "pp",
+   "value": 1.6961
+  },
+  "adv_mean_before": {
+   "display": "+2.10 pp",
+   "formula_id": "F-adv",
+   "inputs": [
+    "cut_date 2025-10-29",
+    "months 2023-03..2026-09, closed by the samples on 2023-04-01..2026-10-01",
+    "side: the month's closing sample is on or before cut_date 2025-10-29"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "pp",
+   "value": 2.0995
+  },
+  "adv_months": {
+   "display": "42",
+   "formula_id": "F-adv",
+   "inputs": [
+    "cut_date 2025-10-29",
+    "months 2023-03..2026-09, closed by the samples on 2023-04-01..2026-10-01"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "count",
+   "value": 42.0
+  },
+  "adv_months_after": {
+   "display": "11",
+   "formula_id": "F-adv",
+   "inputs": [
+    "cut_date 2025-10-29",
+    "months 2023-03..2026-09, closed by the samples on 2023-04-01..2026-10-01",
+    "side: the month's closing sample is after cut_date 2025-10-29"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "count",
+   "value": 11.0
+  },
+  "adv_months_before": {
+   "display": "31",
+   "formula_id": "F-adv",
+   "inputs": [
+    "cut_date 2025-10-29",
+    "months 2023-03..2026-09, closed by the samples on 2023-04-01..2026-10-01",
+    "side: the month's closing sample is on or before cut_date 2025-10-29"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "count",
+   "value": 31.0
+  },
+  "adv_months_clean_after": {
+   "display": "0",
+   "formula_id": "F-adv",
+   "inputs": [
+    "clean after: E - 365 days >= cut_date",
+    "cut_date 2025-10-29",
+    "months 2023-03..2026-09, closed by the samples on 2023-04-01..2026-10-01"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "count",
+   "value": 0.0
+  },
+  "adv_share_le0": {
+   "display": "0.00%",
+   "formula_id": "F-adv",
+   "inputs": [
+    "cut_date 2025-10-29",
+    "months 2023-03..2026-09, closed by the samples on 2023-04-01..2026-10-01"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "%",
+   "value": 0.0
+  },
+  "adv_years": {
+   "display": "4",
+   "formula_id": "F-adv",
+   "inputs": [
+    "cut_date 2025-10-29",
+    "floor((E_last - (E_first - 365 days)) / 365 days)",
+    "months 2023-03..2026-09, closed by the samples on 2023-04-01..2026-10-01"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "count",
+   "value": 4.0
+  },
+  "cpi_yoy": {
+   "display": "3.72%",
+   "formula_id": "F-yoy",
+   "inputs": [
+    "CPIAUCSL 2026-09 / CPIAUCSL 2025-09 - 1"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv"
+   ],
+   "unit": "%",
+   "value": 3.7173
+  },
+  "ffcomp_365": {
+   "display": "3.81%",
+   "formula_id": "F-ffcomp",
+   "inputs": [
+    "F-ffcomp DFF over [2025-11-10, 2026-11-10)",
+    "the spread_adj_365 window"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "%",
+   "value": 3.8136
+  },
+  "g_365": {
+   "display": "2.48%",
+   "formula_id": "F-growth",
+   "inputs": [
+    "total_supply_near 2025-11-10 (block 171965511)",
+    "total_supply_near 2026-11-10 (block 223838227)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv"
+   ],
+   "unit": "%",
+   "value": 2.4825
+  },
+  "h2_from": {
+   "display": "2025-12-01",
+   "formula_id": "F-cut-gap",
+   "inputs": [
+    "CPIAUCSL 2026-10 / CPIAUCSL 2025-11, annualized ^(12/11)",
+    "cut_date 2025-10-29; months 2025-12..2026-10 (n = 11)",
+    "supply samples 2025-12-01 (block 174918110) -> 2026-11-01 (block 222491355)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "date",
+   "value": "2025-12-01"
+  },
+  "h2_gap": {
+   "display": "+1.69 pp",
+   "formula_id": "F-cut-gap",
+   "inputs": [
+    "CPIAUCSL 2026-10 / CPIAUCSL 2025-11, annualized ^(12/11)",
+    "cut_date 2025-10-29; months 2025-12..2026-10 (n = 11)",
+    "supply samples 2025-12-01 (block 174918110) -> 2026-11-01 (block 222491355)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "pp",
+   "value": 1.6893
+  },
+  "h2_gap_alt": {
+   "display": "+1.28 pp",
+   "formula_id": "F-cut-gap",
+   "inputs": [
+    "CPIAUCSL 2026-10 / CPIAUCSL 2025-09, annualized ^(12/13)",
+    "supply samples 2025-12-01 (block 174918110) -> 2026-11-01 (block 222491355)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "pp",
+   "value": 1.2772
+  },
+  "h2_gap_dir": {
+   "display": "slower",
+   "formula_id": "F-cut-gap",
+   "inputs": [
+    "h2_gap = h2_cpi - h2_near_g: positive -> NEAR grew slower"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "text",
+   "value": "slower"
+  },
+  "h2_months_read": {
+   "display": "11",
+   "formula_id": "F-cut-gap",
+   "inputs": [
+    "candidate months 2025-11..2026-10"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "count",
+   "value": 11.0
+  },
+  "h2_months_slower": {
+   "display": "8",
+   "formula_id": "F-cut-gap",
+   "inputs": [
+    "candidate months 2025-11..2026-10"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "count",
+   "value": 8.0
+  },
+  "h2_to": {
+   "display": "2026-11-01",
+   "formula_id": "F-cut-gap",
+   "inputs": [
+    "CPIAUCSL 2026-10 / CPIAUCSL 2025-11, annualized ^(12/11)",
+    "cut_date 2025-10-29; months 2025-12..2026-10 (n = 11)",
+    "supply samples 2025-12-01 (block 174918110) -> 2026-11-01 (block 222491355)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/CPIAUCSL.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv",
+    "data/raw/rpc/protocol_changes.csv",
+    "data/raw/rpc/protocol_config_samples.csv"
+   ],
+   "unit": "date",
+   "value": "2026-11-01"
+  },
+  "h5_now_narrower": {
+   "display": "1",
+   "formula_id": "F-panel",
+   "inputs": [
+    "reading A: |near_reading_a| against panel_median_abs_a: wider",
+    "reading B: |near_reading_b| against panel_median_abs_b: narrower"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/bis/cpi_yoy_monthly.csv",
+    "data/raw/bis/policy_rates_monthly.csv",
+    "data/raw/fred/DFF.csv",
+    "data/raw/fred/EFFR.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "count",
+   "value": 1.0
+  },
+  "h5_now_wider": {
+   "display": "1",
+   "formula_id": "F-panel",
+   "inputs": [
+    "reading A: |near_reading_a| against panel_median_abs_a: wider",
+    "reading B: |near_reading_b| against panel_median_abs_b: narrower"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/bis/cpi_yoy_monthly.csv",
+    "data/raw/bis/policy_rates_monthly.csv",
+    "data/raw/fred/DFF.csv",
+    "data/raw/fred/EFFR.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "count",
+   "value": 1.0
+  },
+  "intents_vol_90d_seq_ratio": {
+   "display": "1.84×",
+   "formula_id": "F-ratio-90d-seq",
+   "inputs": [
+    "2026-08-13..2026-11-10 / 2026-05-15..2026-08-12 (the latest ninety days against the ninety before)",
+    "includes provisional days 2026-11-08, 2026-11-09, 2026-11-10 (values as published)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/intents/defillama_volume_daily.csv"
+   ],
+   "unit": "x",
+   "value": 1.8411
+  },
+  "m2_yoy": {
+   "display": "5.71%",
+   "formula_id": "F-yoy",
+   "inputs": [
+    "M2SL 2026-09 / M2SL 2025-09 - 1"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/M2SL.csv"
+   ],
+   "unit": "%",
+   "value": 5.7099
+  },
+  "n_panel": {
+   "display": "10",
+   "formula_id": "F-panel",
+   "inputs": [
+    "AU: A 2026-06, B 2026-09",
+    "BR: A 2026-09, B 2026-10",
+    "CA: A 2026-09, B 2026-10",
+    "CH: A 2026-09, B 2026-10",
+    "GB: A 2026-09, B 2026-10",
+    "IN: A 2026-09, B 2026-09",
+    "JP: A 2026-09, B 2026-10",
+    "TR: A 2026-09, B 2026-10",
+    "US: A 2026-09, B 2026-10",
+    "XM: A 2026-09, B 2026-10"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/bis/cpi_yoy_monthly.csv",
+    "data/raw/bis/policy_rates_monthly.csv"
+   ],
+   "unit": "count",
+   "value": 10.0
+  },
+  "near_options": {
+   "display": "none",
+   "formula_id": "F-venues",
+   "inputs": [
+    "0 of 3 checked venues list NEAR options",
+    "checked_at 2026-11-11T22:59:56+00:00"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/market/options_venues.json"
+   ],
+   "unit": "text",
+   "value": "none"
+  },
+  "spread_adj_365": {
+   "display": "+0.32 pp",
+   "formula_id": "F-spread-adj",
+   "inputs": [
+    "365.000 days",
+    "F-ffcomp DFF over [2025-11-10, 2026-11-10)",
+    "LST prices 2025-11-10 (block 171965511)",
+    "LST prices 2026-11-10 (block 223838227)",
+    "window ends at the latest LST sample DFF covers"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "pp",
+   "value": 0.3154
+  },
+  "spread_adj_365_dir": {
+   "display": "above",
+   "formula_id": "F-spread-adj",
+   "inputs": [
+    "spread_adj_365 >= 0 -> above"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "text",
+   "value": "above"
+  },
+  "vol_call_now": {
+   "display": "37.8%",
+   "formula_id": "F-vol-call",
+   "inputs": [
+    "rv_365_near 103.3154%, y_lst_90 4.2855%, DFF 2026-11-09 3.88%"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/market/NEARUSDT_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "%",
+   "value": 37.7573
+  },
+  "vol_perp_band": {
+   "display": "inside",
+   "formula_id": "F-vol-null",
+   "inputs": [
+    "above if both venues are above, below if both are below, else inside"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_binance_8h.csv",
+    "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+    "data/raw/perps/near_perp_binance_daily.csv",
+    "data/raw/perps/near_perp_hyperliquid_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "text",
+   "value": "inside"
+  },
+  "vol_perp_bn_rank": {
+   "display": "46.9%",
+   "formula_id": "F-vol-null",
+   "inputs": [
+    "1,000 shuffles of 30-day blocks of the venue's day records, Prng(sim_seed = 20261109)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_binance_8h.csv",
+    "data/raw/perps/near_perp_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "%",
+   "value": 46.9
+  },
+  "vol_perp_bn_swing": {
+   "display": "-6.91 pp",
+   "formula_id": "F-perp-static",
+   "inputs": [
+    "1317 start days 2022-03-24..2025-10-30, horizon 365 days",
+    "a short of 25% of the stake from the start close to the end close, the ladder's collateral rule",
+    "windows failing on bars / funding / DFF / LST edges: 0 / 13 / 0 / 525"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_binance_8h.csv",
+    "data/raw/perps/near_perp_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "pp",
+   "value": -6.9129
+  },
+  "vol_perp_bn_swing_band": {
+   "display": "inside",
+   "formula_id": "F-perp-redraw",
+   "inputs": [
+    "1,000 redraws of 30-day blocks with replacement, Prng(sim_seed = 20261109), centred on the real swing",
+    "above if share >= 97.5, below if share <= 2.5, else inside"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_binance_8h.csv",
+    "data/raw/perps/near_perp_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "text",
+   "value": "inside"
+  },
+  "vol_perp_bn_swing_share": {
+   "display": "53.8%",
+   "formula_id": "F-perp-redraw",
+   "inputs": [
+    "1,000 redraws of 30-day blocks with replacement, Prng(sim_seed = 20261109), centred on the real swing"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_binance_8h.csv",
+    "data/raw/perps/near_perp_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "%",
+   "value": 53.8
+  },
+  "vol_perp_bn_windows": {
+   "display": "1,317",
+   "formula_id": "F-perp-windows",
+   "inputs": [
+    "1317 start days 2022-03-24..2025-10-30, horizon 365 days",
+    "windows failing on bars / funding / DFF / LST edges: 0 / 13 / 0 / 525"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_binance_8h.csv",
+    "data/raw/perps/near_perp_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "count",
+   "value": 1317.0
+  },
+  "vol_perp_bn_years": {
+   "display": "4",
+   "formula_id": "F-perp-windows",
+   "inputs": [
+    "1317 start days 2022-03-24..2025-10-30, horizon 365 days",
+    "floor((last_end - first_start) / 365)",
+    "windows failing on bars / funding / DFF / LST edges: 0 / 13 / 0 / 525"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_binance_8h.csv",
+    "data/raw/perps/near_perp_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "count",
+   "value": 4.0
+  },
+  "vol_perp_hl_const_share": {
+   "display": "77.6%",
+   "formula_id": "F-perp-funding",
+   "inputs": [
+    "2025-11-12..2026-10-30, 353 days every funding file covers in full",
+    "|rate - 1.25e-05| < 1e-12: Hyperliquid's fixed interest term, 0.01% per eight hours paid hourly"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/perps/near_funding_binance_8h.csv",
+    "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+    "data/raw/perps/near_funding_kraken_hourly.csv"
+   ],
+   "unit": "%",
+   "value": 77.5732
+  },
+  "vol_perp_hl_funding_year": {
+   "display": "10.92%",
+   "formula_id": "F-perp-funding",
+   "inputs": [
+    "2025-11-12..2026-10-30, 353 days every funding file covers in full",
+    "mean settlement rate x 8,760 settlements a year"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/perps/near_funding_binance_8h.csv",
+    "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+    "data/raw/perps/near_funding_kraken_hourly.csv"
+   ],
+   "unit": "%",
+   "value": 10.9231
+  },
+  "vol_perp_hl_rank": {
+   "display": "97.2%",
+   "formula_id": "F-vol-null",
+   "inputs": [
+    "1,000 shuffles of 30-day blocks of the venue's day records, Prng(sim_seed = 20261109)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+    "data/raw/perps/near_perp_hyperliquid_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "%",
+   "value": 97.2
+  },
+  "vol_perp_hl_swing": {
+   "display": "+11.02 pp",
+   "formula_id": "F-perp-static",
+   "inputs": [
+    "741 start days 2023-11-01..2025-11-10, horizon 365 days",
+    "a short of 25% of the stake from the start close to the end close, the ladder's collateral rule",
+    "windows failing on bars / funding / DFF / LST edges: 0 / 0 / 2 / 0"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+    "data/raw/perps/near_perp_hyperliquid_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "pp",
+   "value": 11.0154
+  },
+  "vol_perp_hl_swing_band": {
+   "display": "inside",
+   "formula_id": "F-perp-redraw",
+   "inputs": [
+    "1,000 redraws of 30-day blocks with replacement, Prng(sim_seed = 20261109), centred on the real swing",
+    "above if share >= 97.5, below if share <= 2.5, else inside"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+    "data/raw/perps/near_perp_hyperliquid_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "text",
+   "value": "inside"
+  },
+  "vol_perp_hl_swing_share": {
+   "display": "77.6%",
+   "formula_id": "F-perp-redraw",
+   "inputs": [
+    "1,000 redraws of 30-day blocks with replacement, Prng(sim_seed = 20261109), centred on the real swing"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+    "data/raw/perps/near_perp_hyperliquid_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "%",
+   "value": 77.6
+  },
+  "vol_perp_hl_windows": {
+   "display": "741",
+   "formula_id": "F-perp-windows",
+   "inputs": [
+    "741 start days 2023-11-01..2025-11-10, horizon 365 days",
+    "windows failing on bars / funding / DFF / LST edges: 0 / 0 / 2 / 0"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+    "data/raw/perps/near_perp_hyperliquid_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "count",
+   "value": 741.0
+  },
+  "vol_perp_hl_years": {
+   "display": "3",
+   "formula_id": "F-perp-windows",
+   "inputs": [
+    "741 start days 2023-11-01..2025-11-10, horizon 365 days",
+    "floor((last_end - first_start) / 365)",
+    "windows failing on bars / funding / DFF / LST edges: 0 / 0 / 2 / 0"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+    "data/raw/perps/near_perp_hyperliquid_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "count",
+   "value": 3.0
+  },
+  "vol_perp_swing_band": {
+   "display": "inside",
+   "formula_id": "F-perp-redraw",
+   "inputs": [
+    "above if both venues are above, below if both are below, else inside"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/perps/near_funding_binance_8h.csv",
+    "data/raw/perps/near_funding_hyperliquid_hourly.csv",
+    "data/raw/perps/near_perp_binance_daily.csv",
+    "data/raw/perps/near_perp_hyperliquid_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "text",
+   "value": "inside"
+  },
+  "vol_rally_band": {
+   "display": "inside",
+   "formula_id": "F-vol-null",
+   "inputs": [
+    "1,000 shuffles of 30-day blocks, Prng(sim_seed = 20261109)",
+    "above if rank >= 97.5, below if rank <= 2.5, else inside"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/market/NEARUSDT_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "text",
+   "value": "inside"
+  },
+  "vol_rally_excess": {
+   "display": "-4.82 pp",
+   "formula_id": "F-vol-null",
+   "inputs": [
+    "1,000 shuffles of 30-day blocks, Prng(sim_seed = 20261109)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/market/NEARUSDT_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "pp",
+   "value": -4.817
+  },
+  "vol_rally_rank": {
+   "display": "35.7%",
+   "formula_id": "F-vol-null",
+   "inputs": [
+    "1,000 shuffles of 30-day blocks, Prng(sim_seed = 20261109)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/market/NEARUSDT_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "%",
+   "value": 35.7
+  },
+  "vol_rebal_band": {
+   "display": "inside",
+   "formula_id": "F-vol-null",
+   "inputs": [
+    "1,000 shuffles of 30-day blocks, Prng(sim_seed = 20261109)",
+    "above if rank >= 97.5, below if rank <= 2.5, else inside"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/market/NEARUSDT_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "text",
+   "value": "inside"
+  },
+  "vol_rebal_excess": {
+   "display": "-1.21 pp",
+   "formula_id": "F-vol-null",
+   "inputs": [
+    "1,000 shuffles of 30-day blocks, Prng(sim_seed = 20261109)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/market/NEARUSDT_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "pp",
+   "value": -1.2054
+  },
+  "vol_rebal_rank": {
+   "display": "33.6%",
+   "formula_id": "F-vol-null",
+   "inputs": [
+    "1,000 shuffles of 30-day blocks, Prng(sim_seed = 20261109)"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/market/NEARUSDT_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "%",
+   "value": 33.6
+  },
+  "vol_trend_mean": {
+   "display": "37.6%",
+   "formula_id": "F-vol-windows",
+   "inputs": [
+    "100 (mean p_H - 1)",
+    "1328 start days 2022-03-24..2025-11-10, horizon 365 days",
+    "windows failing on closes / DFF / LST edges: 0 / 0 / 526"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/market/NEARUSDT_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "%",
+   "value": 37.6163
+  },
+  "vol_windows": {
+   "display": "1,328",
+   "formula_id": "F-vol-windows",
+   "inputs": [
+    "1328 start days 2022-03-24..2025-11-10, horizon 365 days",
+    "windows failing on closes / DFF / LST edges: 0 / 0 / 526"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/market/NEARUSDT_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "count",
+   "value": 1328.0
+  },
+  "vol_years": {
+   "display": "4",
+   "formula_id": "F-vol-windows",
+   "inputs": [
+    "1328 start days 2022-03-24..2025-11-10, horizon 365 days",
+    "floor((vol_last_end - vol_first_start) / 365)",
+    "windows failing on closes / DFF / LST edges: 0 / 0 / 526"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/fred/DFF.csv",
+    "data/raw/market/NEARUSDT_binance_daily.csv",
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "count",
+   "value": 4.0
+  },
+  "y_lst_365": {
+   "display": "4.13%",
+   "formula_id": "F-lst",
+   "inputs": [
+    "365.000 days",
+    "LST prices 2025-11-10 (block 171965511)",
+    "LST prices 2026-11-10 (block 223838227)",
+    "window ends at the latest LST sample DFF covers"
+   ],
+   "null_reason": null,
+   "source_files": [
+    "data/raw/rpc/dense_samples.csv",
+    "data/raw/rpc/history_samples.csv"
+   ],
+   "unit": "%",
+   "value": 4.129
+  }
+ },
+ "value_only": {
+  "fiat_gm_latest_med": {
+   "display": "4.79%",
+   "formula_id": "F-median",
+   "unit": "%",
+   "value": 4.792
+  },
+  "h1_gap_med": {
+   "display": "+2.31 pp",
+   "formula_id": "F-h1-gap",
+   "unit": "pp",
+   "value": 2.3095
+  },
+  "h1_n_faster": {
+   "display": "9",
+   "formula_id": "F-h1-gap",
+   "unit": "count",
+   "value": 9.0
+  },
+  "n_fiat_money": {
+   "display": "10",
+   "formula_id": "F-median",
+   "unit": "count",
+   "value": 10.0
+  }
+ }
+}

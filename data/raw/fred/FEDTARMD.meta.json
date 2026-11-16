@@ -1,0 +1,24 @@
+{
+  "blank_rows": 0,
+  "columns": [
+    "date",
+    "value"
+  ],
+  "description": "FOMC Summary of Economic Projections, fed funds rate, median, annual (by projection year), percent",
+  "fetch_day_utc": "2026-11-11",
+  "fetched_at": "2026-11-11T22:58:43+00:00",
+  "file": "data/raw/fred/FEDTARMD.csv",
+  "first_date": "2026-01-01",
+  "http_last_modified": "Wed, 16 Sep 2026 19:09:29 GMT",
+  "last_date": "2029-01-01",
+  "last_observed_date": "2029-01-01",
+  "missing_markers": [
+    ".",
+    ""
+  ],
+  "refresh": "full history re-downloaded every run (FRED revises past values; vintage_date is ignored here)",
+  "rows": 4,
+  "rows_after_fetch_date": 3,
+  "series_id": "FEDTARMD",
+  "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=FEDTARMD"
+}

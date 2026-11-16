@@ -1,0 +1,85 @@
+{
+  "columns": [
+    "date",
+    "height",
+    "block_time_utc",
+    "total_supply_near",
+    "stnear_price",
+    "linear_price"
+  ],
+  "cumulative": {
+    "avg_answered_calls_per_row": 6.611,
+    "avg_calls_per_row": 8.195,
+    "avg_search_calls_per_row": 5.774,
+    "calls": 4786,
+    "fetched": 584,
+    "rate_limited": 925,
+    "search_calls": 3372,
+    "view_calls": 1414
+  },
+  "cumulative_note": "cumulative = counters summed over every run that fetched rows into this file (run = the latest run only); calls count every HTTP attempt, answered = calls - rate_limited.",
+  "description": "NEAR total supply and liquid-staking exchange rates at 00:00 UTC: every Monday from the first Monday on/after 2022-04-01, then every day for the 400 days before the tip's UTC date (archival JSON-RPC).",
+  "endpoints": [
+    "https://archival-rpc.mainnet.fastnear.com",
+    "https://archival-rpc.mainnet.near.org"
+  ],
+  "fetched_at": "2026-11-11T23:02:37+00:00",
+  "file": "data/raw/rpc/dense_samples.csv",
+  "incremental_rule": "Rows are append-only and never re-fetched. A run fetches only scheduled dates with no row. Rows fetched under an earlier schedule (daily dates that have since aged past the daily window) are kept. A row is written only after its block and both views answered (data or a definitive does-not-exist error), so transient failures are retried on the next run.",
+  "methods": {
+    "linear_price": "linear-protocol.near ft_price, args_base64 e30= (empty if the call has no answer)",
+    "stnear_price": "meta-pool.near get_st_near_price, args_base64 e30= (empty if the call has no answer)",
+    "total_supply_near": "block header total_supply"
+  },
+  "overlap_with_history": {
+    "compared": [
+      "height",
+      "block_time_utc",
+      "total_supply_near",
+      "stnear_price",
+      "linear_price"
+    ],
+    "dates": 21,
+    "first": "2022-08-01",
+    "last": "2026-11-01",
+    "mismatched": {}
+  },
+  "rows": 584,
+  "run": {
+    "avg_answered_calls_per_row": null,
+    "avg_calls_per_row": null,
+    "avg_search_calls_per_row": null,
+    "cached_reused": 584,
+    "calls": 0,
+    "failed": {},
+    "fetched": 0,
+    "first_fetched": null,
+    "kept_unscheduled": 0,
+    "last_fetched": null,
+    "rate_limited": 0,
+    "rpc": {
+      "archival": {
+        "calls": 3
+      }
+    },
+    "scheduled": 584,
+    "search_calls": 0,
+    "view_calls": 0
+  },
+  "sampling": "Row = last block with header.timestamp_nanosec <= 00:00:00 UTC of `date` (the history_samples rule), skipping heights with no block. Today (the tip's UTC date) is never sampled, and a date is sampled only once its 00:00 is more than 10 minutes behind the tip.",
+  "schedule": {
+    "daily_days": 400,
+    "daily_from": "2025-10-07",
+    "daily_through": "2026-11-10",
+    "scheduled_dates": 584,
+    "tip_height": 224129519,
+    "tip_time_utc": "2026-11-11T23:01:42.997647+00:00",
+    "weekly": "Mondays from 2022-04-04 up to (not including) daily_from"
+  },
+  "search": "Bracket = nearest known samples on each side (history_samples rows, dense rows, genesis, tip), excluding any sample of the same date so overlap dates are found independently. First probe = extrapolation from the lower bracket at the block rate of the known span ending there; then interpolation inside the shrinking bracket, the parent block read by hash when the answer is just below a fetched upper bracket, a doubling pad when probes stay on one side, bisection after 8.",
+  "source_url": "https://archival-rpc.mainnet.fastnear.com",
+  "units": {
+    "stnear_price / linear_price": "NEAR per token (yocto / 1e24)",
+    "total_supply_near": "NEAR (yocto / 1e24, exact decimal)"
+  }
+}

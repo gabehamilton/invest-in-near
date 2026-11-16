@@ -1,0 +1,123 @@
+# Terms the pages use, defined once. Rendered as "Terms" on index.html (next to the claim ledger) and in
+# THESIS.md (after the claim). Same rules as copy.toml: never type a digit; {key} placeholders name registry
+# figures and nothing else. Terms are listed in the order a first-time reader meets them.
+
+[[terms]]
+id = "pp"
+term = "pp (percentage points)"
+text = "The plain difference between two rates. Staking at a yield a little above fed funds is a spread of a fraction of a pp."
+
+[[terms]]
+id = "epoch"
+term = "Epoch"
+text = "One validator round on NEAR, about {epoch_hours_median_30d} long at the moment. The protocol mints new NEAR once per epoch."
+
+[[terms]]
+id = "ceiling"
+term = "Issuance ceiling"
+text = "The protocol's max_inflation_rate: the most new NEAR it mints in a year, as a share of supply. It is {i_max_now} today, and governance sets it."
+
+[[terms]]
+id = "lst"
+term = "Liquid staking token (stNEAR, LiNEAR)"
+text = "A receipt for staked NEAR whose price in NEAR rises as staking rewards accrue. Meta Pool issues stNEAR and LiNEAR Protocol issues LiNEAR. Liquid staking yield is the growth of that price."
+
+[[terms]]
+id = "ffcomp"
+term = "Fed funds compounded"
+text = "What a dollar earning the effective fed funds rate every day of a window would have made. It is the like-for-like benchmark for a staking yield over the same days."
+
+[[terms]]
+id = "spread"
+term = "Spread"
+text = "Staking yield minus fed funds over the same days, in pp."
+
+[[terms]]
+id = "burn"
+term = "Fee burn"
+text = "NEAR destroyed when transactions pay for gas. Burn offsets issuance, and supply shrinks only when burn exceeds what the protocol mints."
+
+[[terms]]
+id = "upper-bound"
+term = "Upper bound (burn)"
+text = "The most the burn can be, from supply alone: what the ceiling would have minted minus what supply grew by. It counts rewards left unminted by offline validators as burn, so the true burn cannot exceed it."
+
+[[terms]]
+id = "cpi"
+term = "CPI (CPI-U) and core CPI"
+text = "The US consumer price index for all urban consumers, published by the Bureau of Labor Statistics. Core leaves out food and energy."
+
+[[terms]]
+id = "money-supply"
+term = "US money supply"
+text = "The Federal Reserve's broad money measure: currency, checking and savings deposits, small time deposits and retail money funds."
+
+[[terms]]
+id = "volatility"
+term = "Realized volatility"
+text = "The annualized standard deviation of daily price changes. A bigger number means bigger typical swings."
+
+[[terms]]
+id = "sweep"
+term = "Sweep account rules"
+text = "The SEC's money market fund rule and its broker customer-protection rule, which set what a broker may sweep idle cash into."
+
+[[terms]]
+id = "implied"
+term = "Implied volatility"
+text = "The volatility an options price assumes. Implied minus realized is, on average, what an option seller earns for taking the risk."
+
+[[terms]]
+id = "call"
+term = "Call option"
+text = "The right to buy at a set price by a set date. Its price rises with the swings the market expects before that date."
+
+[[terms]]
+id = "rebalancing"
+term = "Rebalancing"
+text = "Trading back to a fixed mix at set intervals, here the desk's share in NEAR and the rest in dollars: selling some NEAR after it rises and buying some after it falls. The desk simulation runs the same strategy against dollars and euros and calls it resetting the NEAR part to its share."
+
+[[terms]]
+id = "shuffled"
+term = "Shuffled history"
+text = "NEAR's own daily price moves, cut into blocks of {vol_null_block_days} and put back in a random order. It keeps every move, the volatility and the overall trend and changes only their order, so a strategy's result on it is what chance gives."
+
+[[terms]]
+id = "perpetual"
+term = "Perpetual future"
+text = "A contract that tracks NEAR's price and never expires. Buyers and sellers post collateral, and one side pays the other funding to keep the contract's price near the spot price."
+
+[[terms]]
+id = "perpetual-style"
+term = "Perpetual-style future"
+text = "A US-regulated form of a perpetual, listed on a futures exchange: Coinbase Derivatives' NEAR contract sets a funding rate every hour like a perpetual but carries an expiry date years away, and it is margined in dollars."
+
+[[terms]]
+id = "short"
+term = "Short"
+text = "A bet that the price falls: sell now, buy back later. A short on a perpetual is settled in dollars, so the NEAR it hedges stays staked."
+
+[[terms]]
+id = "perp-ladder"
+term = "Perp ladder"
+text = "The third way of selling NEAR's swings: keep the NEAR staked and sell {vol_perp_slice_pct} of the stake short on a perpetual after each {vol_perp_rung_pct} rise, up to {vol_perp_cap_pct}, buying each slice back after a {vol_perp_rung_pct} fall. It gains when NEAR swings and comes back, and loses when NEAR runs one way."
+
+[[terms]]
+id = "funding"
+term = "Funding"
+text = "The payment between the two sides of a perpetual, settled every hour or every eight hours by each venue's formula. Hyperliquid's and Binance's formulas add a fixed interest term, so shorts are paid a set rate whenever the perpetual trades close to the spot price."
+
+[[terms]]
+id = "static-short"
+term = "Short that never trades"
+text = "What the perp ladder is measured against: a short of {vol_perp_static_pct} of the stake, sold at the start of a year and bought back at its end, with the same dollars on the venue. What the ladder gains over it is what trading the swings added."
+
+[[terms]]
+id = "redrawn"
+term = "Redrawn history"
+text = "Blocks of {vol_null_block_days} of NEAR's own days drawn at random with repeats, so some months appear twice and some not at all, then shifted so their average matches the real result: they show how far a result moves with the months drawn."
+
+[[terms]]
+id = "tripwire"
+term = "Tripwire"
+text = "A measured result that would change the thesis, checked against the latest data. Some would break part of it; others would strengthen it."

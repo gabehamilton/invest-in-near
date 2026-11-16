@@ -1,0 +1,30 @@
+# Runs `make verify` on every push and pull request, offline and without keys: it recomputes site/ and THESIS.md
+# from data/raw in a temp dir, byte-compares them with the committed copies, runs the number lint and the
+# cross-checks, then the test suite. node is installed so the desk simulation's parity tests run rather than skip.
+name: verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - run: uv python install
+      - run: uv sync --frozen
+      - run: make verify

@@ -1,0 +1,18 @@
+STATUS,200
+MESSAGEID,M181000I
+MESSAGE,Successfully completed
+DATE,2026-11-12T02:40:11.374+09:00
+PARAMETER,FORMAT,CSV
+PARAMETER,LANG,EN
+PARAMETER,DB,MD02
+PARAMETER,STARTDATE,201501
+PARAMETER,ENDDATE,
+PARAMETER,STARTPOSITION,
+NEXTPOSITION,
+SERIES_CODE,NAME_OF_TIME_SERIES,UNIT,FREQUENCY,CATEGORY,LAST_UPDATE,SURVEY_DATES,VALUES
+MAM1XAM3M3MO,M3/Average Amounts Outstanding/Seasonally Adjusted/Money Stock,100 million yen,MONTHLY,Money Stock,20261111,202608,16372604
+MAM1XAM3M3MO,M3/Average Amounts Outstanding/Seasonally Adjusted/Money Stock,100 million yen,MONTHLY,Money Stock,20261111,202609,16381626
+MAM1XAM3M3MO,M3/Average Amounts Outstanding/Seasonally Adjusted/Money Stock,100 million yen,MONTHLY,Money Stock,20261111,202610,16371215
+MAM1XAM2M2MO,M2/Average Amounts Outstanding/Seasonally Adjusted/Money Stock,100 million yen,MONTHLY,Money Stock,20261111,202608,12946217
+MAM1XAM2M2MO,M2/Average Amounts Outstanding/Seasonally Adjusted/Money Stock,100 million yen,MONTHLY,Money Stock,20261111,202609,12964942
+MAM1XAM2M2MO,M2/Average Amounts Outstanding/Seasonally Adjusted/Money Stock,100 million yen,MONTHLY,Money Stock,20261111,202610,12960466

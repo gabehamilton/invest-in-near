@@ -1,0 +1,8 @@
+{
+  "description": "The Coinbase Derivatives NEAR Perp (NER-20DEC30-CDE) product record at fetch time, kept whole as published: contract size (NEAR per contract), funding interval, the current funding rate and its time, open interest and 24h volume in contracts, intraday and overnight margin rates for longs and shorts (fractions of notional), index, settlement and last price. Coinbase publishes no keyless funding history, so funding appears only as the current rate",
+  "fetched_at": "2026-11-14T03:26:48+00:00",
+  "file": "data/raw/perps/near_perp_coinbase_terms.json",
+  "refresh": "snapshot replaced every run; the cached file is kept when the product does not answer",
+  "rows": 1,
+  "source_url": "https://api.coinbase.com/api/v3/brokerage/market/products/NER-20DEC30-CDE"
+}

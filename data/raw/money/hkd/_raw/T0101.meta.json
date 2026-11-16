@@ -1,0 +1,9 @@
+{
+  "bytes": 53248,
+  "description": "Hong Kong Monetary Authority: T0101/M3 HK$",
+  "fetched_at": "2026-11-11T17:40:43+00:00",
+  "file": "data/raw/money/hkd/_raw/T0101.xls",
+  "method": "raw response archived unchanged",
+  "sha256": "b40989cdbb4c8ed6ba4decbdf8df26548da0919e8b98fc09c86adcbc697a4fdc",
+  "source_url": "https://www.hkma.gov.hk/media/eng/doc/market-data-and-statistics/monthly-statistical-bulletin/T0101.xls"
+}

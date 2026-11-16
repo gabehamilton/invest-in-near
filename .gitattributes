@@ -1,0 +1,2 @@
+# Raw captures are archived byte-for-byte (sidecars record their hashes); no line-ending conversion.
+data/raw/** -text
