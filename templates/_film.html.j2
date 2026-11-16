@@ -544,7 +544,7 @@
 <div class="split">
   <div class="words">
     <p class="fig is-near" data-at="0.3"><span class="fig-v">{{ num('sim_carry_usd') }}</span><span class="fig-l">{{ copy('film_d3_carry') }} <a class="tag" href="#claim-H3" data-claim="H3">{{ copy('film_d3_from') }} {{ ident('H3') }}</a></span></p>
-    <p class="fig is-near" data-at="1.6"><span class="fig-v">{{ num(desk.edge.other_key) }}</span><span class="fig-l">{{ copy('film_d3_swing' if swing else 'film_d3_es') }}{% if swing and 'sigma_d' in numbers %} ({{ num('sigma_d') }}){% endif %} <a class="tag" href="#claim-H7" data-claim="H7">{{ copy('film_d3_from') }} {{ ident('H7') }}</a></span></p>
+    <p class="fig is-near" data-at="1.6"><span class="fig-v">{{ num(desk.edge.other_key) }}</span><span class="fig-l">{{ copy('film_d3_swing' if swing else 'film_d3_es') }} <a class="tag" href="#claim-H7" data-claim="H7">{{ copy('film_d3_from') }} {{ ident('H7') }}</a></span></p>
   </div>
   <div class="picture">
     {#- each bar names its own figure, so the edge against the swing reads without the caption -#}

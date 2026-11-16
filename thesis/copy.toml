@@ -1468,7 +1468,7 @@ text = "expected gain a year over dollars and euros only, price flat: {sim_carry
 [film_d3_swing]
 [[film_d3_swing.variants]]
 when = []
-text = "One ordinary day's price move"
+text = "One ordinary day's price move: {sigma_d} of the {sim_near_usd} NEAR part"
 
 [film_d3_es]
 [[film_d3_es.variants]]
@@ -1483,7 +1483,7 @@ text = "A year's expected gain: {sim_carry_usd}"
 [film_d3_bar_swing]
 [[film_d3_bar_swing.variants]]
 when = []
-text = "One ordinary day's price move on the NEAR part: {sim_day_swing_usd}"
+text = "One ordinary day's price move on the {sim_near_usd} NEAR part: {sim_day_swing_usd}"
 
 [film_d3_bar_es]
 [[film_d3_bar_es.variants]]
@@ -1493,7 +1493,7 @@ text = "A bad year's average loss: {sim_es95_usd}"
 [film_d3_cap]
 [[film_d3_cap.variants]]
 when = []
-text = "Expected gain: {sim_carry_usd} a year, {sim_carry_euro_usd} of it the euro-dollar rate gap. One ordinary day moves {sim_day_swing_usd}."
+text = "Expected gain: {sim_carry_usd} a year. One ordinary day moves the {sim_near_usd} NEAR part by {sim_day_swing_usd}."
 
 [film_d3_cap_es]
 [[film_d3_cap_es.variants]]
